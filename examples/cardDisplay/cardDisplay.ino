@@ -8,21 +8,35 @@
 * RST: Pin 9
 *
 * Script is based on the script of Miguel Balboa. 
-* New cardnumber is printed when card has changed. Only a dot is printed
-* if card is the same.
+* Serial number is shown on a HD44780 compatible display
+*
+* The circuit:
+* LCD RS pin to digital pin (7)
+* LCD Enable pin to digital pin (6)
+* LCD D4 pin to digital pin 5
+* LCD D5 pin to digital pin 4
+* LCD D6 pin to digital pin 3
+* LCD D7 pin to digital pin 2
+* LCD R/W pin to ground
+* 10K resistor:
+* ends to +5V and ground
+* wiper to LCD VO pin (pin 3)
 *
 * @version 0.1
 * @author Henri de Jong
-* @since 06-01-2013
+* @since 27-01-2013
 */
 
 #include <SPI.h>
 #include <RFID.h>
+#include <LiquidCrystal.h>
 
 #define SS_PIN 10
 #define RST_PIN 9
 
 RFID rfid(SS_PIN, RST_PIN); 
+
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 // Setup variables:
     int serNum0;
@@ -34,6 +48,7 @@ RFID rfid(SS_PIN, RST_PIN);
 void setup()
 { 
   Serial.begin(9600);
+  lcd.begin(16, 2);
   SPI.begin(); 
   rfid.init();
   
@@ -84,6 +99,21 @@ void loop()
                 Serial.print(", ");
 		Serial.print(rfid.serNum[4],HEX);
                 Serial.println(" ");
+
+                /* Write the HEX code to the display */
+                lcd.clear();                
+                lcd.setCursor(0, 0);
+                lcd.print("Cardno (hex):");
+                lcd.setCursor(0,1);
+                lcd.print(rfid.serNum[0], HEX);
+                lcd.print(',');
+                lcd.print(rfid.serNum[1], HEX);
+                lcd.print(',');
+                lcd.print(rfid.serNum[2], HEX);
+                lcd.print(',');
+                lcd.print(rfid.serNum[3], HEX);
+                lcd.print(',');
+                lcd.print(rfid.serNum[4], HEX);
              } else {
                /* If we have the same ID, just write a dot. */
                Serial.print(".");
