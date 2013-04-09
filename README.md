@@ -7,7 +7,7 @@ Date: 10-06-10
 Pin order, starting from the bottom left hand pin
 (in case your MF522-AN doesn't have pin markings like the B2CQSHOP one):
 
-#...........UNO...2560
+............UNO...2560
 1.....SS.....10.....53
 2.....SCK....13.....52
 3....MOSI....11.....51
