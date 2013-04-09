@@ -1,8 +1,8 @@
 Arduino RFID Library for MF522-AN
 =================================
-Name: MF522-AN
-Design: C_CL
-Date: 10-06-10
+> Name: MF522-AN  
+> Design: C_CL  
+> Date: 10-06-10  
 
 Pin order, starting from the bottom left hand pin
 (in case your MF522-AN doesn't have pin markings like the B2CQSHOP one):
