@@ -31,7 +31,7 @@ void loop()
                         Serial.print(" , ");
 			Serial.print(rfid.serNum[4],DEC);
                         Serial.println(" ");
-                        
+                        delay(1555); // Delay before reading again
                        
             
           }
