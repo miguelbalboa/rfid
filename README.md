@@ -1,4 +1,4 @@
-Arduino RFID Library for MF522-AN
+Arduino RFID Library for MF522-AN (13.56 Mhz)
 =================================
 > Name: MF522-AN  
 > Design: C_CL  
@@ -17,3 +17,10 @@ Pin order, starting from the bottom left hand pin
 | 6    |          | GND                |
 | 7    |          | RST (Digital Pin 5)|
 | 8    |          | +3.3V              |
+
+Using MF522-AN with other SPI components
+========================================
+If you are planning to use other SPI components you just have to make sure each have an exclusive SS (Slave Select) line.  
+MISO, MOSI and SCK lines may be shared. More reference regarding SPI may be found [here](http://arduino.cc/en/Reference/SPI).  
+
+
