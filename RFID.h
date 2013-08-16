@@ -13,33 +13,33 @@
 /******************************************************************************
  * Definitions
  ******************************************************************************/
-#define MAX_LEN 16   // Largo máximo de la matriz
+#define MAX_LEN 16   // Largo mï¿½ximo de la matriz
 
 //MF522 comando palabra
 #define PCD_IDLE              0x00               // NO action; Y cancelar el comando
-#define PCD_AUTHENT           0x0E               // autenticación de clave
-#define PCD_RECEIVE           0x08               // recepción de datos
+#define PCD_AUTHENT           0x0E               // autenticaciï¿½n de clave
+#define PCD_RECEIVE           0x08               // recepciï¿½n de datos
 #define PCD_TRANSMIT          0x04               // Enviar datos
 #define PCD_TRANSCEIVE        0x0C               // Enviar y recibir datos
 #define PCD_RESETPHASE        0x0F               // reajustar
 #define PCD_CALCCRC           0x03               // CRC calcular
 
 //Mifare_One  Tarjeta Mifare_One comando palabra
-#define PICC_REQIDL           0x26               // Área de la antena no está tratando de entrar en el estado de reposo
-#define PICC_REQALL           0x52               // Todas las cartas para encontrar el área de la antena
-#define PICC_ANTICOLL         0x93               // anti-colisión
-#define PICC_SElECTTAG        0x93               // elección de tarjeta
-#define PICC_AUTHENT1A        0x60               // verificación key A
-#define PICC_AUTHENT1B        0x61               // verificación Key B
+#define PICC_REQIDL           0x26               // ï¿½rea de la antena no estï¿½ tratando de entrar en el estado de reposo
+#define PICC_REQALL           0x52               // Todas las cartas para encontrar el ï¿½rea de la antena
+#define PICC_ANTICOLL         0x93               // anti-colisiï¿½n
+#define PICC_SElECTTAG        0x93               // elecciï¿½n de tarjeta
+#define PICC_AUTHENT1A        0x60               // verificaciï¿½n key A
+#define PICC_AUTHENT1B        0x61               // verificaciï¿½n Key B
 #define PICC_READ             0x30               // leer bloque
 #define PICC_WRITE            0xA0               // Escribir en el bloque 
 #define PICC_DECREMENT        0xC0               // cargo
 #define PICC_INCREMENT        0xC1               // recargar
 #define PICC_RESTORE          0xC2               // Transferencia de datos de bloque de buffer
-#define PICC_TRANSFER         0xB0               // Guardar los datos en el búfer
+#define PICC_TRANSFER         0xB0               // Guardar los datos en el bï¿½fer
 #define PICC_HALT             0x50               // inactividad
 
-//MF522 Código de error de comunicación cuando regresó
+//MF522 Cï¿½digo de error de comunicaciï¿½n cuando regresï¿½
 #define MI_OK                 0
 #define MI_NOTAGERR           1
 #define MI_ERR                2
@@ -134,6 +134,7 @@ class RFID
 	unsigned char MFRC522Request(unsigned char reqMode, unsigned char *TagType);
 	unsigned char MFRC522ToCard(unsigned char command, unsigned char *sendData, unsigned char sendLen, unsigned char *backData, unsigned int *backLen);
 	unsigned char anticoll(unsigned char *serNum);
+	unsigned char selectTag(unsigned char *serNum);
 	unsigned char auth(unsigned char authMode, unsigned char BlockAddr, unsigned char *Sectorkey, unsigned char *serNum);
 	unsigned char read(unsigned char blockAddr, unsigned char *recvData);
 	unsigned char write(unsigned char blockAddr, unsigned char *writeData);
