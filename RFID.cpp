@@ -473,13 +473,15 @@ unsigned char RFID::write(unsigned char blockAddr, unsigned char *writeData)
  */
 void RFID::halt()
 {
-	unsigned char status;
+    unsigned char status;
     unsigned int unLen;
-    unsigned char buff[4]; 
+    unsigned char buff[4];
 
     buff[0] = PICC_HALT;
     buff[1] = 0;
     calculateCRC(buff, 2, &buff[2]);
- 
+
+    clearBitMask(Status2Reg, 0x08); // turn off encryption
+
     status = MFRC522ToCard(PCD_TRANSCEIVE, buff, 4, buff,&unLen);
 }
