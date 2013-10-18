@@ -1,0 +1,4 @@
+Renamed library from RFID to MFRC522 (RFID seemed to generic).
+Register names changed to comply with datasheet.
+Global defines moved into class.
+
