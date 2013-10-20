@@ -1,6 +1,6 @@
 /*
 * MFRC522.cpp - Library to use ARDUINO RFID MODULE KIT 13.56 MHZ WITH TAGS SPI W AND R BY COOQROBOT.
-* Please see comments in MFRC522.h
+* _Please_ see the comments in MFRC522.h - they give useful hints and background.
 * Released into the public domain.
 */
 
@@ -16,7 +16,7 @@
  * Prepares the output pins.
  */
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
-					byte resetPowerDownPin		///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 				) {
 	// Set the chipSelectPin as digital output, do not select the slave yet
 	_chipSelectPin = chipSelectPin;
@@ -93,9 +93,9 @@ byte MFRC522::PCD_ReadRegister(	byte reg	///< The register to read from. One of 
  * The interface is described in the datasheet section 8.1.2.
  */
 void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One of the PCD_Register enums.
-									byte count,		///< The number of bytes to read
-									byte *values,	///< Byte array to store the values in.
-									byte rxAlign	///< Only bit positions rxAlign..7 in values[0] are updated.
+								byte count,		///< The number of bytes to read
+								byte *values,	///< Byte array to store the values in.
+								byte rxAlign	///< Only bit positions rxAlign..7 in values[0] are updated.
 								) {
 	if (count == 0) {
 		return;
@@ -104,8 +104,8 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	byte address = 0x80 | (reg & 0x7E);		// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
-	count--;									// One read is performed outside of the loop
-	SPI.transfer(address);						// Tell MFRC522 which address we want to read
+	count--;								// One read is performed outside of the loop
+	SPI.transfer(address);					// Tell MFRC522 which address we want to read
 	while (index < count) {
 		if (index == 0 && rxAlign) { // Only update bit positions rxAlign..7 in values[0]
 			// Create bit mask for bit positions rxAlign..7
@@ -141,7 +141,7 @@ void MFRC522::PCD_SetRegisterBitMask(	byte reg,	///< The register to update. One
 /**
  * Clears the bits given in mask from register reg.
  */
-void MFRC522::PCD_ClearRegisterBitMask(byte reg,	///< The register to update. One of the PCD_Register enums.
+void MFRC522::PCD_ClearRegisterBitMask(	byte reg,	///< The register to update. One of the PCD_Register enums.
 										byte mask	///< The bits to clear.
 									  ) {
 	byte tmp;
@@ -229,7 +229,7 @@ void MFRC522::PCD_Reset() {
 	while (PCD_ReadRegister(CommandReg) & (1<<4)) {
 		// PCD still restarting - unlikely after waiting 50ms, but better safe than sorry.
 	}
-}
+} // End PCD_Reset()
 
 /**
  * Turns the antenna on by enabling pins TX1 and TX2.
@@ -361,7 +361,7 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 	}
 	
 	return STATUS_OK;
-} // End PCD_CommunicateWithPICC
+} // End PCD_CommunicateWithPICC()
 
 /**
  * Transmits a REQuest command, Type A. Invites PICCs in state IDLE to go to READY and prepare for anticollision or selection. 7 bit frame.
@@ -373,7 +373,7 @@ byte MFRC522::PICC_RequestA(byte *bufferATQA,	///< The buffer to store the ATQA 
 							byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 							) {
 	return PICC_REQA_or_WUPA(PICC_CMD_REQA, bufferATQA, bufferSize);
-}
+} // End PICC_RequestA()
 
 /**
  * Transmits a Wake-UP command, Type A. Invites PICCs in state IDLE and HALT to go to READY(*) and prepare for anticollision or selection. 7 bit frame.
@@ -385,7 +385,7 @@ byte MFRC522::PICC_WakeupA(	byte *bufferATQA,	///< The buffer to store the ATQA 
 							byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 							) {
 	return PICC_REQA_or_WUPA(PICC_CMD_WUPA, bufferATQA, bufferSize);
-}
+} // End PICC_WakeupA()
 
 /**
  * Transmits REQA or WUPA commands.
@@ -443,8 +443,8 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	byte count;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
-	char currentLevelKnownBits;	// The number of known UID bits in the current Cascade Level.
-	byte buffer[9];				// The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
+	char currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
+	byte buffer[9];					// The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
 	byte bufferUsed;				// The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
 	byte rxAlign;					// Used in BitFramingReg. Defines the bit position for the first bit received.
 	byte txLastBits;				// Used in BitFramingReg. The number of valid bits in the last transmitted byte. 
@@ -501,7 +501,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			case 3:
 				buffer[0] = PICC_CMD_SEL_CL3;
 				uidIndex = 6;
-				useCascadeTag = false;							// Never used in CL3.
+				useCascadeTag = false;						// Never used in CL3.
 				break;
 			
 			default:
@@ -567,7 +567,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			}
 
 			// Set bit adjustments
-			rxAlign = txLastBits;												// Having a seperate variable is overkill. But it makes the next line easier to read.
+			rxAlign = txLastBits;											// Having a seperate variable is overkill. But it makes the next line easier to read.
 			PCD_WriteRegister(BitFramingReg, (rxAlign << 4) + txLastBits);	// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 
 			// Transmit the buffer and receive the response.
@@ -581,7 +581,6 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				if (collisionPos == 0) {
 					collisionPos = 32;
 				}
-				//Serial.print("Collision in bit ");   Serial.println(collisionPos);
 				if (collisionPos <= currentLevelKnownBits) { // No progress - should not happen 
 					return STATUS_INTERNAL_ERROR;
 				}
@@ -605,7 +604,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 					// Run loop again to do the SELECT.
 				}
 			}
-		} //End of while ( ! selectDone)
+		} // End of while ( ! selectDone)
 
 		// We do not check the CBB - it was constructed by us above.
 		
@@ -681,7 +680,6 @@ byte MFRC522::PICC_HaltA() {
 // Functions for communicating with MIFARE PICCs
 /////////////////////////////////////////////////////////////////////////////////////
 
-
 /**
  * Executes the MFRC522 MFAuthent command.
  * This command manages MIFARE authentication to enable a secure communication to any MIFARE Mini, MIFARE 1K and MIFARE 4K card.
@@ -694,7 +692,7 @@ byte MFRC522::PICC_HaltA() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise. Probably STATUS_TIMEOUT if you supply the wrong key.
  */
-byte MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_AUTH_KEY_A or PICC_CMD_AUTH_KEY_B
+byte MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
 								byte blockAddr, 	///< The block number. See numbering in the comments in the .h file.
 								MIFARE_Key *key,	///< Pointer to the Crypteo1 key to use (6 bytes)
 								Uid *uid			///< Pointer to Uid struct. The first 4 bytes of the UID is used.
@@ -741,7 +739,7 @@ void MFRC522::PCD_StopCrypto1() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The first page to return data from.
+byte MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The first page to return data from.
 							byte *buffer,		///< The buffer to store the data in
 							byte *bufferSize	///< Buffer size, at least 18 bytes. Also number of bytes returned if STATUS_OK.
 						) {
@@ -753,7 +751,7 @@ byte MFRC522::PICC_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff
 	}
 
 	// Build command buffer
-	buffer[0] = PICC_CMD_READ;
+	buffer[0] = PICC_CMD_MF_READ;
 	buffer[1] = blockAddr;
 	// Calculate CRC_A
 	result = PCD_CalculateCRC(buffer, 2, &buffer[2]);
@@ -763,7 +761,7 @@ byte MFRC522::PICC_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff
 	
 	// Transmit the buffer and receive the response, validate CRC_A.
 	return PCD_TransceiveData(buffer, 4, buffer, bufferSize, NULL, 0, true);
-} // End PICC_Read()
+} // End MIFARE_Read()
 
 /**
  * Writes 16 bytes to the active PICC.
@@ -776,12 +774,11 @@ byte MFRC522::PICC_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff
  * * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Write(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The page (2-15) to write to.
-							byte *buffer,		///< The 16 bytes to write to the PICC
+byte MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The page (2-15) to write to.
+							byte *buffer,	///< The 16 bytes to write to the PICC
 							byte bufferSize	///< Buffer size, must be at least 16 bytes. Exactly 16 bytes are written.
 						) {
 	byte result;
-	byte cmdBuffer[18]; // We need room for the 16 bytes and CRC_A.
 
 	// Sanity check
 	if (buffer == NULL || bufferSize < 16) {
@@ -790,7 +787,8 @@ byte MFRC522::PICC_Write(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xf
 
 	// Mifare Classic protocol requires two communications to perform a write.
 	// Step 1: Tell the PICC we want to write to block blockAddr.
-	cmdBuffer[0] = PICC_CMD_WRITE;
+	byte cmdBuffer[2];
+	cmdBuffer[0] = PICC_CMD_MF_WRITE;
 	cmdBuffer[1] = blockAddr;
 	result = PCD_MIFARE_Transceive(cmdBuffer, 2); // Adds CRC_A and checks that the response is MF_ACK.
 	if (result != STATUS_OK) {
@@ -804,60 +802,90 @@ byte MFRC522::PICC_Write(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xf
 	}
 
 	return STATUS_OK;
-} // End PICC_Write()
+} // End MIFARE_Write()
+
+/**
+ * Writes a 4 byte page to the active MIFARE Ultralight PICC.
+ * 
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+ */
+byte MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page (2-15) to write to.
+										byte *buffer,	///< The 4 bytes to write to the PICC
+										byte bufferSize	///< Buffer size, must be at least 4 bytes. Exactly 4 bytes are written.
+									) {
+	byte result;
+
+	// Sanity check
+	if (buffer == NULL || bufferSize < 4) {
+		return STATUS_INVALID;
+	}
+
+	// Build commmand buffer
+	byte cmdBuffer[6];
+	cmdBuffer[0] = PICC_CMD_UL_WRITE;
+	cmdBuffer[1] = page;
+	memcpy(&cmdBuffer[2], buffer, 4);
+	
+	// Perform the write
+	result = PCD_MIFARE_Transceive(cmdBuffer, 6); // Adds CRC_A and checks that the response is MF_ACK.
+	if (result != STATUS_OK) {
+		return result;
+	}
+	return STATUS_OK;
+} // End MIFARE_Ultralight_Write()
 
 /**
  * MIFARE Decrement subtracts the delta from the value of the addressed block, and stores the result in a volatile memory.
  * For MIFARE Classic only. The sector containing the block must be authenticated before calling this function.
  * Only for blocks in "value block" mode, ie with access bits [C1 C2 C3] = [110] or [001].
- * Use PICC_Transfer() to store the result in a block.
+ * Use MIFARE_Transfer() to store the result in a block.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
+byte MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
 								long delta		///< This number is subtracted from the value of block blockAddr.
 							) {
-	return PICC_TwoStepHelper(PICC_CMD_DECREMENT, blockAddr, delta);
-} // End PICC_Decrement()
+	return MIFARE_TwoStepHelper(PICC_CMD_MF_DECREMENT, blockAddr, delta);
+} // End MIFARE_Decrement()
 
 /**
  * MIFARE Increment adds the delta to the value of the addressed block, and stores the result in a volatile memory.
  * For MIFARE Classic only. The sector containing the block must be authenticated before calling this function.
  * Only for blocks in "value block" mode, ie with access bits [C1 C2 C3] = [110] or [001].
- * Use PICC_Transfer() to store the result in a block.
+ * Use MIFARE_Transfer() to store the result in a block.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Increment(	byte blockAddr, ///< The block (0-0xff) number.
+byte MFRC522::MIFARE_Increment(	byte blockAddr, ///< The block (0-0xff) number.
 								long delta		///< This number is added to the value of block blockAddr.
 							) {
-	return PICC_TwoStepHelper(PICC_CMD_INCREMENT, blockAddr, delta);
-} // End PICC_Increment()
+	return MIFARE_TwoStepHelper(PICC_CMD_MF_INCREMENT, blockAddr, delta);
+} // End MIFARE_Increment()
 
 /**
  * MIFARE Restore copies the value of the addressed block into a volatile memory.
  * For MIFARE Classic only. The sector containing the block must be authenticated before calling this function.
  * Only for blocks in "value block" mode, ie with access bits [C1 C2 C3] = [110] or [001].
- * Use PICC_Transfer() to store the result in a block.
+ * Use MIFARE_Transfer() to store the result in a block.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Restore(	byte blockAddr ///< The block (0-0xff) number.
+byte MFRC522::MIFARE_Restore(	byte blockAddr ///< The block (0-0xff) number.
 							) {
 	// The datasheet describes Restore as a two step operation, but does not explain what data to transfer in step 2.
 	// Doing only a single step does not work, so I chose to transfer 0L in step two.
-	return PICC_TwoStepHelper(PICC_CMD_RESTORE, blockAddr, 0L);
-} // End PICC_Restore()
+	return MIFARE_TwoStepHelper(PICC_CMD_MF_RESTORE, blockAddr, 0L);
+} // End MIFARE_Restore()
 
 /**
  * Helper function for the two-step MIFARE Classic protocol operations Decrement, Increment and Restore.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_TwoStepHelper(	byte command,	///< The command to use
+byte MFRC522::MIFARE_TwoStepHelper(	byte command,	///< The command to use
 									byte blockAddr,	///< The block (0-0xff) number.
 									long data		///< The data to transfer in step 2
-							) {
+									) {
 	byte result;
 	byte cmdBuffer[2]; // We only need room for 2 bytes.
 
@@ -876,7 +904,7 @@ byte MFRC522::PICC_TwoStepHelper(	byte command,	///< The command to use
 	}
 
 	return STATUS_OK;
-} // End PICC_TwoStepHelper()
+} // End MIFARE_TwoStepHelper()
 
 /**
  * MIFARE Transfer writes the value stored in the volatile memory into one MIFARE Classic block.
@@ -885,20 +913,20 @@ byte MFRC522::PICC_TwoStepHelper(	byte command,	///< The command to use
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Transfer(	byte blockAddr ///< The block (0-0xff) number.
+byte MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0xff) number.
 							) {
 	byte result;
 	byte cmdBuffer[2]; // We only need room for 2 bytes.
 
 	// Tell the PICC we want to transfer the result into block blockAddr.
-	cmdBuffer[0] = PICC_CMD_TRANSFER;
+	cmdBuffer[0] = PICC_CMD_MF_TRANSFER;
 	cmdBuffer[1] = blockAddr;
 	result = PCD_MIFARE_Transceive(	cmdBuffer, 2); // Adds CRC_A and checks that the response is MF_ACK.
 	if (result != STATUS_OK) {
 		return result;
 	}
 	return STATUS_OK;
-} // End PICC_Transfer()
+} // End MIFARE_Transfer()
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -986,33 +1014,14 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 	}
 	
 	switch (sak) {
-		case 0x09:
-			return PICC_TYPE_MIFARE_MINI;
-			break;
-			
-		case 0x08:
-			return PICC_TYPE_MIFARE_1K;
-			break;
-			
-		case 0x18:
-			return PICC_TYPE_MIFARE_4K;
-			break;
-			
-		case 0x00:
-			return PICC_TYPE_MIFARE_UL;
-			break;
-			
+		case 0x09:	return PICC_TYPE_MIFARE_MINI;	break;
+		case 0x08:	return PICC_TYPE_MIFARE_1K;		break;
+		case 0x18:	return PICC_TYPE_MIFARE_4K;		break;
+		case 0x00:	return PICC_TYPE_MIFARE_UL;		break;
 		case 0x10:
-		case 0x11:
-			return PICC_TYPE_MIFARE_PLUS;
-			break;
-			
-		case 0x01:
-			return PICC_TYPE_TNP3XXX;
-			break;
-			
-		default:
-			break;
+		case 0x11:	return PICC_TYPE_MIFARE_PLUS;	break;
+		case 0x01:	return PICC_TYPE_TNP3XXX;		break;
+		default:	break;
 	}
 	
 	if (sak & 0x20) {
@@ -1033,27 +1042,26 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 const char *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
 	switch (piccType) {
-		case PICC_TYPE_ISO_14443_4:		return "PICC compliant with ISO/IEC 14443-4"; break;
-		case PICC_TYPE_ISO_18092:		return "PICC compliant with ISO/IEC 18092 (NFC)"; break;
-		case PICC_TYPE_MIFARE_MINI:		return "MIFARE Mini, 320 bytes"; break;
-		case PICC_TYPE_MIFARE_1K:		return "MIFARE 1KB"; break;
-		case PICC_TYPE_MIFARE_4K:		return "MIFARE 4KB"; break;
-		case PICC_TYPE_MIFARE_UL:		return "MIFARE Ultralight or Ultralight C"; break;
-		case PICC_TYPE_MIFARE_PLUS:		return "MIFARE Plus"; break;
-		case PICC_TYPE_TNP3XXX:			return "MIFARE TNP3XXX"; break;
-		case PICC_TYPE_NOT_COMPLETE:	return "SAK indicates UID is not complete."; break;
+		case PICC_TYPE_ISO_14443_4:		return "PICC compliant with ISO/IEC 14443-4";		break;
+		case PICC_TYPE_ISO_18092:		return "PICC compliant with ISO/IEC 18092 (NFC)";	break;
+		case PICC_TYPE_MIFARE_MINI:		return "MIFARE Mini, 320 bytes";					break;
+		case PICC_TYPE_MIFARE_1K:		return "MIFARE 1KB";								break;
+		case PICC_TYPE_MIFARE_4K:		return "MIFARE 4KB";								break;
+		case PICC_TYPE_MIFARE_UL:		return "MIFARE Ultralight or Ultralight C";			break;
+		case PICC_TYPE_MIFARE_PLUS:		return "MIFARE Plus";								break;
+		case PICC_TYPE_TNP3XXX:			return "MIFARE TNP3XXX";							break;
+		case PICC_TYPE_NOT_COMPLETE:	return "SAK indicates UID is not complete.";		break;
 		case PICC_TYPE_UNKNOWN:
-		default:
-			return "Unknown type";
-			break;
+		default:						return "Unknown type";								break;
 	}
 } // End PICC_GetTypeName()
 
 /**
  * Dumps debug info about the selected PICC to Serial.
  * On success the PICC is halted after dumping the data.
+ * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried. 
  */
-void MFRC522::PICC_DumpToSerial(Uid *uid		///< Pointer to Uid struct returned from a successful PICC_Select().
+void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned from a successful PICC_Select().
 								) {
 	MIFARE_Key key;
 	
@@ -1145,8 +1153,8 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid str
 
 /**
  * Dumps memory contents of a sector of a MIFARE Classic PICC.
- * Uses PCD_Authenticate(), PICC_Read() and PCD_StopCrypto1.
- * Always uses PICC_CMD_AUTH_KEY_A because only Key A can always read the sector trailer access bits.
+ * Uses PCD_Authenticate(), MIFARE_Read() and PCD_StopCrypto1.
+ * Always uses PICC_CMD_MF_AUTH_KEY_A because only Key A can always read the sector trailer access bits.
  */
 void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to Uid struct returned from a successful PICC_Select().
 													MIFARE_Key *key,	///< Key A for the sector.
@@ -1207,7 +1215,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		Serial.print("  ");
 		// Establish encrypted communications before reading the first block
 		if (isSectorTrailer) {
-			status = PCD_Authenticate(PICC_CMD_AUTH_KEY_A, firstBlock, key, uid);
+			status = PCD_Authenticate(PICC_CMD_MF_AUTH_KEY_A, firstBlock, key, uid);
 			if (status != STATUS_OK) {
 				Serial.print("PCD_Authenticate() failed: ");
 				Serial.println(GetStatusCodeName(status));
@@ -1216,9 +1224,9 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		}
 		// Read block
 		byteCount = sizeof(buffer);
-		status = PICC_Read(blockAddr, buffer, &byteCount);
+		status = MIFARE_Read(blockAddr, buffer, &byteCount);
 		if (status != STATUS_OK) {
-			Serial.print("PICC_Read() failed: ");
+			Serial.print("MIFARE_Read() failed: ");
 			Serial.println(GetStatusCodeName(status));
 			continue;
 		}
@@ -1289,13 +1297,13 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 	byte i;
 
 	Serial.println("Page  0  1  2  3");
-	// Try reading all pages of an Ultralight C. Stop when a read fails.
-	for (byte page = 0; page < 48; page +=4) { // Read returns data for 4 pages at a time.
+	// Try the mpages of the original Ultralight. Ultralight C has more pages.
+	for (byte page = 0; page < 16; page +=4) { // Read returns data for 4 pages at a time.
 		// Read pages
 		byteCount = sizeof(buffer);
-		status = PICC_Read(page, buffer, &byteCount);
+		status = MIFARE_Read(page, buffer, &byteCount);
 		if (status != STATUS_OK) {
-			Serial.print("PICC_Read() failed: ");
+			Serial.print("MIFARE_Read() failed: ");
 			Serial.println(GetStatusCodeName(status));
 			break;
 		}
@@ -1318,7 +1326,7 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 /**
  * Calculates the bit pattern needed for the specified access bits. In the [C1 C2 C3] tupples C1 is MSB (=4) and C3 is LSB (=1).
  */
-void MFRC522::PICC_SetAccessBits(	byte *accessBitBuffer,	///< Pointer to byte 6, 7 and 8 in the sector trailer. Bytes [0..2] will be set.
+void MFRC522::MIFARE_SetAccessBits(	byte *accessBitBuffer,	///< Pointer to byte 6, 7 and 8 in the sector trailer. Bytes [0..2] will be set.
 									byte g0,				///< Access bits [C1 C2 C3] for block 0 (for sectors 0-31) or blocks 0-4 (for sectors 32-39)
 									byte g1,				///< Access bits C1 C2 C3] for block 1 (for sectors 0-31) or blocks 5-9 (for sectors 32-39)
 									byte g2,				///< Access bits C1 C2 C3] for block 2 (for sectors 0-31) or blocks 10-14 (for sectors 32-39)
@@ -1331,7 +1339,7 @@ void MFRC522::PICC_SetAccessBits(	byte *accessBitBuffer,	///< Pointer to byte 6,
 	accessBitBuffer[0] = (~c2 & 0xF) << 4 | (~c1 & 0xF);
 	accessBitBuffer[1] =          c1 << 4 | (~c3 & 0xF);
 	accessBitBuffer[2] =          c3 << 4 | c2;
-} // End PICC_SetAccessBits()
+} // End MIFARE_SetAccessBits()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Convenience functions - does not add extra functionality

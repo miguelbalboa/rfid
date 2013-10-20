@@ -5,6 +5,9 @@
  * Rewritten by Søren Thing Andersen (access.thing.dk), fall of 2013 (Translation to English, refactored, comments, anti collision, cascade levels.)
  * Released into the public domain.
  * 
+ * Please read this file for an overview and then MFRC522.c for comments on the specific functions.
+ * Search for "mf-rc522" on ebay.com to purchase the MF-RC522 board. 
+ * 
  * There are three hardware components involved:
  * 1) The micro controller: An Arduino
  * 2) The PCD (short for Proximity Coupling Device): NXP MFRC522 Contactless Reader IC
@@ -57,7 +60,7 @@
  * 		Page 2 contains the last chech digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
  * 		Page 3 is OTP, One Time Programmable bits. Once set to 1 they cannot revert to 0.
  * 		Pages 4-15 are read/write unless blocked by the lock bytes in page 2. 
- * MIFARE Ultralight C (MF0ICUC):
+ * MIFARE Ultralight C (MF0ICU2):
  * 		Has 48 pages of 4 bytes = 64 bytes.
  * 		Pages 0 + 1 is used for the 7-byte UID.
  * 		Page 2 contains the last chech digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
@@ -159,7 +162,7 @@ public:
 		PCD_GenerateRandomID	= 0x02,		// generates a 10-byte random ID number
 		PCD_CalcCRC				= 0x03,		// activates the CRC coprocessor or performs a self test
 		PCD_Transmit			= 0x04,		// transmits data from the FIFO buffer
-		PCD_NoCmdChange			= 0x07,		//	no command change, can be used to modify the CommandReg register bits without affecting the command, for example, the PowerDown bit
+		PCD_NoCmdChange			= 0x07,		// no command change, can be used to modify the CommandReg register bits without affecting the command, for example, the PowerDown bit
 		PCD_Receive				= 0x08,		// activates the receiver circuits
 		PCD_Transceive 			= 0x0C,		// transmits data from FIFO buffer to antenna and automatically activates the receiver after transmission
 		PCD_MFAuthent 			= 0x0E,		// performs the MIFARE standard authentication as a reader
@@ -178,14 +181,18 @@ public:
 		PICC_CMD_HLTA			= 0x50,		// HaLT command, Type A. Instructs an ACTIVE PICC to go to state HALT.
 		// The commands used for MIFARE Classic (from http://www.nxp.com/documents/data_sheet/MF1S503x.pdf, Section 9)
 		// Use PCD_MFAuthent to authenticate access to a sector, then use these commands to read/write/modify the blocks on the sector.
-		PICC_CMD_AUTH_KEY_A		= 0x60,		// Perform authentication with Key A
-		PICC_CMD_AUTH_KEY_B		= 0x61,		// Perform authentication with Key B
-		PICC_CMD_READ			= 0x30,		// Reads one 16 byte block from the authenticated sector of the PICC. Also used for MIFARE Ultralight.
-		PICC_CMD_WRITE			= 0xA0,		// Writes one 16 byte block to the authenticated sector of the PICC. Called "COMPATIBILITY WRITE" for MIFARE Ultralight.
-		PICC_CMD_DECREMENT		= 0xC0,		// Decrements the contents of a block and stores the result in the internal data register.
-		PICC_CMD_INCREMENT		= 0xC1,		// Increments the contents of a block and stores the result in the internal data register.
-		PICC_CMD_RESTORE		= 0xC2,		// Reads the contents of a block into the internal data register.
-		PICC_CMD_TRANSFER		= 0xB0		// Writes the contents of the internal data register to a block.
+		// The read/write commands can also be used for MIFARE Ultralight.
+		PICC_CMD_MF_AUTH_KEY_A	= 0x60,		// Perform authentication with Key A
+		PICC_CMD_MF_AUTH_KEY_B	= 0x61,		// Perform authentication with Key B
+		PICC_CMD_MF_READ		= 0x30,		// Reads one 16 byte block from the authenticated sector of the PICC. Also used for MIFARE Ultralight.
+		PICC_CMD_MF_WRITE		= 0xA0,		// Writes one 16 byte block to the authenticated sector of the PICC. Called "COMPATIBILITY WRITE" for MIFARE Ultralight.
+		PICC_CMD_MF_DECREMENT	= 0xC0,		// Decrements the contents of a block and stores the result in the internal data register.
+		PICC_CMD_MF_INCREMENT	= 0xC1,		// Increments the contents of a block and stores the result in the internal data register.
+		PICC_CMD_MF_RESTORE		= 0xC2,		// Reads the contents of a block into the internal data register.
+		PICC_CMD_MF_TRANSFER	= 0xB0,		// Writes the contents of the internal data register to a block.
+		// The commands used for MIFARE Ultralight (from http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf, Section 8.6)
+		// The PICC_CMD_MF_READ and PICC_CMD_MF_WRITE can also be used for MIFARE Ultralight.
+		PICC_CMD_UL_WRITE		= 0xA2		// Writes one 4 byte page to the PICC.
 	};
 	
 	// MIFARE constants that does not fit anywhere else
@@ -281,15 +288,13 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	byte PCD_Authenticate(byte command, byte blockAddr, MIFARE_Key *key, Uid *uid);
 	void PCD_StopCrypto1();
-	byte PICC_Read(byte blockAddr, byte *buffer, byte *bufferSize);
-	byte PICC_Write(byte blockAddr, byte *buffer, byte bufferSize);
-	/*
-		XXX Hvad med ultralight write/compatibility write()????
-    */
- 	byte PICC_Decrement(byte blockAddr, long delta);
-	byte PICC_Increment(byte blockAddr, long delta);
- 	byte PICC_Restore(byte blockAddr);
- 	byte PICC_Transfer(byte blockAddr);
+	byte MIFARE_Read(byte blockAddr, byte *buffer, byte *bufferSize);
+	byte MIFARE_Write(byte blockAddr, byte *buffer, byte bufferSize);
+ 	byte MIFARE_Decrement(byte blockAddr, long delta);
+	byte MIFARE_Increment(byte blockAddr, long delta);
+ 	byte MIFARE_Restore(byte blockAddr);
+ 	byte MIFARE_Transfer(byte blockAddr);
+	byte MIFARE_Ultralight_Write(byte page, byte *buffer, byte bufferSize);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Support functions
@@ -302,7 +307,7 @@ public:
 	void PICC_DumpMifareClassicToSerial(Uid *uid, byte piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
-	void PICC_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
+	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
@@ -313,7 +318,7 @@ public:
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
-	byte PICC_TwoStepHelper(byte command, byte blockAddr,	long data);
+	byte MIFARE_TwoStepHelper(byte command, byte blockAddr,	long data);
 };
 
 #endif
