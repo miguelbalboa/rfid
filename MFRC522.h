@@ -5,7 +5,7 @@
  * Rewritten by Søren Thing Andersen (access.thing.dk), fall of 2013 (Translation to English, refactored, comments, anti collision, cascade levels.)
  * Released into the public domain.
  * 
- * Please read this file for an overview and then MFRC522.c for comments on the specific functions.
+ * Please read this file for an overview and then MFRC522.cpp for comments on the specific functions.
  * Search for "mf-rc522" on ebay.com to purchase the MF-RC522 board. 
  * 
  * There are three hardware components involved:
