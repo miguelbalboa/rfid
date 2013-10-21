@@ -1,0 +1,9 @@
+Renamed library from RFID to MFRC522 (RFID seemed to generic).
+Register names changed to comply with datasheet.
+Global defines moved into class.
+All constants, functions and parameters are now commented in English.
+Code refactored, most function names have changed.
+Now supports ISO-14443-3 anti collission and 4/7/10 byte UIDs (cascade levels).
+Added functions for MIFARE Classic Decrement/Increment/Restore/Transfer and MIFARE Ultralight Write.
+New examples written.
+
