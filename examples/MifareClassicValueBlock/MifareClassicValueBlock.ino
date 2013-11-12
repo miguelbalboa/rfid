@@ -11,15 +11,20 @@
  * This sample shows how to setup a block on a MIFARE Classic PICC to be in "Value Block" mode.
  * In Value Block mode the operations Increment/Decrement/Restore and Transfer can be used.
  * 
+ ----------------------------------------------------------------------------- empty_skull 
+ * Aggiunti pin per arduino Mega
+ * add pin configuration for arduino mega
+ * http://mac86project.altervista.org/
+ ----------------------------------------------------------------------------- Nicola Coppola
  * Pin layout should be as follows:
- * Signal     Pin              Pin
- *            Arduino Uno      MFRC522 board
- * -----------------------------------------
- * Reset      9                RST
- * SPI SS     10               SDA
- * SPI MOSI   11               MOSI
- * SPI MISO   12               MISO
- * SPI SCK    13               SCK
+ * Signal     Pin              Pin               Pin
+ *            Arduino Uno      Arduino Mega      MFRC522 board
+ * ------------------------------------------------------------
+ * Reset      9                5                 RST
+ * SPI SS     10               53                SDA
+ * SPI MOSI   11               52                MOSI
+ * SPI MISO   12               51                MISO
+ * SPI SCK    13               50                SCK
  *
  * The reader can be found on eBay for around 5 dollars. Search for "mf-rc522" on ebay.com. 
  */
