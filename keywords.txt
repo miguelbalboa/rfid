@@ -11,9 +11,9 @@ PCD_Command	KEYWORD1
 PICC_Command	KEYWORD1
 MIFARE_Misc	KEYWORD1
 PICC_Type	KEYWORD1
-StatusCode	KEYWORD
-Uid	KEYWORD
-MIFARE_Key	KEYWORD
+StatusCode	KEYWORD1
+Uid		KEYWORD1
+MIFARE_Key	KEYWORD1
  
 #######################################
 # KEYWORD2 Methods and functions
