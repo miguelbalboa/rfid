@@ -20,9 +20,9 @@
  * ------------------------------------------------------------
  * Reset      9                5                 RST
  * SPI SS     10               53                SDA
- * SPI MOSI   11               52                MOSI
- * SPI MISO   12               51                MISO
- * SPI SCK    13               50                SCK
+ * SPI MOSI   11               51                MOSI
+ * SPI MISO   12               50                MISO
+ * SPI SCK    13               52                SCK
  *
  * The reader can be found on eBay for around 5 dollars. Search for "mf-rc522" on ebay.com. 
  */
