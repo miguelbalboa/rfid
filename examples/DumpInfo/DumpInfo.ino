@@ -36,7 +36,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);	// Create MFRC522 instance.
 
 void setup() {
 	Serial.begin(9600);	// Initialize serial communications with the PC
-	SPI.begin();			// Init SPI bus
+	SPI.begin();		// Init SPI bus
 	mfrc522.PCD_Init();	// Init MFRC522 card
 	Serial.println("Scan PICC to see UID and type...");
 }
