@@ -2,18 +2,8 @@
 Developer: Matteo Facchetti
  * This file is a further development of the basic libraries MFRC522 created by Miguel Balboa.
  *
- * Uses the library files MFRC522.h e MFRC522.cpp
+ * Uses the library files MFRC522.h e MFRC522.cpp created by Miguel Balboa
  *
- ----------------------------------------------------------------------------- empty_skull
-
- - Aggiunti pin per arduino Mega
- - Scritto semplice codice per la scrittura e lettura
-
- - add pin configuration for arduino mega
- - write simple read/write Code for new entry user
-
- http://mac86project.altervista.org/
-
  ----------------------------------------------------------------------------- Nicola Coppola
  * Pin layout should be as follows:
  * Signal     Pin              Pin               Pin
@@ -70,23 +60,21 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);        // Create MFRC522 instance.
 
 #define TRAILER 3
 
-#define AUTH_KEYA       1
-#define AUTH_KEYB       2
-#define AUTH_DEFAULT    3
+static MFRC522::MIFARE_Key keyDefault = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+static MFRC522::MIFARE_Key keyA = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static MFRC522::MIFARE_Key keyB = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-MFRC522::MIFARE_Key keyDefault = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static byte g0 = 0;    // imposta il 1° blocco dati di un settore con accesso totale con KeaA e KeyB
+static byte g1 = 0;    // imposta il 2° blocco dati di un settore con accesso totale con KeaA e KeyB
+static byte g2 = 0;    // imposta il 3° blocco dati di un settore con accesso totale con KeaA e KeyB
+static byte g3 = 1;    // imposta il TRAILER come default di fabbrica (accesso a tutto con KeyA tranne la lettura della KeyA stessa)
 
-MFRC522::MIFARE_Key keyA = {0xAB, 0xCD, 0xEF, 0xAB, 0xCD, 0xEF}; //{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-MFRC522::MIFARE_Key keyB = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static byte tmp_buf[16];        // buffer temporaneo per la lettura dei blocchi
+static byte trailerBuffer[16];  // buffer per la scrittura del trailer, riempito con keyA, KeyB e gli Access Bit (g0, g1, g2, g3)
 
-byte g0 = 0;    // imposta il 1° blocco dati di un settore con accesso totale con KeaA e KeyB
-byte g1 = 0;    // imposta il 2° blocco dati di un settore con accesso totale con KeaA e KeyB
-byte g2 = 0;    // imposta il 3° blocco dati di un settore con accesso totale con KeaA e KeyB
-byte g3 = 1;    // imposta il TRAILER come default di fabbrica (accesso a tutto con KeyA tranne la lettura della KeyA stessa)
-
-byte tmp_buf[16];   // buffer temporaneo per la lettura dei blocchi
-byte trailerBuffer[16]; // buffer per la scrittura del trailer, riempito con keyA, KeyB e gli Access Bit (g0, g1, g2, g3)
+static uint8_t idx_blk;             // block number to read/write - numero del blocco da leggere/scrivere
+static uint8_t idx_blk_trailer;     // trailer number - numero del trailer
 
 /*
     Function: print_tag_sts(-)
@@ -95,7 +83,7 @@ byte trailerBuffer[16]; // buffer per la scrittura del trailer, riempito con key
 */
 void print_tag_sts(uint8_t sts)
 {
-    Serial.print("Status TAG: ");
+    //Serial.print("Status TAG: ");
     switch(sts)
     {
     case MFRC_TYPE_ERROR:       // type TAG error - tipo TAG errato
@@ -131,9 +119,33 @@ void print_tag_sts(uint8_t sts)
     Description: Init MFRC522 card
     Descrizione: Inizializza lettore MFRC522
 */
-void initMFRC()
+void initMFRC(byte *kA, byte *kB)
 {
+
+    if (kA) memcpy((void *)&keyA, kA, sizeof(keyA));  // set keyA or default
+    if (kB) memcpy((void *)&keyB, kB, sizeof(keyB));  // set keyB or default
+
     mfrc522.PCD_Init();        // Init MFRC522 card
+}
+
+/*
+    Function: setIdxBlk(-)
+    Description: set index block to use
+    Descrizione: imposta l'indice del blocco da usare
+*/
+void setIdxBlk(uint8_t idx)
+{
+    idx_blk = idx;
+}
+
+/*
+    Function: setIdxTrailer(-)
+    Description: set index trailer to use
+    Descrizione: imposta l'indice del trailer da usare
+*/
+void setIdxTrailer(uint8_t idx)
+{
+    idx_blk_trailer = idx;
 }
 
 /*
@@ -420,7 +432,7 @@ uint8_t MFRC_formatTrailer(byte blk)
     Description: Format card
     Descrizione: Formatta la card (TAG)
 */
-uint8_t MFRC_formatCard()
+uint8_t MFRC_formatCard(uint8_t auth)
 {
     uint8_t blk, max_blk, nblk_for_sect, err = 0;
     byte piccType;
@@ -459,10 +471,9 @@ uint8_t MFRC_formatCard()
     }
 
     // card formatting - formattazione CARD
-    for (blk = 1; blk < max_blk; blk++)
+    for (blk = 1; blk < max_blk; blk++) // first block is protected
     {
-        //if(err = MFRC_auth(blk, AUTH_KEYB))
-        if(!(err = MFRC_auth(blk, AUTH_KEYA))) // need to know key for access
+        if(!(err = MFRC_auth(blk, auth))) // need to know key for access
         {
             // specialization for MIFARE 4K - specializzazione per MIFARE 4K
             if((piccType == MFRC522::PICC_TYPE_MIFARE_4K) && (blk > 31)) //
@@ -484,13 +495,12 @@ uint8_t MFRC_formatCard()
     Description: Check the presence of a TAG and performs a read or write
     Descrizione: Controlla la presenza di un TAG ed esegue lettura o scrittura
 */
-uint8_t check_rfid(byte write, uint8_t *buf, uint8_t size)
+uint8_t check_rfid(uint8_t auth, byte write, uint8_t *buf, uint8_t size)
 {
     uint8_t err = 0;
-    uint8_t idx_blk = 1;    // block number to read/write - numero del blocco da leggere/scrivere
 
     if ((err = MFRC_connect()) ||       // 1 connect - Break if error
-        (err = MFRC_auth(idx_blk, AUTH_KEYA)) ||    // 2 auth - Break if error
+        (err = MFRC_auth(idx_blk, auth)) ||    // 2 auth - Break if error
         ((write) && (err = write_rfid(idx_blk, buf, size, 1))) ||   // 3 write or read
         ((!write) && (err = read_rfid(idx_blk, buf, size))))        //
     {
@@ -505,19 +515,18 @@ uint8_t check_rfid(byte write, uint8_t *buf, uint8_t size)
 /*
     Function: init_rfid(-)
     Description: Initializes a sector by setting the trailer (and the key bit access)
+                 Set owner keyA with default keyA access
     Descrizione: Inizializza un settore impostando il trailer (chiave e bit di accesso)
 */
-uint8_t init_rfid()
+uint8_t init_rfid(uint8_t auth)
 {
     uint8_t err = 0;
-    uint8_t idx_blk_trailer = 3;    // trailer number - numero del trailer
-    uint8_t idx_blk = 1;            // block number to read/write - numero del blocco da leggere/scrivere
 
     if ((err = MFRC_connect()) ||       // 1 connect - Break if error
         //(err = MFRC_auth(idx_blk, AUTH_DEFAULT)) ||
         //(err = MFRC_formatBlock(idx_blk))||
-        (err = MFRC_auth(idx_blk_trailer, AUTH_DEFAULT)) ||    // 2 auth - Break if error
-        (err = MFRC_setTrailer(idx_blk_trailer)))        //
+        (err = MFRC_auth(idx_blk_trailer, auth)) ||    // 2 auth - Break if error
+        (err = MFRC_setTrailer(idx_blk_trailer)))        // 3 - Set trailer with owner keyA
     {
         MFRC_close();
         return (err); // Errore
