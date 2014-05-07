@@ -21,12 +21,12 @@ MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's S
 	// Set the chipSelectPin as digital output, do not select the slave yet
 	_chipSelectPin = chipSelectPin;
 	pinMode(_chipSelectPin, OUTPUT);
-	digitalWrite(_chipSelectPin, HIGH);
+    digitalWrite(_chipSelectPin, LOW);
 	
 	// Set the resetPowerDownPin as digital output, do not reset or power down.
 	_resetPowerDownPin = resetPowerDownPin;
 	pinMode(_resetPowerDownPin, OUTPUT);
-	digitalWrite(_resetPowerDownPin, LOW);
+    digitalWrite(_resetPowerDownPin, HIGH);
 	
 	// Set SPI bus to work with MFRC522 chip.
 	setSPIConfig();
