@@ -1,0 +1,10 @@
+{
+  "name": "Arduino-MFRC522",
+  "keywords": "rfid, spi",
+  "description": "Read a card using a MFRC522 reader on your SPI interface on your Arduino",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/miguelbalboa/rfid.git"
+  }
+}
