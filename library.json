@@ -1,10 +1,12 @@
 {
-  "name": "Arduino-MFRC522",
+  "name": "MFRC522",
   "keywords": "rfid, spi",
-  "description": "Read a card using a MFRC522 reader on your SPI interface on your Arduino",
+  "description": "Read a card using a MFRC522 reader on your SPI interface",
   "repository":
   {
     "type": "git",
     "url": "https://github.com/miguelbalboa/rfid.git"
-  }
+  },
+  "frameworks": "arduino",
+  "platforms": "atmelavr"
 }
