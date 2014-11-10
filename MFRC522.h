@@ -100,7 +100,7 @@ public:
 		CollReg					= 0x0E << 1,	// bit position of the first bit-collision detected on the RF interface
 		//						  0x0F			// reserved for future use
 		
-		// Page 1:Command
+		// Page 1: Command
 		// 						  0x10			// reserved for future use
 		ModeReg					= 0x11 << 1,	// defines general modes for transmitting and receiving 
 		TxModeReg				= 0x12 << 1,	// defines transmission data rate and framing
@@ -119,7 +119,7 @@ public:
 		SerialSpeedReg			= 0x1F << 1,	// selects the speed of the serial UART interface
 		
 		// Page 2: Configuration
-		// 						0x20			// reserved for future use
+		// 						  0x20			// reserved for future use
 		CRCResultRegH			= 0x21 << 1,	// shows the MSB and LSB values of the CRC calculation
 		CRCResultRegL			= 0x22 << 1,
 		// 						  0x23			// reserved for future use
@@ -136,7 +136,7 @@ public:
 		TCounterValueRegH		= 0x2E << 1,	// shows the 16-bit timer value
 		TCounterValueRegL		= 0x2F << 1,
 		
-		// Page 3:Test Registers
+		// Page 3: Test Registers
 		// 						  0x30			// reserved for future use
 		TestSel1Reg				= 0x31 << 1,	// general test signal configuration
 		TestSel2Reg				= 0x32 << 1,	// general test signal configuration
@@ -155,7 +155,7 @@ public:
 		// 						  0x3F			// reserved for production tests
 	};
 	
-	// MFRC522 comands. Described in chapter 10 of the datasheet.
+	// MFRC522 commands. Described in chapter 10 of the datasheet.
 	enum PCD_Command {
 		PCD_Idle				= 0x00,		// no action, cancels current command execution
 		PCD_Mem					= 0x01,		// stores 25 bytes into the internal buffer
@@ -279,7 +279,7 @@ public:
 
 	byte PICC_RequestA(byte *bufferATQA, byte *bufferSize);
 	byte PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
-	byte PICC_REQA_or_WUPA(	byte command, byte *bufferATQA, byte *bufferSize);	
+	byte PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);	
 	byte PICC_Select(Uid *uid, byte validBits = 0);
 	byte PICC_HaltA();
 	
@@ -318,7 +318,7 @@ public:
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
-	byte MIFARE_TwoStepHelper(byte command, byte blockAddr,	long data);
+	byte MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
 };
 
 #endif

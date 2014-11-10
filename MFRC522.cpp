@@ -1,6 +1,6 @@
 /*
 * MFRC522.cpp - Library to use ARDUINO RFID MODULE KIT 13.56 MHZ WITH TAGS SPI W AND R BY COOQROBOT.
-* _Please_ see the comments in MFRC522.h - they give useful hints and background.
+* NOTE: Please also check the comments in MFRC522.h - they provide useful hints and background information.
 * Released into the public domain.
 */
 
@@ -53,7 +53,7 @@ void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One o
 									byte value		///< The value to write.
 								) {
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
-	SPI.transfer(reg & 0x7E);					// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
+	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	SPI.transfer(value);
 	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
 } // End PCD_WriteRegister()
@@ -107,7 +107,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	count--;								// One read is performed outside of the loop
 	SPI.transfer(address);					// Tell MFRC522 which address we want to read
 	while (index < count) {
-		if (index == 0 && rxAlign) { // Only update bit positions rxAlign..7 in values[0]
+		if (index == 0 && rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
 			// Create bit mask for bit positions rxAlign..7
 			byte mask = 0;
 			for (byte i = rxAlign; i <= 7; i++) {
@@ -159,17 +159,17 @@ byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to tra
 								byte length,	///< In: The number of bytes to transfer.
 								byte *result	///< Out: Pointer to result buffer. Result is written to result[0..1], low byte first.
 					 ) {
-	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop any active command.
-	PCD_WriteRegister(DivIrqReg, 0x04);					// Clear the CRCIRq interrupt request bit
+	PCD_WriteRegister(CommandReg, PCD_Idle);		// Stop any active command.
+	PCD_WriteRegister(DivIrqReg, 0x04);				// Clear the CRCIRq interrupt request bit
 	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);		// FlushBuffer = 1, FIFO initialization
-	PCD_WriteRegister(FIFODataReg, length, data);		// Write data to the FIFO
+	PCD_WriteRegister(FIFODataReg, length, data);	// Write data to the FIFO
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);		// Start the calculation
 	
 	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73�s.
 	word i = 5000;
 	byte n;
 	while (1) {
-		n = PCD_ReadRegister(DivIrqReg);	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq   reserved CRCIRq reserved reserved
+		n = PCD_ReadRegister(DivIrqReg);	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
 		if (n & 0x04) {						// CRCIRq bit set - calculation done
 			break;
 		}
@@ -177,7 +177,7 @@ byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to tra
 			return STATUS_TIMEOUT;
 		}
 	}
-	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop calculating CRC for new content in the FIFO.
+	PCD_WriteRegister(CommandReg, PCD_Idle);		// Stop calculating CRC for new content in the FIFO.
 	
 	// Transfer the result from the registers to the result buffer
 	result[0] = PCD_ReadRegister(CRCResultRegL);
@@ -194,8 +194,8 @@ byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to tra
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
-	if (digitalRead(_resetPowerDownPin) == LOW) { //The MFRC522 chip is in power down mode.
-		digitalWrite(_resetPowerDownPin, HIGH);	// Exit power down mode. This triggers a hard reset.
+	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
+		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
 		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
 		delay(50);
 	}
@@ -206,10 +206,10 @@ void MFRC522::PCD_Init() {
 	// When communicating with a PICC we need a timeout if something goes wrong.
 	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
 	// TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg.
-    PCD_WriteRegister(TModeReg, 0x80);			// TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds
-    PCD_WriteRegister(TPrescalerReg, 0xA9);	// TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25�s.
-    PCD_WriteRegister(TReloadRegH, 0x03);		// Reload timer with 0x3E8 = 1000, ie 25ms before timeout.
-    PCD_WriteRegister(TReloadRegL, 0xE8);
+	PCD_WriteRegister(TModeReg, 0x80);			// TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds
+	PCD_WriteRegister(TPrescalerReg, 0xA9);		// TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25�s.
+	PCD_WriteRegister(TReloadRegH, 0x03);		// Reload timer with 0x3E8 = 1000, ie 25ms before timeout.
+	PCD_WriteRegister(TReloadRegL, 0xE8);
 	
 	PCD_WriteRegister(TxASKReg, 0x40);		// Default 0x00. Force a 100 % ASK modulation independent of the ModGsPReg register setting
 	PCD_WriteRegister(ModeReg, 0x3D);		// Default 0x3F. Set the preset value for the CRC coprocessor for the CalcCRC command to 0x6363 (ISO 14443-3 part 6.2.4)
@@ -233,7 +233,7 @@ void MFRC522::PCD_Reset() {
 
 /**
  * Turns the antenna on by enabling pins TX1 and TX2.
- * After a reset these pins disabled.
+ * After a reset these pins are disabled.
  */
 void MFRC522::PCD_AntennaOn() {
 	byte value = PCD_ReadRegister(TxControlReg);
@@ -265,7 +265,7 @@ byte MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to t
 } // End PCD_TransceiveData()
 
 /**
- * Transfers data to the MFRC522 FIFO, executes a commend, waits for completion and transfers data back from the FIFO.
+ * Transfers data to the MFRC522 FIFO, executes a command, waits for completion and transfers data back from the FIFO.
  * CRC validation can only be done if backData and backLen are specified.
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
@@ -289,11 +289,11 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 	
 	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop any active command.
 	PCD_WriteRegister(ComIrqReg, 0x7F);					// Clear all seven interrupt request bits
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);		// FlushBuffer = 1, FIFO initialization
+	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);			// FlushBuffer = 1, FIFO initialization
 	PCD_WriteRegister(FIFODataReg, sendLen, sendData);	// Write sendData to the FIFO
 	PCD_WriteRegister(BitFramingReg, bitFraming);		// Bit adjustments
-	PCD_WriteRegister(CommandReg, command);			// Execute the command
-	if (command == PCD_Transceive) 	{
+	PCD_WriteRegister(CommandReg, command);				// Execute the command
+	if (command == PCD_Transceive) {
 		PCD_SetRegisterBitMask(BitFramingReg, 0x80);	// StartSend=1, transmission of data starts
 	}
 	
@@ -302,7 +302,7 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 	// Each iteration of the do-while-loop takes 17.86�s.
 	i = 2000;
 	while (1) {
-		n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq   HiAlertIRq LoAlertIRq ErrIRq TimerIRq
+		n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
 			break;
 		}
@@ -315,27 +315,27 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 	}
 	
 	// Stop now if any errors except collisions were detected.
-	byte errorRegValue = PCD_ReadRegister(ErrorReg); // ErrorReg[7..0] bits are: WrErr TempErr reserved BufferOvfl   CollErr CRCErr ParityErr ProtocolErr
+	byte errorRegValue = PCD_ReadRegister(ErrorReg); // ErrorReg[7..0] bits are: WrErr TempErr reserved BufferOvfl CollErr CRCErr ParityErr ProtocolErr
 	if (errorRegValue & 0x13) {	 // BufferOvfl ParityErr ProtocolErr
 		return STATUS_ERROR;
 	}	
 
 	// If the caller wants data back, get it from the MFRC522.
 	if (backData && backLen) {
-		n = PCD_ReadRegister(FIFOLevelReg);						// Number of bytes in the FIFO
+		n = PCD_ReadRegister(FIFOLevelReg);			// Number of bytes in the FIFO
 		if (n > *backLen) {
 			return STATUS_NO_ROOM;
 		}
-		*backLen = n;												// Number of bytes returned
-		PCD_ReadRegister(FIFODataReg, n, backData, rxAlign);		// Get received data from FIFO
-		_validBits = PCD_ReadRegister(ControlReg) & 0x07;	// RxLastBits[2:0] indicates the number of valid bits in the last received byte. If this value is 000b, the whole byte is valid.
+		*backLen = n;											// Number of bytes returned
+		PCD_ReadRegister(FIFODataReg, n, backData, rxAlign);	// Get received data from FIFO
+		_validBits = PCD_ReadRegister(ControlReg) & 0x07;		// RxLastBits[2:0] indicates the number of valid bits in the last received byte. If this value is 000b, the whole byte is valid.
 		if (validBits) {
 			*validBits = _validBits;
 		}
 	}
 	
 	// Tell about collisions
-	if (errorRegValue & 0x08) { // CollErr
+	if (errorRegValue & 0x08) {		// CollErr
 		return STATUS_COLLISION;
 	}
 	
@@ -403,8 +403,8 @@ byte MFRC522::PICC_REQA_or_WUPA(	byte command, 		///< The command to send - PICC
 	if (bufferATQA == NULL || *bufferSize < 2) {	// The ATQA response is 2 bytes long.
 		return STATUS_NO_ROOM;
 	}
-	PCD_ClearRegisterBitMask(CollReg, 0x80);			// ValuesAfterColl=1 => Bits received after collision are cleared.
-	validBits = 7;										// For REQA and WUPA we need the short frame format - transmit only 7 bits of the last (and only) byte. TxLastBits = BitFramingReg[2..0]
+	PCD_ClearRegisterBitMask(CollReg, 0x80);		// ValuesAfterColl=1 => Bits received after collision are cleared.
+	validBits = 7;									// For REQA and WUPA we need the short frame format - transmit only 7 bits of the last (and only) byte. TxLastBits = BitFramingReg[2..0]
 	status = PCD_TransceiveData(&command, 1, bufferATQA, bufferSize, &validBits);
 	if (status != STATUS_OK) {
 		return status;
@@ -452,13 +452,13 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	byte responseLength;
 	
 	// Description of buffer structure:
-	// 		Byte 0: SEL 				Indicates the Cascade Level: PICC_CMD_SEL_CL1, PICC_CMD_SEL_CL2 or PICC_CMD_SEL_CL3
-	// 		Byte 1: NVB					Number of Valid Bits (in complete command, not just the UID): High nibble: complete bytes, Low nibble: Extra bits. 
-	// 		Byte 2: UID-data or CT		See explanation below. CT means Cascade Tag.
-	// 		Byte 3: UID-data
-	// 		Byte 4: UID-data
-	// 		Byte 5: UID-data
-	// 		Byte 6: BCC					Block Check Character - XOR of bytes 2-5
+	//		Byte 0: SEL 				Indicates the Cascade Level: PICC_CMD_SEL_CL1, PICC_CMD_SEL_CL2 or PICC_CMD_SEL_CL3
+	//		Byte 1: NVB					Number of Valid Bits (in complete command, not just the UID): High nibble: complete bytes, Low nibble: Extra bits. 
+	//		Byte 2: UID-data or CT		See explanation below. CT means Cascade Tag.
+	//		Byte 3: UID-data
+	//		Byte 4: UID-data
+	//		Byte 5: UID-data
+	//		Byte 6: BCC					Block Check Character - XOR of bytes 2-5
 	//		Byte 7: CRC_A
 	//		Byte 8: CRC_A
 	// The BCC and CRC_A is only transmitted if we know all the UID bits of the current Cascade Level.
@@ -479,7 +479,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	}
 
 	// Prepare MFRC522
-	PCD_ClearRegisterBitMask(CollReg, 0x80);			// ValuesAfterColl=1 => Bits received after collision are cleared.
+	PCD_ClearRegisterBitMask(CollReg, 0x80);		// ValuesAfterColl=1 => Bits received after collision are cleared.
 
 	// Repeat Cascade Level loop until we have a complete UID.
 	uidComplete = false;
@@ -541,7 +541,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			if (currentLevelKnownBits >= 32) { // All UID bits in this Cascade Level are known. This is a SELECT.
 				//Serial.print("SELECT: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
 				buffer[1] = 0x70; // NVB - Number of Valid Bits: Seven whole bytes
-				// Calulate BCC - Block Check Character
+				// Calculate BCC - Block Check Character
 				buffer[6] = buffer[2] ^ buffer[3] ^ buffer[4] ^ buffer[5];
 				// Calculate CRC_A
 				result = PCD_CalculateCRC(buffer, 7, &buffer[7]);
@@ -720,7 +720,7 @@ byte MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_MF_AUTH_KEY_A or PIC
  */
 void MFRC522::PCD_StopCrypto1() {
 	// Clear MFCrypto1On bit
-	PCD_ClearRegisterBitMask(Status2Reg, 0x08); // Status2Reg[7..0] bits are: TempSensClear I2CForceHS reserved reserved   MFCrypto1On ModemState[2:0]
+	PCD_ClearRegisterBitMask(Status2Reg, 0x08); // Status2Reg[7..0] bits are: TempSensClear I2CForceHS reserved reserved MFCrypto1On ModemState[2:0]
 } // End PCD_StopCrypto1()
 
 /**
