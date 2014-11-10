@@ -169,6 +169,22 @@ public:
 		PCD_SoftReset			= 0x0F		// resets the MFRC522
 	};
 	
+	// MFRC522 RxGain[2:0] masks, defines the receiver's signal voltage gain factor (on the PCD).
+	// Described in 9.3.3.6 / table 98 of the datasheet at http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+	enum PCD_RxGain {
+		RxGain_18dB				= 0x00 << 4,	// 000b - 18 dB, minimum
+		RxGain_23dB				= 0x01 << 4,	// 001b - 23 dB
+		RxGain_18dB_2			= 0x02 << 4,	// 010b - 18 dB, it seems 010b is a duplicate for 000b
+		RxGain_23dB_2			= 0x03 << 4,	// 011b - 23 dB, it seems 011b is a duplicate for 001b
+		RxGain_33dB				= 0x04 << 4,	// 100b - 33 dB, average, and typical default
+		RxGain_38dB				= 0x05 << 4,	// 101b - 38 dB
+		RxGain_43dB				= 0x06 << 4,	// 110b - 43 dB
+		RxGain_48dB				= 0x07 << 4,	// 111b - 48 dB, maximum
+		RxGain_min				= 0x00 << 4,	// 000b - 18 dB, minimum, convenience for RxGain_18dB
+		RxGain_avg				= 0x04 << 4,	// 100b - 33 dB, average, convenience for RxGain_33dB
+		RxGain_max				= 0x07 << 4		// 111b - 48 dB, maximum, convenience for RxGain_48dB
+	};
+	
 	// Commands sent to the PICC.
 	enum PICC_Command {
 		// The commands used by the PCD to manage communication with several PICCs (ISO 14443-3, Type A, section 6.4)
@@ -270,6 +286,9 @@ public:
 	void PCD_Init();
 	void PCD_Reset();
 	void PCD_AntennaOn();
+	void PCD_AntennaOff();
+	byte PCD_GetAntennaGain();
+	void PCD_SetAntennaGain(byte mask);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
