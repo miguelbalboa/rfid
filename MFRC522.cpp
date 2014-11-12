@@ -798,7 +798,7 @@ byte MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0x
  * 
  * For MIFARE Classic the sector containing the block must be authenticated before calling this function.
  * 
- * For MIFARE Ultralight the opretaion is called "COMPATIBILITY WRITE".
+ * For MIFARE Ultralight the operation is called "COMPATIBILITY WRITE".
  * Even though 16 bytes are transferred to the Ultralight PICC, only the least significant 4 bytes (bytes 0 to 3)
  * are written to the specified address. It is recommended to set the remaining bytes 04h to 0Fh to all logic 0.
  * * 
