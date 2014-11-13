@@ -1,119 +1,150 @@
-/* Try the most used default keys in 
- * https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys
- * to dump block 0 of a MIFARE RFID card using a RFID-RC522 reader
- * Uses MFRC522 - Library to use ARDUINO RFID MODULE KIT 13.56 MHZ WITH TAGS SPI W AND R BY COOQROBOT. 
- ----------------------------------------------------------------------------- 
- * Pin layout should be as follows:
- * Signal     Pin              Pin               Pin
- *            Arduino Uno      Arduino Mega      MFRC522 board
+/*
+ * ----------------------------------------------------------------------------
+ * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
+ * for further details and other examples.
+ * 
+ * NOTE: The library file MFRC522.h has a lot of useful info. Please read it.
+ * 
+ * Released into the public domain.
+ * ----------------------------------------------------------------------------
+ * Example sketch/program which will try the most used default keys listed in 
+ * https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys to dump the
+ * block 0 of a MIFARE RFID card using a RFID-RC522 reader.
+ * 
+ * Typical pin layout used:
  * ------------------------------------------------------------
- * Reset      9                5                 RST
- * SPI SS     10               53                SDA
- * SPI MOSI   11               52                MOSI
- * SPI MISO   12               51                MISO
- * SPI SCK    13               50                SCK
- *
- * Hardware required:
- * Arduino
- * PCD (Proximity Coupling Device): NXP MFRC522 Contactless Reader IC
- * PICC (Proximity Integrated Circuit Card): A card or tag using the ISO 14443A interface, eg Mifare or NTAG203.
- * The reader can be found on eBay for around 5 dollars. Search for "mf-rc522" on ebay.com. 
+ *             MFRC522      Arduino       Arduino   Arduino
+ *             Reader/PCD   Uno           Mega      Nano v3
+ * Signal      Pin          Pin           Pin       Pin
+ * ------------------------------------------------------------
+ * RST/Reset   RST          9             5         D9
+ * SPI SS      SDA(SS)      10            53        D10
+ * SPI MOSI    MOSI         11 / ICSP-4   51        D11
+ * SPI MISO    MISO         12 / ICSP-1   50        D12
+ * SPI SCK     SCK          13 / ICSP-3   52        D13
  */
 
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define SS_PIN 10    //Arduino Uno
-#define RST_PIN 9
-MFRC522 mfrc522(SS_PIN, RST_PIN);        // Create MFRC522 instance.
+#define RST_PIN         9           // Configurable, see typical pin layout above
+#define SS_PIN          10          // Configurable, see typical pin layout above
 
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+
+// Number of known default keys (hard-coded)
+// NOTE: Synchronize the NR_KNOWN_KEYS define with the defaultKeys[] array
+#define NR_KNOWN_KEYS   8
+// Known keys, see: https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys
+byte knownKeys[NR_KNOWN_KEYS][MFRC522::MF_KEY_SIZE] =  {
+    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, // FF FF FF FF FF FF = factory default
+    {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5}, // A0 A1 A2 A3 A4 A5
+    {0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5}, // B0 B1 B2 B3 B4 B5
+    {0x4d, 0x3a, 0x99, 0xc3, 0x51, 0xdd}, // 4D 3A 99 C3 51 DD
+    {0x1a, 0x98, 0x2c, 0x7e, 0x45, 0x9a}, // 1A 98 2C 7E 45 9A
+    {0xd3, 0xf7, 0xd3, 0xf7, 0xd3, 0xf7}, // D3 F7 D3 F7 D3 F7
+    {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}, // AA BB CC DD EE FF
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}  // 00 00 00 00 00 00
+};
+
+/*
+ * Initialize.
+ */
 void setup() {
-        Serial.begin(9600);        // Initialize serial communications with the PC
-        SPI.begin();                // Init SPI bus
-        mfrc522.PCD_Init();        // Init MFRC522 card
-        Serial.println("Try the most used default keys to print block 0 of a MIFARE PICC ");
+    Serial.begin(9600);         // Initialize serial communications with the PC
+    SPI.begin();                // Init SPI bus
+    mfrc522.PCD_Init();         // Init MFRC522 card
+    Serial.println("Try the most used default keys to print block 0 of a MIFARE PICC.");
 }
 
+/*
+ * Helper routine to dump a byte array as hex values to Serial.
+ */
+void dump_byte_array(byte *buffer, byte bufferSize) {
+    for (byte i = 0; i < bufferSize; i++) {
+        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+        Serial.print(buffer[i], HEX);
+    }
+}
 
-void try_key(MFRC522::MIFARE_Key *key)
+/*
+ * Try using the PICC (the tag/card) with the given key to access block 0.
+ * On success, it will show the key details, and dump the block data on Serial.
+ *
+ * @return true when the given key worked, false otherwise.
+ */
+boolean try_key(MFRC522::MIFARE_Key *key)
 {
-        // try with the supplied key
-        byte buffer[18];  
-        byte block  = 0;
-        byte status;
-        //Serial.println("Authenticating using key A...");
-        status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, key, &(mfrc522.uid));
-        if (status != MFRC522::STATUS_OK) {
-           // Serial.print("PCD_Authenticate() failed: ");
-           // Serial.println(mfrc522.GetStatusCodeName(status));
-           return;
-        }
-        
-        // Read block
-	byte byteCount = sizeof(buffer);
-	status = mfrc522.MIFARE_Read(block, buffer, &byteCount);
-	if (status != MFRC522::STATUS_OK) {
-	    // Serial.print("MIFARE_Read() failed: ");
-	    // Serial.println(mfrc522.GetStatusCodeName(status));
-	}
-        else  // Dump data
-        {
-          Serial.print("Success: key ");
-          for (byte i = 0; i < 6; i++) Serial.print((*key).keyByte[i], HEX);
-          Serial.print(" Block 0 : ");
-	  for (byte index = 0; index < 16; index++) {
-	    Serial.print(buffer[index] < 0x10 ? " 0" : " ");
-	    Serial.print(buffer[index], HEX);
-	    if ((index % 4) == 3) Serial.print(" ");
-	  }
-        }
-        Serial.println(" ");
-        mfrc522.PICC_HaltA(); // Halt PICC
-        mfrc522.PCD_StopCrypto1();  // Stop encryption on PCD
-       
+    boolean result = false;
+    byte buffer[18];
+    byte block = 0;
+    byte status;
+    
+    // Serial.println("Authenticating using key A...");
+    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, key, &(mfrc522.uid));
+    if (status != MFRC522::STATUS_OK) {
+        // Serial.print("PCD_Authenticate() failed: ");
+        // Serial.println(mfrc522.GetStatusCodeName(status));
+        return false;
+    }
+
+    // Read block
+    byte byteCount = sizeof(buffer);
+    status = mfrc522.MIFARE_Read(block, buffer, &byteCount);
+    if (status != MFRC522::STATUS_OK) {
+        // Serial.print("MIFARE_Read() failed: ");
+        // Serial.println(mfrc522.GetStatusCodeName(status));
+    }
+    else {
+        // Successful read
+        result = true;
+        Serial.print("Success with key:");
+        dump_byte_array((*key).keyByte, MFRC522::MF_KEY_SIZE);
+        Serial.println();
+        // Dump block data
+        Serial.print("Block "); Serial.print(block); Serial.print(":");
+        dump_byte_array(buffer, 16);
+        Serial.println();
+    }
+    Serial.println();
+
+    mfrc522.PICC_HaltA();       // Halt PICC
+    mfrc522.PCD_StopCrypto1();  // Stop encryption on PCD
+    return result;
 }
 
+/*
+ * Main loop.
+ */
 void loop() {
-        // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
-        MFRC522::MIFARE_Key k;
-        // Look for new cards
-        if ( ! mfrc522.PICC_IsNewCardPresent()) return;
-      
-        // Select one of the cards
-        if ( ! mfrc522.PICC_ReadCardSerial())    return;
-        
-        Serial.print("Card UID:");    //Dump UID
-        for (byte i = 0; i < mfrc522.uid.size; i++) {
-          Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-          Serial.print(mfrc522.uid.uidByte[i], HEX);
-        } 
-        Serial.print(" PICC type: ");   // Dump PICC type
-        byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-        Serial.println(mfrc522.PICC_GetTypeName(piccType));
-         
-        // Trying FFFFFFFFFFFF
-        for (byte i = 0; i < 6; i++) k.keyByte[i] = 0xFF;
-        try_key(&k); 
-        // Trying A0A1A2A3A4A5
-        k.keyByte[0] = 0xA0; k.keyByte[1] = 0xA1; k.keyByte[2] = 0xA2;  k.keyByte[3] = 0xA3; k.keyByte[4] = 0xA4; k.keyByte[5] = 0xA5;
-        try_key(&k); 
-        // Trying B0B1B2B3B4B5
-        k.keyByte[0] = 0xB0; k.keyByte[1] = 0xB1; k.keyByte[2] = 0xB2;  k.keyByte[3] = 0xB3; k.keyByte[4] = 0xB4; k.keyByte[5] = 0xB5;
-        try_key(&k); 
-         // Trying 000000000000
-        k.keyByte[0] = 0x00; k.keyByte[1] = 0x00; k.keyByte[2] = 0x00;  k.keyByte[3] = 0x00; k.keyByte[4] = 0x00; k.keyByte[5] = 0x00;
-        try_key(&k); 
-        // Trying 4d3a99c351dd
-        k.keyByte[0] = 0x04d; k.keyByte[1] = 0x3a; k.keyByte[2] = 0x99;  k.keyByte[3] = 0xc3; k.keyByte[4] = 0x51; k.keyByte[5] = 0xdd;
-        try_key(&k); 
-        // Trying 1a982c7e459a
-        k.keyByte[0] = 0x1a; k.keyByte[1] = 0x98; k.keyByte[2] = 0x2c;  k.keyByte[3] = 0x7e; k.keyByte[4] = 0x45; k.keyByte[5] = 0x9a;
-        try_key(&k); 
-        // Trying d3f7d3f7d3f7
-        k.keyByte[0] = 0xd3; k.keyByte[1] = 0xf7; k.keyByte[2] = 0xd3;  k.keyByte[3] = 0xf7; k.keyByte[4] = 0xd3; k.keyByte[5] = 0xf7;
-        try_key(&k); 
-        // Trying aabbccddeeff
-        k.keyByte[0] = 0xaa; k.keyByte[1] = 0xbb; k.keyByte[2] = 0xcc;  k.keyByte[3] = 0xdd; k.keyByte[4] = 0xee; k.keyByte[5] = 0xff;
-        try_key(&k); 
-}
+    // Look for new cards
+    if ( ! mfrc522.PICC_IsNewCardPresent())
+        return;
 
+    // Select one of the cards
+    if ( ! mfrc522.PICC_ReadCardSerial())
+        return;
+
+    // Show some details of the PICC (that is: the tag/card)
+    Serial.print("Card UID:");
+    dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+    Serial.println();
+    Serial.print("PICC type: ");
+    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    Serial.println(mfrc522.PICC_GetTypeName(piccType));
+    
+    // Try the known default keys
+    MFRC522::MIFARE_Key key;
+    for (byte k = 0; k < NR_KNOWN_KEYS; k++) {
+        // Copy the known key into the MIFARE_Key structure
+        for (byte i = 0; i < MFRC522::MF_KEY_SIZE; i++) {
+            key.keyByte[i] = knownKeys[k][i];
+        }
+        // Try the key
+        if (try_key(&key)) {
+            // Found and reported on the key and block,
+            // no need to try other keys for this PICC
+            break;
+        }
+    }
+}
