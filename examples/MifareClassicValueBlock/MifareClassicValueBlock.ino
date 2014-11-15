@@ -1,202 +1,356 @@
 /*
- * MFRC522 - Library to use ARDUINO RFID MODULE KIT 13.56 MHZ WITH TAGS SPI W AND R BY COOQROBOT.
- * The library file MFRC522.h has a wealth of useful info. Please read it.
- * The functions are documented in MFRC522.cpp.
- *
- * Based on code Dr.Leong   ( WWW.B2CQSHOP.COM )
- * Created by Miguel Balboa (circuitito.com), Jan, 2012.
- * Rewritten by Søren Thing Andersen (access.thing.dk), fall of 2013 (Translation to English, refactored, comments, anti collision, cascade levels.)
- * Released into the public domain.
- *
- * This sample shows how to setup a block on a MIFARE Classic PICC to be in "Value Block" mode.
- * In Value Block mode the operations Increment/Decrement/Restore and Transfer can be used.
+ * ----------------------------------------------------------------------------
+ * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
+ * for further details and other examples.
  * 
- ----------------------------------------------------------------------------- empty_skull 
- * Aggiunti pin per arduino Mega
- * add pin configuration for arduino mega
- * http://mac86project.altervista.org/
- ----------------------------------------------------------------------------- Nicola Coppola
- * Pin layout should be as follows:
- * Signal     Pin              Pin               Pin
- *            Arduino Uno      Arduino Mega      MFRC522 board
+ * NOTE: The library file MFRC522.h has a lot of useful info. Please read it.
+ * 
+ * Released into the public domain.
+ * ----------------------------------------------------------------------------
+ * This sample shows how to setup blocks on a MIFARE Classic PICC (= card/tag)
+ * to be in "Value Block" mode: in this mode the operations Increment/Decrement,
+ * Restore and Transfer can be used.
+ * 
+ * BEWARE: Data will be written to the PICC, in sector #1 (blocks #4 to #7).
+ * 
+ * 
+ * Typical pin layout used:
  * ------------------------------------------------------------
- * Reset      9                5                 RST
- * SPI SS     10               53                SDA
- * SPI MOSI   11               51                MOSI
- * SPI MISO   12               50                MISO
- * SPI SCK    13               52                SCK
- *
- * The reader can be found on eBay for around 5 dollars. Search for "mf-rc522" on ebay.com. 
+ *             MFRC522      Arduino       Arduino   Arduino
+ *             Reader/PCD   Uno           Mega      Nano v3
+ * Signal      Pin          Pin           Pin       Pin
+ * ------------------------------------------------------------
+ * RST/Reset   RST          9             5         D9
+ * SPI SS      SDA(SS)      10            53        D10
+ * SPI MOSI    MOSI         11 / ICSP-4   51        D11
+ * SPI MISO    MISO         12 / ICSP-1   50        D12
+ * SPI SCK     SCK          13 / ICSP-3   52        D13
  */
 
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define SS_PIN 10
-#define RST_PIN 9
-MFRC522 mfrc522(SS_PIN, RST_PIN);	// Create MFRC522 instance.
+#define RST_PIN         9           // Configurable, see typical pin layout above
+#define SS_PIN          10          // Configurable, see typical pin layout above
 
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+
+MFRC522::MIFARE_Key key;
+
+/*
+ * Initialize.
+ */
 void setup() {
-	Serial.begin(9600);	// Initialize serial communications with the PC
-	SPI.begin();		// Init SPI bus
-	mfrc522.PCD_Init();	// Init MFRC522 card
-	Serial.println("Scan a MIFARE Classic PICC to demonstrate Value Blocks.");
+    Serial.begin(9600);	// Initialize serial communications with the PC
+    SPI.begin();		// Init SPI bus
+    mfrc522.PCD_Init();	// Init MFRC522 card
+
+    // Prepare the key (used both as key A and as key B)
+    // using FFFFFFFFFFFFh which is the default at chip delivery from the factory
+    for (byte i = 0; i < 6; i++) {
+        key.keyByte[i] = 0xFF;
+    }
+
+    Serial.println("Scan a MIFARE Classic PICC to demonstrate Value Block mode.");
+    Serial.print("Using key (for A and B):");
+    dump_byte_array(key.keyByte, MFRC522::MF_KEY_SIZE);
+    Serial.println();
+    
+    Serial.println("BEWARE: Data will be written to the PICC, in sector #1");
 }
 
+/*
+ * Main loop.
+ */
 void loop() {
-	// Look for new cards
-	if ( ! mfrc522.PICC_IsNewCardPresent()) {
-		return;
-	}
+    // Look for new cards
+    if ( ! mfrc522.PICC_IsNewCardPresent())
+        return;
 
-	// Select one of the cards
-	if ( ! mfrc522.PICC_ReadCardSerial()) {
-		return;
-	}
-	// Now a card is selected. The UID and SAK is in mfrc522.uid.
-	
-	// Dump UID
-	Serial.print("Card UID:");
-	for (byte i = 0; i < mfrc522.uid.size; i++) {
-		Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-		Serial.print(mfrc522.uid.uidByte[i], HEX);
-	} 
-	Serial.println();
+    // Select one of the cards
+    if ( ! mfrc522.PICC_ReadCardSerial())
+        return;
 
-	// Dump PICC type
-	byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-	Serial.print("PICC type: ");
-	Serial.println(mfrc522.PICC_GetTypeName(piccType));
-	if (	piccType != MFRC522::PICC_TYPE_MIFARE_MINI 
-		&&	piccType != MFRC522::PICC_TYPE_MIFARE_1K
-		&&	piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-		Serial.println("This sample only works with MIFARE Classic cards.");
-		return;
-	}
+    // Show some details of the PICC (that is: the tag/card)
+    Serial.print("Card UID:");
+    dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+    Serial.println();
+    Serial.print("PICC type: ");
+    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
-	// Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
-	MFRC522::MIFARE_Key key;
-	for (byte i = 0; i < 6; i++) {
-		key.keyByte[i] = 0xFF;
-	}
+    // Check for compatibility
+    if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
+        &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
+        &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
+        Serial.println("This sample only works with MIFARE Classic cards.");
+        return;
+    }
 
-	// In this sample we use the second sector (ie block 4-7).
-	byte sector			= 1;
-	byte valueBlockA	= 5;
-	byte valueBlockB	= 6;
-	byte trailerBlock	= 7;
-	
-	// Authenticate using key A.
-	Serial.println("Authenticating using key A...");
-	byte status;
-	status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("PCD_Authenticate() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
-	
-	// We need a sector trailer that defines blocks 5 and 6 as Value Blocks and enables key B.
-	byte trailerBuffer[] = { 255,255,255,255,255,255,  0,0,0,  0,  255,255,255,255,255,255}; // Keep default keys.
-	// g1=6 => Set block 5 as value block. Must use Key B towrite & increment, A or B can be used for derement.
-	// g2=6 => Same thing for block 6.
-	// g3=3 => Key B must be used to modify the Sector Trailer. Key B becomes valid. 
-	mfrc522.MIFARE_SetAccessBits(&trailerBuffer[6], 0, 6, 6, 3);
-	
-	// Now we read the sector trailer and see if it is like we want it to be.
-	Serial.println("Reading sector trailer...");
-	byte buffer[18];
-	byte size = sizeof(buffer);
-	status = mfrc522.MIFARE_Read(trailerBlock, buffer, &size);
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("MIFARE_Read() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
-	if (	buffer[6] != trailerBuffer[6]
-		&&	buffer[7] != trailerBuffer[7]
-		&&	buffer[8] != trailerBuffer[8]) {
-		Serial.println("Writing new sector trailer...");
-		status = mfrc522.MIFARE_Write(trailerBlock, trailerBuffer, 16);
-		if (status != MFRC522::STATUS_OK) {
-			Serial.print("MIFARE_Write() failed: ");
-			Serial.println(mfrc522.GetStatusCodeName(status));
-			return;
-		}
-	}
-	
-	// Authenticate using key B.
-	Serial.println("Authenticating again using key B...");
-	status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("PCD_Authenticate() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
-	
-	// Value blocks has a 32 bit signed value stored three times and an 8 bit address stored 4 times.
-	// Make sure blocks valueBlockA and valueBlockB has that format.
-	formatBlock(valueBlockA);
-	formatBlock(valueBlockB);
+    // In this sample we use the second sector,
+    // that is: sector #1, covering block #4 up to and including block #7
+    byte sector         = 1;
+    byte valueBlockA    = 5;
+    byte valueBlockB    = 6;
+    byte trailerBlock   = 7;
+    byte status;
+    byte buffer[18];
+    byte size = sizeof(buffer);
+    long value;
 
-	// Add 1 to the value of valueBlockA and store the result in valueBlockA.
-	Serial.print("Adding 1 to value of block "); Serial.println(valueBlockA);
-	status = mfrc522.MIFARE_Increment(valueBlockA, 1);
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("MIFARE_Increment() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
-	status = mfrc522.MIFARE_Transfer(valueBlockA);
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("MIFARE_Transfer() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
-	
-	// Dump the result
-	mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
-	
-	// Halt PICC
-	mfrc522.PICC_HaltA();
+    // Authenticate using key A
+    Serial.println("Authenticating using key A...");
+    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("PCD_Authenticate() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
 
-	// Stop encryption on PCD
-	mfrc522.PCD_StopCrypto1();
+    // Show the whole sector as it currently is
+    Serial.println("Current data in sector:");
+    mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+    Serial.println();
+    
+    // We need a sector trailer that defines blocks 5 and 6 as Value Blocks and enables key B
+    // The last block in a sector (block #3 for Mifare Classic 1K) is the Sector Trailer.
+    // See http://www.nxp.com/documents/data_sheet/MF1S503x.pdf sections 8.6 and 8.7:
+    //      Bytes 0-5:   Key A
+    //      Bytes 6-8:   Access Bits
+    //      Bytes 9:     User data
+    //      Bytes 10-15: Key B (or user data)
+    byte trailerBuffer[] = {
+        255, 255, 255, 255, 255, 255,       // Keep default key A
+        0, 0, 0,
+        0,
+        255, 255, 255, 255, 255, 255};      // Keep default key B
+    // The access bits are stored in a peculiar fashion.
+    // There are four groups:
+    //      g[0]    Access bits for block 0 (for sectors 0-31)
+    //              or blocks 0-4 (for sectors 32-39)
+    //      g[1]    Access bits for block 1 (for sectors 0-31)
+    //              or blocks 5-9 (for sectors 32-39)
+    //      g[2]    Access bits for block 2 (for sectors 0-31)
+    //              or blocks 10-14 (for sectors 32-39)
+    //      g[3]    Access bits for the Sector Trailer: block 3 (for sectors 0-31)
+    //              or block 15 (for sectors 32-39)
+    // Each group has access bits [C1 C2 C3], in this code C1 is MSB and C3 is LSB.
+    // Determine the bit pattern needed using MIFARE_SetAccessBits:
+    //      g0=0    access bits for block 0 (of this sector) using [0 0 0] = 000b = 0
+    //              which means key A|B have r/w for block 0 of this sector
+    //              which (in this example) translates to block #4 within sector #1;
+    //              this is the transport configuration (at factory delivery).
+    //      g1=6    access bits for block 1 (of this sector) using [1 1 0] = 110b = 6
+    //              which means block 1 (of this sector) is used as a value block,
+    //              which (in this example) translates to block #5 within sector #1;
+    //              where key A|B have r, key B has w, key B can increment,
+    //              and key A|B can decrement, transfer, and restore.
+    //      g2=6    same thing for block 2 (of this sector): set it to a value block;
+    //              which (in this example) translates to block #6 within sector #1;
+    //      g3=3    access bits for block 3 (of this sector): the Sector Trailer here;
+    //              using [0 1 1] = 011b = 3 which means only key B has r/w access
+    //              to the Sector Trailer (block 3 of this sector) from now on
+    //              which (in this example) translates to block #7 within sector #1;
+    mfrc522.MIFARE_SetAccessBits(&trailerBuffer[6], 0, 6, 6, 3);
+
+    // Read the sector trailer as it is currently stored on the PICC
+    Serial.println("Reading sector trailer...");
+    status = mfrc522.MIFARE_Read(trailerBlock, buffer, &size);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Read() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    // Check if it matches the desired access pattern already;
+    // because if it does, we don't need to write it again...
+    if (    buffer[6] != trailerBuffer[6]
+        &&  buffer[7] != trailerBuffer[7]
+        &&  buffer[8] != trailerBuffer[8]) {
+        // They don't match (yet), so write it to the PICC
+        Serial.println("Writing new sector trailer...");
+        status = mfrc522.MIFARE_Write(trailerBlock, trailerBuffer, 16);
+        if (status != MFRC522::STATUS_OK) {
+            Serial.print("MIFARE_Write() failed: ");
+            Serial.println(mfrc522.GetStatusCodeName(status));
+            return;
+        }
+    }
+
+    // Authenticate using key B
+    Serial.println("Authenticating again using key B...");
+    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("PCD_Authenticate() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+
+    // A value block has a 32 bit signed value stored three times
+    // and an 8 bit address stored 4 times. Make sure that valueBlockA
+    // and valueBlockB have that format (note that it will only format
+    // the block when it doesn't comply to the expected format already).
+    formatValueBlock(valueBlockA);
+    formatValueBlock(valueBlockB);
+
+    // Add 1 to the value of valueBlockA and store the result in valueBlockA.
+    Serial.print("Adding 1 to value of block "); Serial.println(valueBlockA);
+    status = mfrc522.MIFARE_Increment(valueBlockA, 1);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Increment() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    status = mfrc522.MIFARE_Transfer(valueBlockA);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Transfer() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    // Show the new value of valueBlockA
+    status = mifare_GetValue(valueBlockA, &value);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("mifare_GetValue() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    Serial.print("New value of value of block "); Serial.print(valueBlockA);
+    Serial.print(" = "); Serial.println(value);
+
+    // Decrement 10 from the value of valueBlockB and store the result in valueBlockB.
+    Serial.print("Subtracting 10 from value of block "); Serial.println(valueBlockB);
+    status = mfrc522.MIFARE_Decrement(valueBlockB, 10);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Decrement() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    status = mfrc522.MIFARE_Transfer(valueBlockB);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Transfer() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    // Show the new value of valueBlockB
+    status = mifare_GetValue(valueBlockB, &value);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("mifare_GetValue() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+    Serial.print("New value of value of block "); Serial.print(valueBlockB);
+    Serial.print(" = "); Serial.println(value);
+    // Check some boundary...
+    if (value <= -100) {
+        Serial.println("Below -100, so resetting it to 255 = 0xFF just for fun...");
+        status = mifare_SetValue(valueBlockB, 255);
+        if (status != MFRC522::STATUS_OK) {
+            Serial.print("mifare_SetValue() failed: ");
+            Serial.println(mfrc522.GetStatusCodeName(status));
+            return;
+        }
+    }
+
+    // Dump the sector data
+    mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+    Serial.println();
+
+    // Halt PICC
+    mfrc522.PICC_HaltA();
+    // Stop encryption on PCD
+    mfrc522.PCD_StopCrypto1();
 }
 
-void formatBlock(byte blockAddr) {
-	Serial.print("Reading block "); Serial.println(blockAddr);
-	byte buffer[18];
-	byte size = sizeof(buffer);
-	byte status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-	if (status != MFRC522::STATUS_OK) {
-		Serial.print("MIFARE_Read() failed: ");
-		Serial.println(mfrc522.GetStatusCodeName(status));
-		return;
-	}
+/*
+ * Helper routine to dump a byte array as hex values to Serial.
+ */
+void dump_byte_array(byte *buffer, byte bufferSize) {
+    for (byte i = 0; i < bufferSize; i++) {
+        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+        Serial.print(buffer[i], HEX);
+    }
+}
 
-	if (	(buffer[0] == (byte)~buffer[4])
-		&&	(buffer[1] == (byte)~buffer[5])
-		&&	(buffer[2] == (byte)~buffer[6])
-		&&	(buffer[3] == (byte)~buffer[7])
-		
-		&&	(buffer[0] == buffer[8])
-		&&	(buffer[1] == buffer[9])
-		&&	(buffer[2] == buffer[10])
-		&&	(buffer[3] == buffer[11])
-		
-		&&	(buffer[12] == (byte)~buffer[13])
-		&&	(buffer[12] ==        buffer[14])
-		&&	(buffer[12] == (byte)~buffer[15])) {
-		Serial.println("Block has correct Block Value format.");
-	}
-	else {
-		Serial.println("Writing new value block...");
-		byte valueBlock[] = { 0,0,0,0,  255,255,255,255,  0,0,0,0,   blockAddr,~blockAddr,blockAddr,~blockAddr };
-		status = mfrc522.MIFARE_Write(blockAddr, valueBlock, 16);
-		if (status != MFRC522::STATUS_OK) {
-			Serial.print("MIFARE_Write() failed: ");
-			Serial.println(mfrc522.GetStatusCodeName(status));
-		}
-	}		
-} // End formatBlock()
+/*
+ * Helper routine to read the current value from a Value Block.
+ */
+byte mifare_GetValue(byte blockAddr, long *value) {
+    byte status;
+    byte buffer[18];
+    byte size = sizeof(buffer);
+
+    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    if (status == MFRC522::STATUS_OK) {
+      *value = (long(buffer[3])<<24) | (long(buffer[2])<<16) | (long(buffer[1])<<8) | long(buffer[0]);
+    }
+    return status;
+}
+
+/*
+ * Helper routine to write a value into a Value Block.
+ */
+byte mifare_SetValue(byte blockAddr, long value) {
+    byte buffer[18];
+
+    // Translate the long into 4 bytes; repeated 2x in value block
+    buffer[0] = buffer[ 8] = (value & 0xFF);
+    buffer[1] = buffer[ 9] = (value & 0xFF00) >> 8;
+    buffer[2] = buffer[10] = (value & 0xFF0000) >> 16;
+    buffer[3] = buffer[11] = (value & 0xFF000000) >> 24;
+    // Inverse 4 bytes also found in value block
+    buffer[4] = ~buffer[0];
+    buffer[5] = ~buffer[1];
+    buffer[6] = ~buffer[2];
+    buffer[7] = ~buffer[3];
+    // Address 2x with inverse address 2x
+    buffer[12] = buffer[14] = blockAddr;
+    buffer[13] = buffer[15] = ~blockAddr;
+
+    // Write the whole data block
+    return mfrc522.MIFARE_Write(blockAddr, buffer, 16);
+}
+
+/*
+ * Ensure that a given block is formatted as a Value Block.
+ */
+void formatValueBlock(byte blockAddr) {
+    byte buffer[18];
+    byte size = sizeof(buffer);
+    byte status;
+
+    Serial.print("Reading block "); Serial.println(blockAddr);
+    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    if (status != MFRC522::STATUS_OK) {
+        Serial.print("MIFARE_Read() failed: ");
+        Serial.println(mfrc522.GetStatusCodeName(status));
+        return;
+    }
+
+    if (    (buffer[0] == (byte)~buffer[4])
+        &&  (buffer[1] == (byte)~buffer[5])
+        &&  (buffer[2] == (byte)~buffer[6])
+        &&  (buffer[3] == (byte)~buffer[7])
+
+        &&  (buffer[0] == buffer[8])
+        &&  (buffer[1] == buffer[9])
+        &&  (buffer[2] == buffer[10])
+        &&  (buffer[3] == buffer[11])
+
+        &&  (buffer[12] == (byte)~buffer[13])
+        &&  (buffer[12] ==        buffer[14])
+        &&  (buffer[12] == (byte)~buffer[15])) {
+        Serial.println("Block has correct Value Block format.");
+    }
+    else {
+        Serial.println("Formatting as Value Block...");
+        byte valueBlock[] = {
+            0, 0, 0, 0,
+            255, 255, 255, 255,
+            0, 0, 0, 0,
+            blockAddr, ~blockAddr, blockAddr, ~blockAddr };
+        status = mfrc522.MIFARE_Write(blockAddr, valueBlock, 16);
+        if (status != MFRC522::STATUS_OK) {
+            Serial.print("MIFARE_Write() failed: ");
+            Serial.println(mfrc522.GetStatusCodeName(status));
+        }
+    }
+}
