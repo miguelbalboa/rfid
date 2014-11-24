@@ -1,4 +1,4 @@
-/*
+/**
  * ----------------------------------------------------------------------------
  * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
  * for further details and other examples.
@@ -37,7 +37,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 MFRC522::MIFARE_Key key;
 
-/*
+/**
  * Initialize.
  */
 void setup() {
@@ -59,7 +59,7 @@ void setup() {
     Serial.println("BEWARE: Data will be written to the PICC, in sector #1");
 }
 
-/*
+/**
  * Main loop.
  */
 void loop() {
@@ -207,7 +207,7 @@ void loop() {
         return;
     }
     // Show the new value of valueBlockA
-    status = mifare_GetValue(valueBlockA, &value);
+    status = mfrc522.MIFARE_GetValue(valueBlockA, &value);
     if (status != MFRC522::STATUS_OK) {
         Serial.print("mifare_GetValue() failed: ");
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -231,7 +231,7 @@ void loop() {
         return;
     }
     // Show the new value of valueBlockB
-    status = mifare_GetValue(valueBlockB, &value);
+    status = mfrc522.MIFARE_GetValue(valueBlockB, &value);
     if (status != MFRC522::STATUS_OK) {
         Serial.print("mifare_GetValue() failed: ");
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -242,7 +242,7 @@ void loop() {
     // Check some boundary...
     if (value <= -100) {
         Serial.println("Below -100, so resetting it to 255 = 0xFF just for fun...");
-        status = mifare_SetValue(valueBlockB, 255);
+        status = mfrc522.MIFARE_SetValue(valueBlockB, 255);
         if (status != MFRC522::STATUS_OK) {
             Serial.print("mifare_SetValue() failed: ");
             Serial.println(mfrc522.GetStatusCodeName(status));
@@ -260,7 +260,7 @@ void loop() {
     mfrc522.PCD_StopCrypto1();
 }
 
-/*
+/**
  * Helper routine to dump a byte array as hex values to Serial.
  */
 void dump_byte_array(byte *buffer, byte bufferSize) {
@@ -270,46 +270,7 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
     }
 }
 
-/*
- * Helper routine to read the current value from a Value Block.
- */
-byte mifare_GetValue(byte blockAddr, long *value) {
-    byte status;
-    byte buffer[18];
-    byte size = sizeof(buffer);
-
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    if (status == MFRC522::STATUS_OK) {
-      *value = (long(buffer[3])<<24) | (long(buffer[2])<<16) | (long(buffer[1])<<8) | long(buffer[0]);
-    }
-    return status;
-}
-
-/*
- * Helper routine to write a value into a Value Block.
- */
-byte mifare_SetValue(byte blockAddr, long value) {
-    byte buffer[18];
-
-    // Translate the long into 4 bytes; repeated 2x in value block
-    buffer[0] = buffer[ 8] = (value & 0xFF);
-    buffer[1] = buffer[ 9] = (value & 0xFF00) >> 8;
-    buffer[2] = buffer[10] = (value & 0xFF0000) >> 16;
-    buffer[3] = buffer[11] = (value & 0xFF000000) >> 24;
-    // Inverse 4 bytes also found in value block
-    buffer[4] = ~buffer[0];
-    buffer[5] = ~buffer[1];
-    buffer[6] = ~buffer[2];
-    buffer[7] = ~buffer[3];
-    // Address 2x with inverse address 2x
-    buffer[12] = buffer[14] = blockAddr;
-    buffer[13] = buffer[15] = ~blockAddr;
-
-    // Write the whole data block
-    return mfrc522.MIFARE_Write(blockAddr, buffer, 16);
-}
-
-/*
+/**
  * Ensure that a given block is formatted as a Value Block.
  */
 void formatValueBlock(byte blockAddr) {
