@@ -958,6 +958,62 @@ byte MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0xff) number.
 	return STATUS_OK;
 } // End MIFARE_Transfer()
 
+/**
+ * Helper routine to read the current value from a Value Block.
+ * 
+ * Only for MIFARE Classic and only for blocks in "value block" mode, that
+ * is: with access bits [C1 C2 C3] = [110] or [001]. The sector containing
+ * the block must be authenticated before calling this function. 
+ * 
+ * @param[in]   blockAddr   The block (0x00-0xff) number.
+ * @param[out]  value       Current value of the Value Block.
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+  */
+byte MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
+    byte status;
+    byte buffer[18];
+    byte size = sizeof(buffer);
+
+    // Read the block
+    status = MIFARE_Read(blockAddr, buffer, &size);
+    if (status == STATUS_OK) {
+      // Extract the value
+      *value = (long(buffer[3])<<24) | (long(buffer[2])<<16) | (long(buffer[1])<<8) | long(buffer[0]);
+    }
+    return status;
+} // End MIFARE_GetValue()
+
+/**
+ * Helper routine to write a specific value into a Value Block.
+ * 
+ * Only for MIFARE Classic and only for blocks in "value block" mode, that
+ * is: with access bits [C1 C2 C3] = [110] or [001]. The sector containing
+ * the block must be authenticated before calling this function. 
+ * 
+ * @param[in]   blockAddr   The block (0x00-0xff) number.
+ * @param[in]   value       New value of the Value Block.
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+ */
+byte MFRC522::MIFARE_SetValue(byte blockAddr, long value) {
+    byte buffer[18];
+
+    // Translate the long into 4 bytes; repeated 2x in value block
+    buffer[0] = buffer[ 8] = (value & 0xFF);
+    buffer[1] = buffer[ 9] = (value & 0xFF00) >> 8;
+    buffer[2] = buffer[10] = (value & 0xFF0000) >> 16;
+    buffer[3] = buffer[11] = (value & 0xFF000000) >> 24;
+    // Inverse 4 bytes also found in value block
+    buffer[4] = ~buffer[0];
+    buffer[5] = ~buffer[1];
+    buffer[6] = ~buffer[2];
+    buffer[7] = ~buffer[3];
+    // Address 2x with inverse address 2x
+    buffer[12] = buffer[14] = blockAddr;
+    buffer[13] = buffer[15] = ~blockAddr;
+
+    // Write the whole data block
+    return MIFARE_Write(blockAddr, buffer, 16);
+} // End MIFARE_SetValue()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Support functions
