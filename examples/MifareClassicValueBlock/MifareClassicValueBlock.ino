@@ -213,7 +213,7 @@ void loop() {
         Serial.println(mfrc522.GetStatusCodeName(status));
         return;
     }
-    Serial.print("New value of value of block "); Serial.print(valueBlockA);
+    Serial.print("New value of value block "); Serial.print(valueBlockA);
     Serial.print(" = "); Serial.println(value);
 
     // Decrement 10 from the value of valueBlockB and store the result in valueBlockB.
@@ -237,7 +237,7 @@ void loop() {
         Serial.println(mfrc522.GetStatusCodeName(status));
         return;
     }
-    Serial.print("New value of value of block "); Serial.print(valueBlockB);
+    Serial.print("New value of value block "); Serial.print(valueBlockB);
     Serial.print(" = "); Serial.println(value);
     // Check some boundary...
     if (value <= -100) {
