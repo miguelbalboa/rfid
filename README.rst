@@ -7,6 +7,8 @@ Read and write different types of Radio-Frequency IDentification (RFID) cards
 on your Arduino using a RC522 based reader connected via the Serial Peripheral
 Interface (SPI) interface.
 
+Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
+
 
 .. _pin layout:
 
@@ -97,6 +99,8 @@ for *"Arduino RFID module Kit 13.56 Mhz with Tags SPI W and R By COOQRobot"*.
 
 It was translated into English and rewritten/refactored in the fall of 2013
 by Søren Thing Andersen (from http://access.thing.dk).
+
+It has been extended with functionality to alter sector 0 on Chinese UID changeable MIFARE card in Oct 2014 by Tom Clement (from http://tomclement.nl).
 
 
 .. _arduino: http://arduino.cc/
