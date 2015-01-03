@@ -10,8 +10,7 @@
  * 
  * Released into the public domain.
  *
- * This sample shows how to setup a block on a MIFARE Classic PICC to be in "Value Block" mode.
- * In Value Block mode the operations Increment/Decrement/Restore and Transfer can be used.
+ * This sample shows how to set the UID on a UID changeable MIFARE card.
  * 
  ----------------------------------------------------------------------------- empty_skull 
  
