@@ -3,6 +3,7 @@
  * Based on code Dr.Leong   ( WWW.B2CQSHOP.COM )
  * Created by Miguel Balboa (circuitito.com), Jan, 2012.
  * Rewritten by Søren Thing Andersen (access.thing.dk), fall of 2013 (Translation to English, refactored, comments, anti collision, cascade levels.)
+ * Extended by Tom Clement with functionality to write to sector 0 of UID changeable Mifare cards.
  * Released into the public domain.
  * 
  * Please read this file for an overview and then MFRC522.cpp for comments on the specific functions.
@@ -329,6 +330,9 @@ public:
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
+    bool MIFARE_OpenUidBackdoor(bool logErrors);
+    bool MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors);
+    bool MIFARE_UnbrickUidSector(bool logErrors);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
