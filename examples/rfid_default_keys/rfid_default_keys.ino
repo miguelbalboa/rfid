@@ -12,16 +12,17 @@
  * block 0 of a MIFARE RFID card using a RFID-RC522 reader.
  * 
  * Typical pin layout used:
- * ------------------------------------------------------------
- *             MFRC522      Arduino       Arduino   Arduino
- *             Reader/PCD   Uno           Mega      Nano v3
- * Signal      Pin          Pin           Pin       Pin
- * ------------------------------------------------------------
- * RST/Reset   RST          9             5         D9
- * SPI SS      SDA(SS)      10            53        D10
- * SPI MOSI    MOSI         11 / ICSP-4   51        D11
- * SPI MISO    MISO         12 / ICSP-1   50        D12
- * SPI SCK     SCK          13 / ICSP-3   52        D13
+ * -----------------------------------------------------------------------------------------
+ *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
+ *             Reader/PCD   Uno           Mega      Nano v3    Leonardo/Micro   Pro Micro
+ * Signal      Pin          Pin           Pin       Pin        Pin              Pin
+ * -----------------------------------------------------------------------------------------
+ * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
+ * SPI SS      SDA(SS)      10            53        D10        10               10
+ * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
+ * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
+ * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
+ *
  */
 
 #include <SPI.h>
@@ -52,6 +53,7 @@ byte knownKeys[NR_KNOWN_KEYS][MFRC522::MF_KEY_SIZE] =  {
  */
 void setup() {
     Serial.begin(9600);         // Initialize serial communications with the PC
+    while (!Serial);            // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
     SPI.begin();                // Init SPI bus
     mfrc522.PCD_Init();         // Init MFRC522 card
     Serial.println("Try the most used default keys to print block 0 of a MIFARE PICC.");
