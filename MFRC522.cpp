@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 #include <MFRC522.h>
+#include <avr/pgmspace.h>
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for setting up the Arduino
@@ -1072,20 +1073,11 @@ byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data t
  */
 const char *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
 										) {
-	switch (code) {
-		case STATUS_OK:				return "Success."; break;
-		case STATUS_ERROR:			return "Error in communication."; break;
-		case STATUS_COLLISION:		return "Collission detected."; break;
-		case STATUS_TIMEOUT:		return "Timeout in communication."; break;
-		case STATUS_NO_ROOM:		return "A buffer is not big enough."; break;
-		case STATUS_INTERNAL_ERROR:	return "Internal error in the code. Should not happen."; break;
-		case STATUS_INVALID:		return "Invalid argument."; break;
-		case STATUS_CRC_WRONG:		return "The CRC_A does not match."; break;
-		case STATUS_MIFARE_NACK:	return "A MIFARE PICC responded with NAK."; break;
-		default:
-			return "Unknown error";
-			break;
+	if (code == 0 || code > STATUS_MIFARE_NACK) {
+		return "Unknown error";
 	}
+	strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_StatusCodeName[code - 1])));
+	return stringBuffer;
 } // End GetStatusCodeName()
 
 /**
@@ -1127,19 +1119,12 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
  */
 const char *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
-	switch (piccType) {
-		case PICC_TYPE_ISO_14443_4:		return "PICC compliant with ISO/IEC 14443-4";		break;
-		case PICC_TYPE_ISO_18092:		return "PICC compliant with ISO/IEC 18092 (NFC)";	break;
-		case PICC_TYPE_MIFARE_MINI:		return "MIFARE Mini, 320 bytes";					break;
-		case PICC_TYPE_MIFARE_1K:		return "MIFARE 1KB";								break;
-		case PICC_TYPE_MIFARE_4K:		return "MIFARE 4KB";								break;
-		case PICC_TYPE_MIFARE_UL:		return "MIFARE Ultralight or Ultralight C";			break;
-		case PICC_TYPE_MIFARE_PLUS:		return "MIFARE Plus";								break;
-		case PICC_TYPE_TNP3XXX:			return "MIFARE TNP3XXX";							break;
-		case PICC_TYPE_NOT_COMPLETE:	return "SAK indicates UID is not complete.";		break;
-		case PICC_TYPE_UNKNOWN:
-		default:						return "Unknown type";								break;
+	if (piccType == PICC_TYPE_UNKNOWN) {
+		strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_PICC_TYPE_NOT_COMPLETE])));
+	} else {
+		strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_PICC_TypeName[piccType])));
 	}
+	return stringBuffer;
 } // End PICC_GetTypeName()
 
 /**
@@ -1184,7 +1169,8 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 		case PICC_TYPE_ISO_18092:
 		case PICC_TYPE_MIFARE_PLUS:
 		case PICC_TYPE_TNP3XXX:
-			Serial.println("Dumping memory contents not implemented for that PICC type.");
+			strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_PICC_TYPE_TNP3XXX])));
+			Serial.println(stringBuffer);
 			break;
 			
 		case PICC_TYPE_UNKNOWN:
@@ -1458,7 +1444,8 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
     byte status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
     if( status != STATUS_OK ) {
         if( logErrors ) {
-            Serial.println("Card did not respond to 0x40 after HALT command. Are you sure it is a UID changeable one?");
+            strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_NO_RESPONSE_AFTER_HALT])));
+            Serial.println(stringBuffer);
             Serial.print("Error name: ");
             Serial.println(GetStatusCodeName(status));
         }
@@ -1466,7 +1453,8 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
     }
     if ( received != 1 || response[0] != 0x0A ) {
         if ( logErrors ) {
-            Serial.print("Got bad response on backdoor 0x40 command: ");
+            strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_COMMAND_0x40_RESPONSE])));
+            Serial.print(stringBuffer);
             Serial.print(response[0], HEX);
             Serial.print(" (");
             Serial.print(validBits);
@@ -1480,7 +1468,8 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
     status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 43
     if( status != STATUS_OK ) {
         if( logErrors ) {
-            Serial.println("Error in communication at command 0x43, after successfully executing 0x40");
+            strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_COMMAND_0x43_COMM])));
+            Serial.println(stringBuffer);
             Serial.print("Error name: ");
             Serial.println(GetStatusCodeName(status));
         }
@@ -1488,7 +1477,8 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
     }
     if ( received != 1 || response[0] != 0x0A ) {
         if ( logErrors ) {
-            Serial.print("Got bad response on backdoor 0x43 command: ");
+            strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_COMMAND_0x43_RESPONSE])));
+            Serial.print(stringBuffer);
             Serial.print(response[0], HEX);
             Serial.print(" (");
             Serial.print(validBits);
@@ -1514,7 +1504,8 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
     // UID + BCC byte can not be larger than 16 together
     if ( !newUid || !uidSize || uidSize > 15) {
         if ( logErrors ) {
-            Serial.println("New UID buffer empty, size 0, or size > 15 given");
+            strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_WRONG_UID])));
+            Serial.println(stringBuffer);
         }
         return false;
     }
@@ -1533,7 +1524,8 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 //            PICC_WakeupA(atqa_answer, &atqa_size);
             
             if ( !PICC_IsNewCardPresent() || !PICC_ReadCardSerial() ) {
-                Serial.println("No card was previously selected, and none are available. Failed to set UID.");
+                strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_NO_CARD])));
+                Serial.println(stringBuffer);
                 return false;
             }
             
@@ -1541,7 +1533,8 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
             if ( status != STATUS_OK ) {
                 // We tried, time to give up
                 if ( logErrors ) {
-                    Serial.println("Failed to authenticate to card for reading, could not set UID: ");
+                    strcpy_P(stringBuffer, (char*)pgm_read_word(&(_MFRC522_str_Error[ERR_AUTH_KEY_A])));
+                    Serial.println(stringBuffer);
                     Serial.println(GetStatusCodeName(status));
                 }
                 return false;
