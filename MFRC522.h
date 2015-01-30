@@ -78,6 +78,88 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+/////////////////////////////////////////////////////////////////////////////////////
+// String tables to be stored in program memory
+/////////////////////////////////////////////////////////////////////////////////////
+
+const char _MFRC522_str_STATUS_OK[] PROGMEM = "Success.";
+const char _MFRC522_str_STATUS_ERROR[] PROGMEM = "Error in communication.";
+const char _MFRC522_str_STATUS_COLLISION[] PROGMEM = "Collission detected.";
+const char _MFRC522_str_STATUS_TIMEOUT[] PROGMEM = "Timeout in communication.";
+const char _MFRC522_str_STATUS_NO_ROOM[] PROGMEM = "A buffer is not big enough.";
+const char _MFRC522_str_STATUS_INTERNAL_ERROR[] PROGMEM = "Internal error in the code. Should not happen.";
+const char _MFRC522_str_STATUS_INVALID[] PROGMEM = "Invalid argument.";
+const char _MFRC522_str_STATUS_CRC_WRONG[] PROGMEM = "The CRC_A does not match.";
+const char _MFRC522_str_STATUS_MIFARE_NACK[] PROGMEM = "A MIFARE PICC responded with NAK.";
+
+const char* const _MFRC522_str_StatusCodeName[] PROGMEM {
+	_MFRC522_str_STATUS_OK,
+	_MFRC522_str_STATUS_ERROR,
+	_MFRC522_str_STATUS_COLLISION,
+	_MFRC522_str_STATUS_TIMEOUT,
+	_MFRC522_str_STATUS_NO_ROOM,
+	_MFRC522_str_STATUS_INTERNAL_ERROR,
+	_MFRC522_str_STATUS_INVALID,
+	_MFRC522_str_STATUS_CRC_WRONG,
+	_MFRC522_str_STATUS_MIFARE_NACK
+};
+
+const char _MFRC522_str_PICC_TYPE_UNKNOWN[] PROGMEM = "Unknown type";
+const char _MFRC522_str_PICC_TYPE_ISO_14443_4[] PROGMEM = "PICC compliant with ISO/IEC 14443-4";
+const char _MFRC522_str_PICC_TYPE_ISO_18092[] PROGMEM = "PICC compliant with ISO/IEC 18092 (NFC)";
+const char _MFRC522_str_PICC_TYPE_MIFARE_MINI[] PROGMEM = "MIFARE Mini, 320 bytes";
+const char _MFRC522_str_PICC_TYPE_MIFARE_1K[] PROGMEM = "MIFARE 1KB";
+const char _MFRC522_str_PICC_TYPE_MIFARE_4K[] PROGMEM = "MIFARE 4KB";
+const char _MFRC522_str_PICC_TYPE_MIFARE_UL[] PROGMEM = "MIFARE Ultralight or Ultralight C";
+const char _MFRC522_str_PICC_TYPE_MIFARE_PLUS[] PROGMEM = "MIFARE Plus";
+const char _MFRC522_str_PICC_TYPE_TNP3XXX[] PROGMEM = "MIFARE TNP3XXX";
+
+const char* const _MFRC522_str_PICC_TypeName[] PROGMEM {
+	_MFRC522_str_PICC_TYPE_UNKNOWN,
+	_MFRC522_str_PICC_TYPE_ISO_14443_4,
+	_MFRC522_str_PICC_TYPE_ISO_18092,
+	_MFRC522_str_PICC_TYPE_MIFARE_MINI,
+	_MFRC522_str_PICC_TYPE_MIFARE_1K,
+	_MFRC522_str_PICC_TYPE_MIFARE_4K,
+	_MFRC522_str_PICC_TYPE_MIFARE_UL,
+	_MFRC522_str_PICC_TYPE_MIFARE_PLUS,
+	_MFRC522_str_PICC_TYPE_TNP3XXX
+};
+
+const char _MFRC522_str_ERR_PICC_TYPE_NOT_COMPLETE[] PROGMEM = "SAK indicates UID is not complete.";
+const char _MFRC522_str_ERR_PICC_TYPE_TNP3XXX[] PROGMEM = "Dumping memory contents not implemented for that PICC type.";
+const char _MFRC522_str_ERR_NO_RESPONSE_AFTER_HALT[] PROGMEM = "Card did not respond to 0x40 after HALT command. Are you sure it is a UID changeable one?";
+const char _MFRC522_str_ERR_COMMAND_0x40_RESPONSE[] PROGMEM = "Got bad response on backdoor 0x40 command: ";
+const char _MFRC522_str_ERR_COMMAND_0x43_COMM[] PROGMEM = "Error in communication at command 0x43, after successfully executing 0x40";
+const char _MFRC522_str_ERR_COMMAND_0x43_RESPONSE[] PROGMEM = "Got bad response on backdoor 0x43 command: ";
+const char _MFRC522_str_ERR_WRONG_UID[] PROGMEM = "New UID buffer empty, size 0, or size > 15 given";
+const char _MFRC522_str_ERR_NO_CARD[] PROGMEM = "No card was previously selected, and none are available. Failed to set UID.";
+const char _MFRC522_str_ERR_AUTH_KEY_A[] PROGMEM = "Failed to authenticate to card for reading, could not set UID: ";
+
+enum _MFRC522_str_Error {
+	ERR_PICC_TYPE_NOT_COMPLETE,
+	ERR_PICC_TYPE_TNP3XXX,
+	ERR_NO_RESPONSE_AFTER_HALT,
+	ERR_COMMAND_0x40_RESPONSE,
+	ERR_COMMAND_0x43_COMM,
+	ERR_COMMAND_0x43_RESPONSE,
+	ERR_WRONG_UID,
+	ERR_NO_CARD,
+	ERR_AUTH_KEY_A
+};
+
+const char* const _MFRC522_str_Error[] PROGMEM {
+	_MFRC522_str_ERR_PICC_TYPE_NOT_COMPLETE,
+	_MFRC522_str_ERR_PICC_TYPE_TNP3XXX,
+	_MFRC522_str_ERR_NO_RESPONSE_AFTER_HALT,
+	_MFRC522_str_ERR_COMMAND_0x40_RESPONSE,
+	_MFRC522_str_ERR_COMMAND_0x43_COMM,
+	_MFRC522_str_ERR_COMMAND_0x43_RESPONSE,
+	_MFRC522_str_ERR_WRONG_UID,
+	_MFRC522_str_ERR_NO_CARD,
+	_MFRC522_str_ERR_AUTH_KEY_A
+};
+
 class MFRC522 {
 public:
 	// MFRC522 registers. Described in chapter 9 of the datasheet.
@@ -218,7 +300,7 @@ public:
 		MF_KEY_SIZE				= 6			// A Mifare Crypto1 key is 6 bytes.
 	};
 
-	// PICC types we can detect. Remember to update PICC_GetTypeName() if you add more.
+	// PICC types we can detect. Remember to update string tables and PICC_GetTypeName() if you add more.
 	enum PICC_Type {
 		PICC_TYPE_UNKNOWN		= 0,
 		PICC_TYPE_ISO_14443_4	= 1,	// PICC compliant with ISO/IEC 14443-4 
@@ -232,7 +314,7 @@ public:
 		PICC_TYPE_NOT_COMPLETE	= 255	// SAK indicates UID is not complete.
 	};
 	
-	// Return codes from the functions in this class. Remember to update GetStatusCodeName() if you add more.
+	// Return codes from the functions in this class. Remember to update string tables and GetStatusCodeName() if you add more.
 	enum StatusCode {
 		STATUS_OK				= 1,	// Success
 		STATUS_ERROR			= 2,	// Error in communication
@@ -344,6 +426,8 @@ private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	byte MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
+
+	char stringBuffer[100];
 };
 
 #endif
