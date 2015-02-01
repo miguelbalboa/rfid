@@ -92,7 +92,7 @@ const char _MFRC522_str_STATUS_INVALID[] PROGMEM = "Invalid argument.";
 const char _MFRC522_str_STATUS_CRC_WRONG[] PROGMEM = "The CRC_A does not match.";
 const char _MFRC522_str_STATUS_MIFARE_NACK[] PROGMEM = "A MIFARE PICC responded with NAK.";
 
-const char* const _MFRC522_str_StatusCodeName[] PROGMEM {
+const char* const _MFRC522_str_StatusCodeName[] PROGMEM = {
 	_MFRC522_str_STATUS_OK,
 	_MFRC522_str_STATUS_ERROR,
 	_MFRC522_str_STATUS_COLLISION,
@@ -114,7 +114,7 @@ const char _MFRC522_str_PICC_TYPE_MIFARE_UL[] PROGMEM = "MIFARE Ultralight or Ul
 const char _MFRC522_str_PICC_TYPE_MIFARE_PLUS[] PROGMEM = "MIFARE Plus";
 const char _MFRC522_str_PICC_TYPE_TNP3XXX[] PROGMEM = "MIFARE TNP3XXX";
 
-const char* const _MFRC522_str_PICC_TypeName[] PROGMEM {
+const char* const _MFRC522_str_PICC_TypeName[] PROGMEM = {
 	_MFRC522_str_PICC_TYPE_UNKNOWN,
 	_MFRC522_str_PICC_TYPE_ISO_14443_4,
 	_MFRC522_str_PICC_TYPE_ISO_18092,
@@ -148,7 +148,7 @@ enum _MFRC522_str_Error {
 	ERR_AUTH_KEY_A
 };
 
-const char* const _MFRC522_str_Error[] PROGMEM {
+const char* const _MFRC522_str_Error[] PROGMEM = {
 	_MFRC522_str_ERR_PICC_TYPE_NOT_COMPLETE,
 	_MFRC522_str_ERR_PICC_TYPE_TNP3XXX,
 	_MFRC522_str_ERR_NO_RESPONSE_AFTER_HALT,
