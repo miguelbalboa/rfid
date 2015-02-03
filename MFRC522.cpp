@@ -1161,7 +1161,7 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 
 	// PICC type
 	byte piccType = PICC_GetType(uid->sak);
-	Serial.print(F("PICC type: "0);
+	Serial.print(F("PICC type: "));
 	Serial.println(PICC_GetTypeName(piccType));
 	
 	// Dump contents
