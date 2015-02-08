@@ -246,7 +246,7 @@ void MFRC522::PCD_AntennaOn() {
  * Turns the antenna off by disabling pins TX1 and TX2.
  */
 void MFRC522::PCD_AntennaOff() {
-	PCD_ClearRegisterBitMask(RFCfgReg, 0x03);
+	PCD_ClearRegisterBitMask(TxControlReg, 0x03);
 } // End PCD_AntennaOff()
 
 /**
