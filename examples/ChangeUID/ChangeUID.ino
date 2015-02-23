@@ -54,7 +54,7 @@ void setup() {
         while (!Serial);           // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
         SPI.begin();               // Init SPI bus
         mfrc522.PCD_Init();        // Init MFRC522 card
-        Serial.println("Warning: this example overwrites the UID of your UID changeable card, use with care!");
+        Serial.println(F("Warning: this example overwrites the UID of your UID changeable card, use with care!"));
         
         // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
         for (byte i = 0; i < 6; i++) {
@@ -83,7 +83,7 @@ void loop() {
         // Now a card is selected. The UID and SAK is in mfrc522.uid.
         
         // Dump UID
-        Serial.print("Card UID:");
+        Serial.print(F("Card UID:"));
         for (byte i = 0; i < mfrc522.uid.size; i++) {
                 Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
                 Serial.print(mfrc522.uid.uidByte[i], HEX);
@@ -92,22 +92,22 @@ void loop() {
 
         // Dump PICC type
 //        byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-//        Serial.print("PICC type: ");
+//        Serial.print(F("PICC type: "));
 //        Serial.print(mfrc522.PICC_GetTypeName(piccType));
-//        Serial.print(" (SAK ");
+//        Serial.print(F(" (SAK "));
 //        Serial.print(mfrc522.uid.sak);
 //        Serial.print(")\r\n");
 //        if (        piccType != MFRC522::PICC_TYPE_MIFARE_MINI 
 //                &&        piccType != MFRC522::PICC_TYPE_MIFARE_1K
 //                &&        piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-//                Serial.println("This sample only works with MIFARE Classic cards.");
+//                Serial.println(F("This sample only works with MIFARE Classic cards."));
 //                return;
 //        }
         
         // Set new UID
         byte newUid[] = NEW_UID;
         if ( mfrc522.MIFARE_SetUid(newUid, (byte)4, true) ) {
-            Serial.println("Wrote new UID to card.");
+            Serial.println(F("Wrote new UID to card."));
         }
         
         // Halt PICC and re-select it so DumpToSerial doesn't get confused
@@ -117,7 +117,7 @@ void loop() {
         }
         
         // Dump the new memory contents
-        Serial.println("New UID and contents:");
+        Serial.println(F("New UID and contents:"));
         mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
         
         delay(2000);

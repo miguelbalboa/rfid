@@ -56,7 +56,7 @@ void setup() {
     while (!Serial);            // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
     SPI.begin();                // Init SPI bus
     mfrc522.PCD_Init();         // Init MFRC522 card
-    Serial.println("Try the most used default keys to print block 0 of a MIFARE PICC.");
+    Serial.println(F("Try the most used default keys to print block 0 of a MIFARE PICC."));
 }
 
 /*
@@ -82,10 +82,10 @@ boolean try_key(MFRC522::MIFARE_Key *key)
     byte block = 0;
     byte status;
     
-    // Serial.println("Authenticating using key A...");
+    // Serial.println(F("Authenticating using key A..."));
     status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
-        // Serial.print("PCD_Authenticate() failed: ");
+        // Serial.print(F("PCD_Authenticate() failed: "));
         // Serial.println(mfrc522.GetStatusCodeName(status));
         return false;
     }
@@ -94,17 +94,17 @@ boolean try_key(MFRC522::MIFARE_Key *key)
     byte byteCount = sizeof(buffer);
     status = mfrc522.MIFARE_Read(block, buffer, &byteCount);
     if (status != MFRC522::STATUS_OK) {
-        // Serial.print("MIFARE_Read() failed: ");
+        // Serial.print(F("MIFARE_Read() failed: "));
         // Serial.println(mfrc522.GetStatusCodeName(status));
     }
     else {
         // Successful read
         result = true;
-        Serial.print("Success with key:");
+        Serial.print(F("Success with key:"));
         dump_byte_array((*key).keyByte, MFRC522::MF_KEY_SIZE);
         Serial.println();
         // Dump block data
-        Serial.print("Block "); Serial.print(block); Serial.print(":");
+        Serial.print(F("Block ")); Serial.print(block); Serial.print(F(":"));
         dump_byte_array(buffer, 16);
         Serial.println();
     }
@@ -128,10 +128,10 @@ void loop() {
         return;
 
     // Show some details of the PICC (that is: the tag/card)
-    Serial.print("Card UID:");
+    Serial.print(F("Card UID:"));
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
-    Serial.print("PICC type: ");
+    Serial.print(F("PICC type: "));
     byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
     
