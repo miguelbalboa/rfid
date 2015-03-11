@@ -272,6 +272,105 @@ void MFRC522::PCD_SetAntennaGain(byte mask) {
 	}
 } // End PCD_SetAntennaGain()
 
+/**
+ * Performs a self-test of the MFRC522
+ * See 16.1.1 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+ * 
+ * @return Whether or not the test passed.
+ */
+bool MFRC522::PCD_PerformSelfTest() {
+    // This follows directly the steps outlined in 16.1.1
+
+    // 1. Perform a soft reset.
+    PCD_Reset();
+
+    // 2. Clear the internal buffer by writing 25 bytes of 00h
+    byte ZEROES[25] = {0x00};
+    PCD_SetRegisterBitMask(FIFOLevelReg, 0x80); // flush the FIFO buffer
+    PCD_WriteRegister(FIFODataReg, 25, ZEROES); // write 25 bytes of 00h to FIFO
+    PCD_WriteRegister(CommandReg, PCD_Mem); // transfer to internal buffer
+
+    // 3. Enable self-test
+    PCD_WriteRegister(AutoTestReg, 0x09);
+
+    // 4. Write 00h to FIFO buffer
+    PCD_WriteRegister(FIFODataReg, 0x00);
+
+    // 5. Start self-test by issuing the CalcCRC command
+    PCD_WriteRegister(CommandReg, PCD_CalcCRC);
+
+    // 6. Wait for self-test to complete
+    word i;
+    byte n;
+    for (i = 0; i < 0xFF; i++) {
+        n = PCD_ReadRegister(DivIrqReg);    // DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
+        if (n & 0x04) {                     // CRCIRq bit set - calculation done
+            break;
+        }
+    }
+    PCD_WriteRegister(CommandReg, PCD_Idle);        // Stop calculating CRC for new content in the FIFO.
+
+    // 7. Read out resulting 64 bytes from the FIFO buffer.
+    byte result[64];
+    PCD_ReadRegister(FIFODataReg, 64, result, 0);
+
+    // Auto self-test done
+
+    // Reset AutoTestReg register to be 0 again. Required for normal operation.
+    PCD_WriteRegister(AutoTestReg, 0x00);
+
+    // Determine firmware version (see section 9.3.4.8 in spec)
+    byte version = PCD_ReadRegister(VersionReg);
+
+    // Reference values based on firmware version; taken from 16.1.1 in spec.
+    // Version 1.0
+    byte referenceV1_0[] = {
+        0x00, 0xC6, 0x37, 0xD5, 0x32, 0xB7, 0x57, 0x5C,
+        0xC2, 0xD8, 0x7C, 0x4D, 0xD9, 0x70, 0xC7, 0x73,
+        0x10, 0xE6, 0xD2, 0xAA, 0x5E, 0xA1, 0x3E, 0x5A,
+        0x14, 0xAF, 0x30, 0x61, 0xC9, 0x70, 0xDB, 0x2E,
+        0x64, 0x22, 0x72, 0xB5, 0xBD, 0x65, 0xF4, 0xEC,
+        0x22, 0xBC, 0xD3, 0x72, 0x35, 0xCD, 0xAA, 0x41,
+        0x1F, 0xA7, 0xF3, 0x53, 0x14, 0xDE, 0x7E, 0x02,
+        0xD9, 0x0F, 0xB5, 0x5E, 0x25, 0x1D, 0x29, 0x79
+    };
+
+    // Version 2.0
+    byte referenceV2_0[] = {
+        0x00, 0xEB, 0x66, 0xBA, 0x57, 0xBF, 0x23, 0x95,
+        0xD0, 0xE3, 0x0D, 0x3D, 0x27, 0x89, 0x5C, 0xDE,
+        0x9D, 0x3B, 0xA7, 0x00, 0x21, 0x5B, 0x89, 0x82,
+        0x51, 0x3A, 0xEB, 0x02, 0x0C, 0xA5, 0x00, 0x49,
+        0x7C, 0x84, 0x4D, 0xB3, 0xCC, 0xD2, 0x1B, 0x81,
+        0x5D, 0x48, 0x76, 0xD5, 0x71, 0x61, 0x21, 0xA9,
+        0x86, 0x96, 0x83, 0x38, 0xCF, 0x9D, 0x5B, 0x6D,
+        0xDC, 0x15, 0xBA, 0x3E, 0x7D, 0x95, 0x3B, 0x2F
+    };
+
+    // Pick the appropriate reference values
+    byte *reference;
+    switch (version) {
+        case 0x91: // Version 1.0
+            reference = referenceV1_0;
+            break;
+        case 0x92: // Version 2.0
+            reference = referenceV2_0;
+            break;
+        default:   // Unknown version
+            return false;
+    }
+
+    // Verify that the results match up to our expectations
+    for (i = 0; i < 64; i++) {
+        if (result[i] != reference[i]) {
+            return false;
+        }
+    }
+
+    // Test passed; all is good.
+    return true;
+} // End PCD_PerformSelfTest()
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with PICCs
 /////////////////////////////////////////////////////////////////////////////////////
