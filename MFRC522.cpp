@@ -272,6 +272,80 @@ void MFRC522::PCD_SetAntennaGain(byte mask) {
 	}
 } // End PCD_SetAntennaGain()
 
+/**
+ * Performs a self-test of the MFRC522
+ * See 16.1.1 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+ * 
+ * @return Whether or not the test passed.
+ */
+bool MFRC522::PCD_PerformSelfTest() {
+    // This follows directly the steps outlined in 16.1.1
+
+    // 1. Perform a soft reset.
+    PCD_Reset();
+
+    // 2. Clear the internal buffer by writing 25 bytes of 00h
+    byte ZEROES[25] = {0x00};
+    PCD_SetRegisterBitMask(FIFOLevelReg, 0x80); // flush the FIFO buffer
+    PCD_WriteRegister(FIFODataReg, 25, ZEROES); // write 25 bytes of 00h to FIFO
+    PCD_WriteRegister(CommandReg, PCD_Mem); // transfer to internal buffer
+
+    // 3. Enable self-test
+    PCD_WriteRegister(AutoTestReg, 0x09);
+
+    // 4. Write 00h to FIFO buffer
+    PCD_WriteRegister(FIFODataReg, 0x00);
+
+    // 5. Start self-test by issuing the CalcCRC command
+    PCD_WriteRegister(CommandReg, PCD_CalcCRC);
+
+    // 6. Wait for self-test to complete
+    word i;
+    byte n;
+    for (i = 0; i < 0xFF; i++) {
+        n = PCD_ReadRegister(DivIrqReg);    // DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
+        if (n & 0x04) {                     // CRCIRq bit set - calculation done
+            break;
+        }
+    }
+    PCD_WriteRegister(CommandReg, PCD_Idle);        // Stop calculating CRC for new content in the FIFO.
+
+    // 7. Read out resulting 64 bytes from the FIFO buffer.
+    byte result[64];
+    PCD_ReadRegister(FIFODataReg, 64, result, 0);
+
+    // Auto self-test done
+
+    // Reset AutoTestReg register to be 0 again. Required for normal operation.
+    PCD_WriteRegister(AutoTestReg, 0x00);
+
+    // Determine firmware version (see section 9.3.4.8 in spec)
+    byte version = PCD_ReadRegister(VersionReg);
+
+    // Pick the appropriate reference values
+    const byte *reference;
+    switch (version) {
+        case 0x91: // Version 1.0
+            reference = MFRC522_firmware_referenceV1_0;
+            break;
+        case 0x92: // Version 2.0
+            reference = MFRC522_firmware_referenceV2_0;
+            break;
+        default:   // Unknown version
+            return false;
+    }
+
+    // Verify that the results match up to our expectations
+    for (i = 0; i < 64; i++) {
+        if (result[i] != pgm_read_byte(&(reference[i]))) {
+            return false;
+        }
+    }
+
+    // Test passed; all is good.
+    return true;
+} // End PCD_PerformSelfTest()
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with PICCs
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1067,24 +1141,22 @@ byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data t
 } // End PCD_MIFARE_Transceive()
 
 /**
- * Returns a string pointer to a status code name.
+ * Returns a __FlashStringHelper pointer to a status code name.
  * 
  */
-const char *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
+const __FlashStringHelper *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
 										) {
 	switch (code) {
-		case STATUS_OK:				return "Success."; break;
-		case STATUS_ERROR:			return "Error in communication."; break;
-		case STATUS_COLLISION:		return "Collission detected."; break;
-		case STATUS_TIMEOUT:		return "Timeout in communication."; break;
-		case STATUS_NO_ROOM:		return "A buffer is not big enough."; break;
-		case STATUS_INTERNAL_ERROR:	return "Internal error in the code. Should not happen."; break;
-		case STATUS_INVALID:		return "Invalid argument."; break;
-		case STATUS_CRC_WRONG:		return "The CRC_A does not match."; break;
-		case STATUS_MIFARE_NACK:	return "A MIFARE PICC responded with NAK."; break;
-		default:
-			return "Unknown error";
-			break;
+		case STATUS_OK:				return F("Success.");										break;
+		case STATUS_ERROR:			return F("Error in communication.");						break;
+		case STATUS_COLLISION:		return F("Collission detected.");							break;
+		case STATUS_TIMEOUT:		return F("Timeout in communication.");						break;
+		case STATUS_NO_ROOM:		return F("A buffer is not big enough.");					break;
+		case STATUS_INTERNAL_ERROR:	return F("Internal error in the code. Should not happen.");	break;
+		case STATUS_INVALID:		return F("Invalid argument.");								break;
+		case STATUS_CRC_WRONG:		return F("The CRC_A does not match.");						break;
+		case STATUS_MIFARE_NACK:	return F("A MIFARE PICC responded with NAK.");				break;
+		default:					return F("Unknown error");									break;
 	}
 } // End GetStatusCodeName()
 
@@ -1122,23 +1194,23 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 } // End PICC_GetType()
 
 /**
- * Returns a string pointer to the PICC type name.
+ * Returns a __FlashStringHelper pointer to the PICC type name.
  * 
  */
-const char *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
+const __FlashStringHelper *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
 	switch (piccType) {
-		case PICC_TYPE_ISO_14443_4:		return "PICC compliant with ISO/IEC 14443-4";		break;
-		case PICC_TYPE_ISO_18092:		return "PICC compliant with ISO/IEC 18092 (NFC)";	break;
-		case PICC_TYPE_MIFARE_MINI:		return "MIFARE Mini, 320 bytes";					break;
-		case PICC_TYPE_MIFARE_1K:		return "MIFARE 1KB";								break;
-		case PICC_TYPE_MIFARE_4K:		return "MIFARE 4KB";								break;
-		case PICC_TYPE_MIFARE_UL:		return "MIFARE Ultralight or Ultralight C";			break;
-		case PICC_TYPE_MIFARE_PLUS:		return "MIFARE Plus";								break;
-		case PICC_TYPE_TNP3XXX:			return "MIFARE TNP3XXX";							break;
-		case PICC_TYPE_NOT_COMPLETE:	return "SAK indicates UID is not complete.";		break;
+		case PICC_TYPE_ISO_14443_4:		return F("PICC compliant with ISO/IEC 14443-4");	break;
+		case PICC_TYPE_ISO_18092:		return F("PICC compliant with ISO/IEC 18092 (NFC)");break;
+		case PICC_TYPE_MIFARE_MINI:		return F("MIFARE Mini, 320 bytes");					break;
+		case PICC_TYPE_MIFARE_1K:		return F("MIFARE 1KB");								break;
+		case PICC_TYPE_MIFARE_4K:		return F("MIFARE 4KB");								break;
+		case PICC_TYPE_MIFARE_UL:		return F("MIFARE Ultralight or Ultralight C");		break;
+		case PICC_TYPE_MIFARE_PLUS:		return F("MIFARE Plus");							break;
+		case PICC_TYPE_TNP3XXX:			return F("MIFARE TNP3XXX");							break;
+		case PICC_TYPE_NOT_COMPLETE:	return F("SAK indicates UID is not complete.");		break;
 		case PICC_TYPE_UNKNOWN:
-		default:						return "Unknown type";								break;
+		default:						return F("Unknown type");							break;
 	}
 } // End PICC_GetTypeName()
 
