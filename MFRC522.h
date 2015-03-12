@@ -290,6 +290,7 @@ public:
 	void PCD_AntennaOff();
 	byte PCD_GetAntennaGain();
 	void PCD_SetAntennaGain(byte mask);
+    bool PCD_PerformSelfTest();
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
