@@ -579,10 +579,10 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	if (validBits > 80) {
 		return STATUS_INVALID;
 	}
-
+	
 	// Prepare MFRC522
 	PCD_ClearRegisterBitMask(CollReg, 0x80);		// ValuesAfterColl=1 => Bits received after collision are cleared.
-
+	
 	// Repeat Cascade Level loop until we have a complete UID.
 	uidComplete = false;
 	while ( ! uidComplete) {
@@ -667,11 +667,11 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				responseBuffer	= &buffer[index];
 				responseLength	= sizeof(buffer) - index;
 			}
-
+			
 			// Set bit adjustments
 			rxAlign = txLastBits;											// Having a seperate variable is overkill. But it makes the next line easier to read.
 			PCD_WriteRegister(BitFramingReg, (rxAlign << 4) + txLastBits);	// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
-
+			
 			// Transmit the buffer and receive the response.
 			result = PCD_TransceiveData(buffer, bufferUsed, responseBuffer, &responseLength, &txLastBits, rxAlign);			
 			if (result == STATUS_COLLISION) { // More than one PICC in the field => collision.
@@ -707,7 +707,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				}
 			}
 		} // End of while ( ! selectDone)
-
+		
 		// We do not check the CBB - it was constructed by us above.
 		
 		// Copy the found UID bytes from buffer[] to uid->uidByte[]
@@ -740,7 +740,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	
 	// Set correct uid->size
 	uid->size = 3 * cascadeLevel + 1;
-
+	
 	return STATUS_OK;
 } // End PICC_Select()
 
