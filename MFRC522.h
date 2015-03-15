@@ -242,7 +242,7 @@ public:
 		MF_ACK					= 0xA,		// The MIFARE Classic uses a 4 bit ACK/NAK. Any other value than 0xA is NAK.
 		MF_KEY_SIZE				= 6			// A Mifare Crypto1 key is 6 bytes.
 	};
-
+	
 	// PICC types we can detect. Remember to update PICC_GetTypeName() if you add more.
 	enum PICC_Type {
 		PICC_TYPE_UNKNOWN		= 0,
@@ -305,7 +305,7 @@ public:
 	void PCD_SetRegisterBitMask(byte reg, byte mask);
 	void PCD_ClearRegisterBitMask(byte reg, byte mask);
 	byte PCD_CalculateCRC(byte *data, byte length, byte *result);
-
+	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for manipulating the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -315,14 +315,13 @@ public:
 	void PCD_AntennaOff();
 	byte PCD_GetAntennaGain();
 	void PCD_SetAntennaGain(byte mask);
-    bool PCD_PerformSelfTest();
+	bool PCD_PerformSelfTest();
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
 	byte PCD_TransceiveData(byte *sendData, byte sendLen, byte *backData, byte *backLen, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
 	byte PCD_CommunicateWithPICC(byte command, byte waitIRq, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
-
 	byte PICC_RequestA(byte *bufferATQA, byte *bufferSize);
 	byte PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
 	byte PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);	
@@ -336,14 +335,14 @@ public:
 	void PCD_StopCrypto1();
 	byte MIFARE_Read(byte blockAddr, byte *buffer, byte *bufferSize);
 	byte MIFARE_Write(byte blockAddr, byte *buffer, byte bufferSize);
- 	byte MIFARE_Decrement(byte blockAddr, long delta);
+	byte MIFARE_Decrement(byte blockAddr, long delta);
 	byte MIFARE_Increment(byte blockAddr, long delta);
- 	byte MIFARE_Restore(byte blockAddr);
- 	byte MIFARE_Transfer(byte blockAddr);
+	byte MIFARE_Restore(byte blockAddr);
+	byte MIFARE_Transfer(byte blockAddr);
 	byte MIFARE_Ultralight_Write(byte page, byte *buffer, byte bufferSize);
-    byte MIFARE_GetValue(byte blockAddr, long *value);
-    byte MIFARE_SetValue(byte blockAddr, long value);
-
+	byte MIFARE_GetValue(byte blockAddr, long *value);
+	byte MIFARE_SetValue(byte blockAddr, long value);
+	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Support functions
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -360,16 +359,16 @@ public:
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
-    bool MIFARE_OpenUidBackdoor(bool logErrors);
-    bool MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors);
-    bool MIFARE_UnbrickUidSector(bool logErrors);
+	bool MIFARE_OpenUidBackdoor(bool logErrors);
+	bool MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors);
+	bool MIFARE_UnbrickUidSector(bool logErrors);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
 	/////////////////////////////////////////////////////////////////////////////////////
 	bool PICC_IsNewCardPresent();
 	bool PICC_ReadCardSerial();	
-
+	
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
