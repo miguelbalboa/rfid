@@ -324,7 +324,7 @@ public:
 	byte PCD_CommunicateWithPICC(byte command, byte waitIRq, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
 	byte PICC_RequestA(byte *bufferATQA, byte *bufferSize);
 	byte PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
-	byte PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);	
+	byte PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
 	byte PICC_Select(Uid *uid, byte validBits = 0);
 	byte PICC_HaltA();
 	
@@ -360,14 +360,14 @@ public:
 	void PICC_DumpMifareUltralightToSerial();
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
 	bool MIFARE_OpenUidBackdoor(bool logErrors);
-	bool MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors);
+	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
 	bool MIFARE_UnbrickUidSector(bool logErrors);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
 	/////////////////////////////////////////////////////////////////////////////////////
 	bool PICC_IsNewCardPresent();
-	bool PICC_ReadCardSerial();	
+	bool PICC_ReadCardSerial();
 	
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)

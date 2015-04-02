@@ -114,7 +114,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 				mask |= (1 << i);
 			}
 			// Read value and tell that we want to read the same address again.
-			byte value = SPI.transfer(address);	
+			byte value = SPI.transfer(address);
 			// Apply mask to both current value of values[0] and the new data in value.
 			values[0] = (values[index] & ~mask) | (value & mask);
 		}
@@ -387,7 +387,7 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 	
 	// Prepare values for BitFramingReg
 	byte txLastBits = validBits ? *validBits : 0;
-	byte bitFraming	= (rxAlign << 4) + txLastBits;		// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
+	byte bitFraming = (rxAlign << 4) + txLastBits;		// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 	
 	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop any active command.
 	PCD_WriteRegister(ComIrqReg, 0x7F);					// Clear all seven interrupt request bits
@@ -452,7 +452,7 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 			return STATUS_CRC_WRONG;
 		}
 		// Verify CRC_A - do our own calculation and store the control in controlBuffer.
-		byte controlBuffer[2]; 
+		byte controlBuffer[2];
 		n = PCD_CalculateCRC(&backData[0], *backLen - 2, &controlBuffer[0]);
 		if (n != STATUS_OK) {
 			return n;
@@ -540,7 +540,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	bool uidComplete;
 	bool selectDone;
 	bool useCascadeTag;
-	byte cascadeLevel	= 1; 
+	byte cascadeLevel = 1;
 	byte result;
 	byte count;
 	byte index;
@@ -585,7 +585,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	
 	// Repeat Cascade Level loop until we have a complete UID.
 	uidComplete = false;
-	while ( ! uidComplete) {
+	while (!uidComplete) {
 		// Set the Cascade Level in the SEL byte, find out if we need to use the Cascade Tag in byte 2.
 		switch (cascadeLevel) {
 			case 1:
@@ -624,7 +624,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 		byte bytesToCopy = currentLevelKnownBits / 8 + (currentLevelKnownBits % 8 ? 1 : 0); // The number of bytes needed to represent the known bits for this level.
 		if (bytesToCopy) {
 			byte maxBytes = useCascadeTag ? 3 : 4; // Max 4 bytes in each Cascade Level. Only 3 left if we use the Cascade Tag
-			if (bytesToCopy > maxBytes) { 
+			if (bytesToCopy > maxBytes) {
 				bytesToCopy = maxBytes;
 			}
 			for (count = 0; count < bytesToCopy; count++) {
@@ -638,7 +638,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 		
 		// Repeat anti collision loop until we can transmit all UID bits + BCC and receive a SAK - max 32 iterations.
 		selectDone = false;
-		while ( ! selectDone) {
+		while (!selectDone) {
 			// Find out how many bits and bytes to send and receive.
 			if (currentLevelKnownBits >= 32) { // All UID bits in this Cascade Level are known. This is a SELECT.
 				//Serial.print("SELECT: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
@@ -673,7 +673,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			PCD_WriteRegister(BitFramingReg, (rxAlign << 4) + txLastBits);	// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 			
 			// Transmit the buffer and receive the response.
-			result = PCD_TransceiveData(buffer, bufferUsed, responseBuffer, &responseLength, &txLastBits, rxAlign);			
+			result = PCD_TransceiveData(buffer, bufferUsed, responseBuffer, &responseLength, &txLastBits, rxAlign);
 			if (result == STATUS_COLLISION) { // More than one PICC in the field => collision.
 				result = PCD_ReadRegister(CollReg); // CollReg[7..0] bits are: ValuesAfterColl reserved CollPosNotValid CollPos[4:0]
 				if (result & 0x20) { // CollPosNotValid
@@ -690,7 +690,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				currentLevelKnownBits = collisionPos;
 				count			= (currentLevelKnownBits - 1) % 8; // The bit to modify
 				index			= 1 + (currentLevelKnownBits / 8) + (count ? 1 : 0); // First byte is index 0.
-				buffer[index]	|= (1 << count); 
+				buffer[index]	|= (1 << count);
 			}
 			else if (result != STATUS_OK) {
 				return result;
@@ -706,7 +706,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 					// Run loop again to do the SELECT.
 				}
 			}
-		} // End of while ( ! selectDone)
+		} // End of while (!selectDone)
 		
 		// We do not check the CBB - it was constructed by us above.
 		
@@ -718,7 +718,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 		}
 		
 		// Check response SAK (Select Acknowledge)
-		if (responseLength != 3 || txLastBits != 0) {		// SAK must be exactly 24 bits (1 byte + CRC_A).
+		if (responseLength != 3 || txLastBits != 0) { // SAK must be exactly 24 bits (1 byte + CRC_A).
 			return STATUS_ERROR;
 		}
 		// Verify CRC_A - do our own calculation and store the control in buffer[2..3] - those bytes are not needed anymore.
@@ -736,7 +736,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			uidComplete = true;
 			uid->sak = responseBuffer[0];
 		}
-	} // End of while ( ! uidComplete)
+	} // End of while (!uidComplete)
 	
 	// Set correct uid->size
 	uid->size = 3 * cascadeLevel + 1;
@@ -751,7 +751,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
  */ 
 byte MFRC522::PICC_HaltA() {
 	byte result;
-	byte buffer[4]; 
+	byte buffer[4];
 	
 	// Build command buffer
 	buffer[0] = PICC_CMD_HLTA;
@@ -898,7 +898,7 @@ byte MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: The block (0-0x
 	}
 	
 	// Step 2: Transfer the data
-	result = PCD_MIFARE_Transceive(	buffer, bufferSize); // Adds CRC_A and checks that the response is MF_ACK.
+	result = PCD_MIFARE_Transceive(buffer, bufferSize); // Adds CRC_A and checks that the response is MF_ACK.
 	if (result != STATUS_OK) {
 		return result;
 	}
@@ -1250,7 +1250,7 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 			PICC_DumpMifareUltralightToSerial();
 			break;
 			
-		case PICC_TYPE_ISO_14443_4:	
+		case PICC_TYPE_ISO_14443_4:
 		case PICC_TYPE_ISO_18092:
 		case PICC_TYPE_MIFARE_PLUS:
 		case PICC_TYPE_TNP3XXX:
@@ -1293,7 +1293,7 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid str
 			break;
 			
 		default: // Should not happen. Ignore.
-			break; 
+			break;
 	}
 	
 	// Dump sectors, highest address first.
@@ -1526,16 +1526,16 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
 	byte response[32]; // Card's response is written here
 	byte received;
 	byte status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
-	if( status != STATUS_OK ) {
-		if( logErrors ) {
+	if(status != STATUS_OK) {
+		if(logErrors) {
 			Serial.println(F("Card did not respond to 0x40 after HALT command. Are you sure it is a UID changeable one?"));
 			Serial.print(F("Error name: "));
 			Serial.println(GetStatusCodeName(status));
 		}
 		return false;
 	}
-	if ( received != 1 || response[0] != 0x0A ) {
-		if ( logErrors ) {
+	if (received != 1 || response[0] != 0x0A) {
+		if (logErrors) {
 			Serial.print(F("Got bad response on backdoor 0x40 command: "));
 			Serial.print(response[0], HEX);
 			Serial.print(F(" ("));
@@ -1548,16 +1548,16 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
 	cmd = 0x43;
 	validBits = 8;
 	status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 43
-	if( status != STATUS_OK ) {
-		if( logErrors ) {
+	if(status != STATUS_OK) {
+		if(logErrors) {
 			Serial.println(F("Error in communication at command 0x43, after successfully executing 0x40"));
 			Serial.print(F("Error name: "));
 			Serial.println(GetStatusCodeName(status));
 		}
 		return false;
 	}
-	if ( received != 1 || response[0] != 0x0A ) {
-		if ( logErrors ) {
+	if (received != 1 || response[0] != 0x0A) {
+		if (logErrors) {
 			Serial.print(F("Got bad response on backdoor 0x43 command: "));
 			Serial.print(response[0], HEX);
 			Serial.print(F(" ("));
@@ -1579,11 +1579,11 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
  * It assumes a default KEY A of 0xFFFFFFFFFFFF.
  * Make sure to have selected the card before this function is called.
  */
-bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
+bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 	
 	// UID + BCC byte can not be larger than 16 together
-	if ( !newUid || !uidSize || uidSize > 15) {
-		if ( logErrors ) {
+	if (!newUid || !uidSize || uidSize > 15) {
+		if (logErrors) {
 			Serial.println(F("New UID buffer empty, size 0, or size > 15 given"));
 		}
 		return false;
@@ -1592,9 +1592,9 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 	// Authenticate for reading
 	MIFARE_Key key = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 	byte status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
-	if ( status != STATUS_OK ) {
+	if (status != STATUS_OK) {
 		
-		if ( status == STATUS_TIMEOUT ) {
+		if (status == STATUS_TIMEOUT) {
 			// We get a read timeout if no card is selected yet, so let's select one
 			
 			// Wake the card up again if sleeping
@@ -1602,15 +1602,15 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 //			  byte atqa_size = 2;
 //			  PICC_WakeupA(atqa_answer, &atqa_size);
 			
-			if ( !PICC_IsNewCardPresent() || !PICC_ReadCardSerial() ) {
+			if (!PICC_IsNewCardPresent() || !PICC_ReadCardSerial()) {
 				Serial.println(F("No card was previously selected, and none are available. Failed to set UID."));
 				return false;
 			}
 			
 			status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
-			if ( status != STATUS_OK ) {
+			if (status != STATUS_OK) {
 				// We tried, time to give up
-				if ( logErrors ) {
+				if (logErrors) {
 					Serial.println(F("Failed to authenticate to card for reading, could not set UID: "));
 					Serial.println(GetStatusCodeName(status));
 				}
@@ -1618,7 +1618,7 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 			}
 		}
 		else {
-			if ( logErrors ) {
+			if (logErrors) {
 				Serial.print(F("PCD_Authenticate() failed: "));
 				Serial.println(GetStatusCodeName(status));
 			}
@@ -1630,8 +1630,8 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 	byte block0_buffer[18];
 	byte byteCount = sizeof(block0_buffer);
 	status = MIFARE_Read((byte)0, block0_buffer, &byteCount);
-	if ( status != STATUS_OK ) {
-		if ( logErrors ) {
+	if (status != STATUS_OK) {
+		if (logErrors) {
 			Serial.print(F("MIFARE_Read() failed: "));
 			Serial.println(GetStatusCodeName(status));
 			Serial.println(F("Are you sure your KEY A for sector 0 is 0xFFFFFFFFFFFF?"));
@@ -1641,7 +1641,7 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 	
 	// Write new UID to the data we just read, and calculate BCC byte
 	byte bcc = 0;
-	for ( int i = 0; i < uidSize; i++ ) {
+	for (int i = 0; i < uidSize; i++) {
 		block0_buffer[i] = newUid[i];
 		bcc ^= newUid[i];
 	}
@@ -1653,8 +1653,8 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 	PCD_StopCrypto1();
 	
 	// Activate UID backdoor
-	if ( !MIFARE_OpenUidBackdoor(logErrors) ) {
-		if ( logErrors ) {
+	if (!MIFARE_OpenUidBackdoor(logErrors)) {
+		if (logErrors) {
 			Serial.println(F("Activating the UID backdoor failed."));
 		}
 		return false;
@@ -1663,7 +1663,7 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
 	// Write modified block 0 back to card
 	status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
 	if (status != STATUS_OK) {
-		if ( logErrors ) {
+		if (logErrors) {
 			Serial.print(F("MIFARE_Write() failed: "));
 			Serial.println(GetStatusCodeName(status));
 		}
@@ -1682,14 +1682,14 @@ bool MFRC522::MIFARE_SetUid(byte* newUid, byte uidSize, bool logErrors) {
  * Resets entire sector 0 to zeroes, so the card can be read again by readers.
  */
 bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
-	MIFARE_OpenUidBackdoor( logErrors );
+	MIFARE_OpenUidBackdoor(logErrors);
 	
 	byte block0_buffer[] = {0x01, 0x02, 0x03, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	
 	// Write modified block 0 back to card
 	byte status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
 	if (status != STATUS_OK) {
-		if ( logErrors ) {
+		if (logErrors) {
 			Serial.print(F("MIFARE_Write() failed: "));
 			Serial.println(GetStatusCodeName(status));
 		}
