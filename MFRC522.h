@@ -40,7 +40,7 @@
  * 				Bytes 6-8:   Access Bits
  * 				Bytes 9:     User data
  * 				Bytes 10-15: Key B (or user data)
- * 		Block 0 is read only manufacturer data.
+ * 		Block 0 is read-only manufacturer data.
  * 		To access a block, an authentication using a key from the block's sector must be performed first.
  * 		Example: To read from block 10, first authenticate using a key from sector 3 (blocks 8-11).
  * 		All keys are set to FFFFFFFFFFFFh at chip delivery.
