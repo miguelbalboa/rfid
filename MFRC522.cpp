@@ -100,7 +100,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	if (count == 0) {
 		return;
 	}
-	//Serial.print("Reading "); 	Serial.print(count); Serial.println(" bytes from register.");
+	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
 	byte address = 0x80 | (reg & 0x7E);		// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
@@ -641,7 +641,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 		while (!selectDone) {
 			// Find out how many bits and bytes to send and receive.
 			if (currentLevelKnownBits >= 32) { // All UID bits in this Cascade Level are known. This is a SELECT.
-				//Serial.print("SELECT: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
+				//Serial.print(F("SELECT: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 				buffer[1] = 0x70; // NVB - Number of Valid Bits: Seven whole bytes
 				// Calculate BCC - Block Check Character
 				buffer[6] = buffer[2] ^ buffer[3] ^ buffer[4] ^ buffer[5];
@@ -657,7 +657,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				responseLength	= 3;
 			}
 			else { // This is an ANTICOLLISION.
-				//Serial.print("ANTICOLLISION: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
+				//Serial.print(F("ANTICOLLISION: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 				txLastBits		= currentLevelKnownBits % 8;
 				count			= currentLevelKnownBits / 8;	// Number of whole bytes in the UID part.
 				index			= 2 + count;					// Number of whole bytes: SEL + NVB + UIDs
@@ -1224,7 +1224,10 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 	// UID
 	Serial.print(F("Card UID:"));
 	for (byte i = 0; i < uid->size; i++) {
-		Serial.print(uid->uidByte[i] < 0x10 ? " 0" : " ");
+		if(uid->uidByte[i] < 0x10)
+			Serial.print(F(" 0"));
+		else
+			Serial.print(F(" "));
 		Serial.print(uid->uidByte[i], HEX);
 	} 
 	Serial.println();
@@ -1358,7 +1361,10 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		blockAddr = firstBlock + blockOffset;
 		// Sector number - only on first line
 		if (isSectorTrailer) {
-			Serial.print(sector < 10 ? "   " : "  "); // Pad with spaces
+			if(sector < 10)
+				Serial.print(F("   ")); // Pad with spaces
+			else
+				Serial.print(F("  ")); // Pad with spaces
 			Serial.print(sector);
 			Serial.print(F("   "));
 		}
@@ -1366,7 +1372,14 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 			Serial.print(F("       "));
 		}
 		// Block number
-		Serial.print(blockAddr < 10 ? "   " : (blockAddr < 100 ? "  "	 : " ")); // Pad with spaces
+		if(blockAddr < 10)
+			Serial.print(F("   ")); // Pad with spaces
+		else {
+			if(blockAddr < 100)
+				Serial.print(F("  ")); // Pad with spaces
+			else
+				Serial.print(F(" ")); // Pad with spaces
+		}
 		Serial.print(blockAddr);
 		Serial.print(F("  "));
 		// Establish encrypted communications before reading the first block
@@ -1388,7 +1401,10 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		}
 		// Dump data
 		for (byte index = 0; index < 16; index++) {
-			Serial.print(buffer[index] < 0x10 ? " 0" : " ");
+			if(buffer[index] < 0x10)
+				Serial.print(F(" 0"));
+			else
+				Serial.print(F(" "));
 			Serial.print(buffer[index], HEX);
 			if ((index % 4) == 3) {
 				Serial.print(F(" "));
@@ -1423,8 +1439,8 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		if (firstInGroup) {
 			// Print access bits
 			Serial.print(F(" [ "));
-			Serial.print((g[group] >> 2) & 1, DEC); Serial.print(" ");
-			Serial.print((g[group] >> 1) & 1, DEC); Serial.print(" ");
+			Serial.print((g[group] >> 2) & 1, DEC); Serial.print(F(" "));
+			Serial.print((g[group] >> 1) & 1, DEC); Serial.print(F(" "));
 			Serial.print((g[group] >> 0) & 1, DEC);
 			Serial.print(F(" ] "));
 			if (invertedError) {
@@ -1466,12 +1482,18 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 		// Dump data
 		for (byte offset = 0; offset < 4; offset++) {
 			i = page + offset;
-			Serial.print(i < 10 ? "  " : " "); // Pad with spaces
+			if(i < 10)
+				Serial.print(F("  ")); // Pad with spaces
+			else
+				Serial.print(F(" ")); // Pad with spaces
 			Serial.print(i);
 			Serial.print(F("  "));
 			for (byte index = 0; index < 4; index++) {
 				i = 4 * offset + index;
-				Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+				if(buffer[i] < 0x10)
+					Serial.print(F(" 0"));
+				else
+					Serial.print(F(" "));
 				Serial.print(buffer[i], HEX);
 			}
 			Serial.println();
