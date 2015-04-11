@@ -54,6 +54,9 @@ void setup() {
 
 void loop() {} // nothing to do
 
+/**
+* Helper to print MFRC522 module info
+*/
 void ShowReaderDetails() {
   // Get the MFRC522 firmware version
   byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
