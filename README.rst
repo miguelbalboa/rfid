@@ -82,13 +82,14 @@ Protocols
 
 2. The reader and the tags communicate using a 13.56 MHz electromagnetic field.
 
-* The protocol is defined in ISO/IEC 14443-3:2011 Part 3.
+* The protocol is defined in ISO/IEC 14443-3:2011 Part 3 Type A.
 
   * Details are found in chapter 6 *"Type A – Initialization and anticollision"*.
 
   * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
     of the final draft (which might be outdated in some areas).
 
+  * The reader do not support ISO/IEC 14443-3 Type B.
 
 License
 -------
