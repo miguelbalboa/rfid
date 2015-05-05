@@ -58,13 +58,13 @@
  * MIFARE Ultralight (MF0ICU1):
  * 		Has 16 pages of 4 bytes = 64 bytes.
  * 		Pages 0 + 1 is used for the 7-byte UID.
- * 		Page 2 contains the last chech digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
+ * 		Page 2 contains the last check digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
  * 		Page 3 is OTP, One Time Programmable bits. Once set to 1 they cannot revert to 0.
  * 		Pages 4-15 are read/write unless blocked by the lock bytes in page 2. 
  * MIFARE Ultralight C (MF0ICU2):
  * 		Has 48 pages of 4 bytes = 64 bytes.
  * 		Pages 0 + 1 is used for the 7-byte UID.
- * 		Page 2 contains the last chech digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
+ * 		Page 2 contains the last check digit for the UID, one byte manufacturer internal data, and the lock bytes (see http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf section 8.5.2)
  * 		Page 3 is OTP, One Time Programmable bits. Once set to 1 they cannot revert to 0.
  * 		Pages 4-39 are read/write unless blocked by the lock bytes in page 2. 
  * 		Page 40 Lock bytes
@@ -218,8 +218,8 @@ public:
 		PICC_CMD_WUPA			= 0x52,		// Wake-UP command, Type A. Invites PICCs in state IDLE and HALT to go to READY(*) and prepare for anticollision or selection. 7 bit frame.
 		PICC_CMD_CT				= 0x88,		// Cascade Tag. Not really a command, but used during anti collision.
 		PICC_CMD_SEL_CL1		= 0x93,		// Anti collision/Select, Cascade Level 1
-		PICC_CMD_SEL_CL2		= 0x95,		// Anti collision/Select, Cascade Level 1
-		PICC_CMD_SEL_CL3		= 0x97,		// Anti collision/Select, Cascade Level 1
+		PICC_CMD_SEL_CL2		= 0x95,		// Anti collision/Select, Cascade Level 2
+		PICC_CMD_SEL_CL3		= 0x97,		// Anti collision/Select, Cascade Level 3
 		PICC_CMD_HLTA			= 0x50,		// HaLT command, Type A. Instructs an ACTIVE PICC to go to state HALT.
 		// The commands used for MIFARE Classic (from http://www.nxp.com/documents/data_sheet/MF1S503x.pdf, Section 9)
 		// Use PCD_MFAuthent to authenticate access to a sector, then use these commands to read/write/modify the blocks on the sector.
