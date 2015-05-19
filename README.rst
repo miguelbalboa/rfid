@@ -47,28 +47,28 @@ There are three hardware components involved:
 
 1. **Micro Controller**:
 
-* An `Arduino`_ or compatible executing the Sketch using this library.
+  * An `Arduino`_ or compatible executing the Sketch using this library.
 
-* Prices vary from USD 7 for clones, to USD 75 for "starter kits" (which
-  might be a good choice if this is your first exposure to Arduino;
-  check if such kit already includes the Arduino, Reader, and some Tags).
+  * Prices vary from USD 7 for clones, to USD 75 for "starter kits" (which
+    might be a good choice if this is your first exposure to Arduino;
+    check if such kit already includes the Arduino, Reader, and some Tags).
 
 2. **Proximity Coupling Device (PCD)**:
 
-* The PCD is the actual RFID **Reader** based on `NXP MFRC522`_ Contactless
-  Reader Integrated Circuit).
+  * The PCD is the actual RFID **Reader** based on `NXP MFRC522`_ Contactless
+    Reader Integrated Circuit).
 
-* Readers can be found on `eBay`_ for around USD 5: search for *"rc522"*.
+  * Readers can be found on `eBay`_ for around USD 5: search for *"rc522"*.
 
-* You can also find them at several web stores, they are often included in
-  *"starter kits"*; so check your favourite electronics provider as well.
+  * You can also find them at several web stores, they are often included in
+    *"starter kits"*; so check your favourite electronics provider as well.
 
 3. **Proximity Integrated Circuit Card (PICC)**:
 
-* The PICC is the RFID **Card** or **Tag** using the `ISO/IEC 14443A`_
-  interface, for example Mifare or NTAG203.
+  * The PICC is the RFID **Card** or **Tag** using the `ISO/IEC 14443A`_
+    interface, for example Mifare or NTAG203.
 
-* One or two might be included with the Reader or *"starter kit"* already.
+  * One or two might be included with the Reader or *"starter kit"* already.
 
 
 Protocols
@@ -76,21 +76,61 @@ Protocols
 
 1. The micro controller and the reader use SPI for communication.
 
-* The protocol is described in the `NXP MFRC522`_ datasheet.
+  * The protocol is described in the `NXP MFRC522`_ datasheet.
 
-* See the `Pin Layout`_ section for details on connecting the pins.
+  * See the `Pin Layout`_ section for details on connecting the pins.
 
 2. The reader and the tags communicate using a 13.56 MHz electromagnetic field.
 
-* The protocol is defined in ISO/IEC 14443-3:2011 Part 3 Type A.
+  * The protocol is defined in ISO/IEC 14443-3:2011 Part 3 Type A.
 
-  * Details are found in chapter 6 *"Type A – Initialization and anticollision"*.
+    * Details are found in chapter 6 *"Type A – Initialization and anticollision"*.
 
-  * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
-    of the final draft (which might be outdated in some areas).
+    * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
+      of the final draft (which might be outdated in some areas).
 
-  * The reader do not support ISO/IEC 14443-3 Type B.
+    * The reader do not support ISO/IEC 14443-3 Type B.
 
+
+Troubleshooting
+-------
+
+* **I don't get input from reader** or **WARNING: Communication failure, is the MFRC522 properly connected?**
+
+  1. Check your connection, see `Pin Layout`_ .
+  2. Check voltage. Most breakouts work with 3.3V.
+  3. The SPI only works with 3.3V, most breakouts seems 5V tollerant, but try a level shifter.
+
+
+* **Sometimes I get timeouts** or **tag/card sometimes not work.**
+
+  1. Try other site of the antenna.
+  2. Try to decrease distance between MFRC522.
+  3. Increase antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
+  4. Use better power supply.
+  5. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+  
+  
+* **My tag/card doesn't work.**
+  
+  1. Distance between antenna and token too huge (>1cm).
+  2. You got wrong PICC. Is it really 13.56MGhz? Is it really a Mifare Type A?
+  3. NFC tokens are not supported. Some may work.
+  4. Animal marker are not supported. They use other frequency.
+  5. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+
+* **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
+
+  1. Card simmulation is not supported.
+  2. Communication with mobile phones is not supported.
+  3. Peer to peer communication is not supported.
+  
+* **I need more features.**
+
+  1. If software: code it and make a pull request.
+  2. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
+  
+  
 License
 -------
 This is free and unencumbered software released into the public domain.
