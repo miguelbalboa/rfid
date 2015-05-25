@@ -1141,6 +1141,7 @@ byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data t
 /**
  * Returns a __FlashStringHelper pointer to a status code name.
  * 
+ * @return const __FlashStringHelper *
  */
 const __FlashStringHelper *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
 										) {
@@ -1194,6 +1195,7 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 /**
  * Returns a __FlashStringHelper pointer to the PICC type name.
  * 
+ * @return const __FlashStringHelper *
  */
 const __FlashStringHelper *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
