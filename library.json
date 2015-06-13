@@ -9,5 +9,5 @@
   },
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": "atmelavr"
+  "platforms": ["atmelavr", "ststm32"]
 }
