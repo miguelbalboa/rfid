@@ -18,18 +18,8 @@
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 				) {
-	// Set the chipSelectPin as digital output, do not select the slave yet
 	_chipSelectPin = chipSelectPin;
-	pinMode(_chipSelectPin, OUTPUT);
-	digitalWrite(_chipSelectPin, HIGH);
-	
-	// Set the resetPowerDownPin as digital output, do not reset or power down.
 	_resetPowerDownPin = resetPowerDownPin;
-	pinMode(_resetPowerDownPin, OUTPUT);
-	digitalWrite(_resetPowerDownPin, LOW);
-	
-	// Set SPI bus to work with MFRC522 chip.
-	setSPIConfig();
 } // End constructor
 
 /**
@@ -194,6 +184,16 @@ byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to tra
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
+	// Set the chipSelectPin as digital output, do not select the slave yet
+	pinMode(_chipSelectPin, OUTPUT);
+	digitalWrite(_chipSelectPin, HIGH);
+
+	// Set the resetPowerDownPin as digital output, do not reset or power down.
+	pinMode(_resetPowerDownPin, OUTPUT);
+
+	// Set SPI bus to work with MFRC522 chip.
+	setSPIConfig();
+
 	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
 		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
 		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
@@ -545,7 +545,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	byte count;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
-	char currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
+	int8_t currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
 	byte buffer[9];					// The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
 	byte bufferUsed;				// The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
 	byte rxAlign;					// Used in BitFramingReg. Defines the bit position for the first bit received.
@@ -1304,7 +1304,7 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid str
 	// Dump sectors, highest address first.
 	if (no_of_sectors) {
 		Serial.println(F("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15  AccessBits"));
-		for (char i = no_of_sectors - 1; i >= 0; i--) {
+		for (int8_t i = no_of_sectors - 1; i >= 0; i--) {
 			PICC_DumpMifareClassicSectorToSerial(uid, key, i);
 		}
 	}
@@ -1359,7 +1359,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 	byte buffer[18];
 	byte blockAddr;
 	isSectorTrailer = true;
-	for (char blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
+	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
 		// Sector number - only on first line
 		if (isSectorTrailer) {
