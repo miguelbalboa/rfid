@@ -64,7 +64,7 @@ void loop() {
         // Ask personal data: Family name
         Serial.println(F("Type Family name, ending with #"));
         len=Serial.readBytesUntil('#', (char *) buffer, 30) ; // read family name from serial
-        for (byte i = len; i < 30; i++) buffer[i] = '\s';     // pad with spaces
+        for (byte i = len; i < 30; i++) buffer[i] = ' ';     // pad with spaces
         
         block = 1;
         //Serial.println(F("Authenticating using key A..."));
@@ -106,7 +106,7 @@ void loop() {
         // Ask personal data: First name
         Serial.println(F("Type First name, ending with #"));
         len=Serial.readBytesUntil('#', (char *) buffer, 20) ; // read first name from serial
-        for (byte i = len; i < 20; i++) buffer[i] = '\s';     // pad with spaces
+        for (byte i = len; i < 20; i++) buffer[i] = ' ';     // pad with spaces
         
         block = 4;
         //Serial.println(F("Authenticating using key A..."));
