@@ -548,7 +548,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	byte count;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
-	int8_t currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
+	signed char currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
 	byte buffer[9];					// The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
 	byte bufferUsed;				// The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
 	byte rxAlign;					// Used in BitFramingReg. Defines the bit position for the first bit received.
@@ -1307,7 +1307,7 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid str
 	// Dump sectors, highest address first.
 	if (no_of_sectors) {
 		Serial.println(F("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15  AccessBits"));
-		for (int8_t i = no_of_sectors - 1; i >= 0; i--) {
+		for (signed char i = no_of_sectors - 1; i >= 0; i--) {
 			PICC_DumpMifareClassicSectorToSerial(uid, key, i);
 		}
 	}
@@ -1362,7 +1362,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 	byte buffer[18];
 	byte blockAddr;
 	isSectorTrailer = true;
-	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
+	for (signed char blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
 		// Sector number - only on first line
 		if (isSectorTrailer) {
