@@ -28,11 +28,11 @@ The following table shows the typical pin layout used:
 +-----------+----------+-------------+---------+---------+---------------+-----------+--------+
 | SPI SS    | SDA [3]_ | 10 [2]_     | 53 [2]_ | D10     | 10            | 10        | 10     |
 +-----------+----------+-------------+---------+---------+---------------+-----------+--------+
-| SPI MOSI  | MOSI     | 11 / ICSP-4 | 52      | D11     | ICSP-4        | 16        | 11     |
+| SPI MOSI  | MOSI     | 11 / ICSP-4 | 51      | D11     | ICSP-4        | 16        | 11     |
 +-----------+----------+-------------+---------+---------+---------------+-----------+--------+
-| SPI MISO  | MISO     | 12 / ICSP-1 | 51      | D12     | ICSP-1        | 14        | 12     |
+| SPI MISO  | MISO     | 12 / ICSP-1 | 50      | D12     | ICSP-1        | 14        | 12     |
 +-----------+----------+-------------+---------+---------+---------------+-----------+--------+
-| SPI SCK   | SCK      | 13 / ICSP-3 | 50      | D13     | ICSP-3        | 15        | 13     |
+| SPI SCK   | SCK      | 13 / ICSP-3 | 52      | D13     | ICSP-3        | 15        | 13     |
 +-----------+----------+-------------+---------+---------+---------------+-----------+--------+
 
 .. [1] Configurable, typically defined as RST_PIN in sketch/program.
@@ -82,14 +82,55 @@ Protocols
 
 2. The reader and the tags communicate using a 13.56 MHz electromagnetic field.
 
-* The protocol is defined in ISO/IEC 14443-3:2011 Part 3.
+* The protocol is defined in ISO/IEC 14443-3:2011 Part 3 Type A.
 
   * Details are found in chapter 6 *"Type A – Initialization and anticollision"*.
-
+  
   * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
     of the final draft (which might be outdated in some areas).
+    
+  * The reader do not support ISO/IEC 14443-3 Type B.
 
 
+Troubleshooting
+-------
+
+* **I don't get input from reader** or **WARNING: Communication failure, is the MFRC522 properly connected?**
+
+  #. Check your connection, see `Pin Layout`_ .
+  #. Check voltage. Most breakouts work with 3.3V.
+  #. The SPI only works with 3.3V, most breakouts seems 5V tollerant, but try a level shifter.
+
+
+* **Sometimes I get timeouts** or **tag/card sometimes not work.**
+
+  #. Try other site of the antenna.
+  #. Try to decrease distance between MFRC522.
+  #. Increase antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
+  #. Use better power supply.
+  #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+  
+  
+* **My tag/card doesn't work.**
+  
+  #. Distance between antenna and token too huge (>1cm).
+  #. You got wrong PICC. Is it really 13.56MGhz? Is it really a Mifare Type A?
+  #. NFC tokens are not supported. Some may work.
+  #. Animal marker are not supported. They use other frequency.
+  #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+
+* **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
+
+  #. Card simmulation is not supported.
+  #. Communication with mobile phones is not supported.
+  #. Peer to peer communication is not supported.
+  
+* **I need more features.**
+
+  #. If software: code it and make a pull request.
+  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
+  
+  
 License
 -------
 This is free and unencumbered software released into the public domain.

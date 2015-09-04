@@ -18,18 +18,8 @@
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 				) {
-	// Set the chipSelectPin as digital output, do not select the slave yet
 	_chipSelectPin = chipSelectPin;
-	pinMode(_chipSelectPin, OUTPUT);
-	digitalWrite(_chipSelectPin, HIGH);
-	
-	// Set the resetPowerDownPin as digital output, do not reset or power down.
 	_resetPowerDownPin = resetPowerDownPin;
-	pinMode(_resetPowerDownPin, OUTPUT);
-	digitalWrite(_resetPowerDownPin, LOW);
-	
-	// Set SPI bus to work with MFRC522 chip.
-	setSPIConfig();
 } // End constructor
 
 /**
@@ -100,7 +90,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	if (count == 0) {
 		return;
 	}
-	//Serial.print("Reading "); 	Serial.print(count); Serial.println(" bytes from register.");
+	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
 	byte address = 0x80 | (reg & 0x7E);		// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
@@ -194,6 +184,16 @@ byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to tra
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
+	// Set the chipSelectPin as digital output, do not select the slave yet
+	pinMode(_chipSelectPin, OUTPUT);
+	digitalWrite(_chipSelectPin, HIGH);
+
+	// Set the resetPowerDownPin as digital output, do not reset or power down.
+	pinMode(_resetPowerDownPin, OUTPUT);
+
+	// Set SPI bus to work with MFRC522 chip.
+	setSPIConfig();
+
 	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
 		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
 		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
@@ -285,9 +285,9 @@ bool MFRC522::PCD_PerformSelfTest() {
 	
 	// 2. Clear the internal buffer by writing 25 bytes of 00h
 	byte ZEROES[25] = {0x00};
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80); // flush the FIFO buffer
-	PCD_WriteRegister(FIFODataReg, 25, ZEROES); // write 25 bytes of 00h to FIFO
-	PCD_WriteRegister(CommandReg, PCD_Mem); // transfer to internal buffer
+	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);	// flush the FIFO buffer
+	PCD_WriteRegister(FIFODataReg, 25, ZEROES);	// write 25 bytes of 00h to FIFO
+	PCD_WriteRegister(CommandReg, PCD_Mem);		// transfer to internal buffer
 	
 	// 3. Enable self-test
 	PCD_WriteRegister(AutoTestReg, 0x09);
@@ -323,6 +323,12 @@ bool MFRC522::PCD_PerformSelfTest() {
 	// Pick the appropriate reference values
 	const byte *reference;
 	switch (version) {
+		case 0x88:	// Fudan Semiconductor FM17522 clone
+			reference = FM17522_firmware_reference;
+			break;
+		case 0x90:	// Version 0.0
+			reference = MFRC522_firmware_referenceV0_0;
+			break;
 		case 0x91:	// Version 1.0
 			reference = MFRC522_firmware_referenceV1_0;
 			break;
@@ -545,7 +551,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 	byte count;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
-	char currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
+	int8_t currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
 	byte buffer[9];					// The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
 	byte bufferUsed;				// The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
 	byte rxAlign;					// Used in BitFramingReg. Defines the bit position for the first bit received.
@@ -641,7 +647,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 		while (!selectDone) {
 			// Find out how many bits and bytes to send and receive.
 			if (currentLevelKnownBits >= 32) { // All UID bits in this Cascade Level are known. This is a SELECT.
-				//Serial.print("SELECT: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
+				//Serial.print(F("SELECT: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 				buffer[1] = 0x70; // NVB - Number of Valid Bits: Seven whole bytes
 				// Calculate BCC - Block Check Character
 				buffer[6] = buffer[2] ^ buffer[3] ^ buffer[4] ^ buffer[5];
@@ -657,7 +663,7 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 				responseLength	= 3;
 			}
 			else { // This is an ANTICOLLISION.
-				//Serial.print("ANTICOLLISION: currentLevelKnownBits="); Serial.println(currentLevelKnownBits, DEC);
+				//Serial.print(F("ANTICOLLISION: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 				txLastBits		= currentLevelKnownBits % 8;
 				count			= currentLevelKnownBits / 8;	// Number of whole bytes in the UID part.
 				index			= 2 + count;					// Number of whole bytes: SEL + NVB + UIDs
@@ -1141,6 +1147,7 @@ byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data t
 /**
  * Returns a __FlashStringHelper pointer to a status code name.
  * 
+ * @return const __FlashStringHelper *
  */
 const __FlashStringHelper *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
 										) {
@@ -1194,6 +1201,7 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 /**
  * Returns a __FlashStringHelper pointer to the PICC type name.
  * 
+ * @return const __FlashStringHelper *
  */
 const __FlashStringHelper *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
@@ -1224,7 +1232,10 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 	// UID
 	Serial.print(F("Card UID:"));
 	for (byte i = 0; i < uid->size; i++) {
-		Serial.print(uid->uidByte[i] < 0x10 ? " 0" : " ");
+		if(uid->uidByte[i] < 0x10)
+			Serial.print(F(" 0"));
+		else
+			Serial.print(F(" "));
 		Serial.print(uid->uidByte[i], HEX);
 	} 
 	Serial.println();
@@ -1299,7 +1310,7 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid str
 	// Dump sectors, highest address first.
 	if (no_of_sectors) {
 		Serial.println(F("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15  AccessBits"));
-		for (char i = no_of_sectors - 1; i >= 0; i--) {
+		for (int8_t i = no_of_sectors - 1; i >= 0; i--) {
 			PICC_DumpMifareClassicSectorToSerial(uid, key, i);
 		}
 	}
@@ -1354,11 +1365,14 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 	byte buffer[18];
 	byte blockAddr;
 	isSectorTrailer = true;
-	for (char blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
+	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
 		// Sector number - only on first line
 		if (isSectorTrailer) {
-			Serial.print(sector < 10 ? "   " : "  "); // Pad with spaces
+			if(sector < 10)
+				Serial.print(F("   ")); // Pad with spaces
+			else
+				Serial.print(F("  ")); // Pad with spaces
 			Serial.print(sector);
 			Serial.print(F("   "));
 		}
@@ -1366,7 +1380,14 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 			Serial.print(F("       "));
 		}
 		// Block number
-		Serial.print(blockAddr < 10 ? "   " : (blockAddr < 100 ? "  "	 : " ")); // Pad with spaces
+		if(blockAddr < 10)
+			Serial.print(F("   ")); // Pad with spaces
+		else {
+			if(blockAddr < 100)
+				Serial.print(F("  ")); // Pad with spaces
+			else
+				Serial.print(F(" ")); // Pad with spaces
+		}
 		Serial.print(blockAddr);
 		Serial.print(F("  "));
 		// Establish encrypted communications before reading the first block
@@ -1388,7 +1409,10 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		}
 		// Dump data
 		for (byte index = 0; index < 16; index++) {
-			Serial.print(buffer[index] < 0x10 ? " 0" : " ");
+			if(buffer[index] < 0x10)
+				Serial.print(F(" 0"));
+			else
+				Serial.print(F(" "));
 			Serial.print(buffer[index], HEX);
 			if ((index % 4) == 3) {
 				Serial.print(F(" "));
@@ -1423,8 +1447,8 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		if (firstInGroup) {
 			// Print access bits
 			Serial.print(F(" [ "));
-			Serial.print((g[group] >> 2) & 1, DEC); Serial.print(" ");
-			Serial.print((g[group] >> 1) & 1, DEC); Serial.print(" ");
+			Serial.print((g[group] >> 2) & 1, DEC); Serial.print(F(" "));
+			Serial.print((g[group] >> 1) & 1, DEC); Serial.print(F(" "));
 			Serial.print((g[group] >> 0) & 1, DEC);
 			Serial.print(F(" ] "));
 			if (invertedError) {
@@ -1466,12 +1490,18 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 		// Dump data
 		for (byte offset = 0; offset < 4; offset++) {
 			i = page + offset;
-			Serial.print(i < 10 ? "  " : " "); // Pad with spaces
+			if(i < 10)
+				Serial.print(F("  ")); // Pad with spaces
+			else
+				Serial.print(F(" ")); // Pad with spaces
 			Serial.print(i);
 			Serial.print(F("  "));
 			for (byte index = 0; index < 4; index++) {
 				i = 4 * offset + index;
-				Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+				if(buffer[i] < 0x10)
+					Serial.print(F(" 0"));
+				else
+					Serial.print(F(" "));
 				Serial.print(buffer[i], HEX);
 			}
 			Serial.println();
@@ -1695,6 +1725,7 @@ bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
 		}
 		return false;
 	}
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
