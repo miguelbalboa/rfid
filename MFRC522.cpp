@@ -285,9 +285,9 @@ bool MFRC522::PCD_PerformSelfTest() {
 	
 	// 2. Clear the internal buffer by writing 25 bytes of 00h
 	byte ZEROES[25] = {0x00};
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80); // flush the FIFO buffer
-	PCD_WriteRegister(FIFODataReg, 25, ZEROES); // write 25 bytes of 00h to FIFO
-	PCD_WriteRegister(CommandReg, PCD_Mem); // transfer to internal buffer
+	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);	// flush the FIFO buffer
+	PCD_WriteRegister(FIFODataReg, 25, ZEROES);	// write 25 bytes of 00h to FIFO
+	PCD_WriteRegister(CommandReg, PCD_Mem);		// transfer to internal buffer
 	
 	// 3. Enable self-test
 	PCD_WriteRegister(AutoTestReg, 0x09);
@@ -323,8 +323,11 @@ bool MFRC522::PCD_PerformSelfTest() {
 	// Pick the appropriate reference values
 	const byte *reference;
 	switch (version) {
-		case 0x88:  // Fudan Semiconductor FM17522 clone
+		case 0x88:	// Fudan Semiconductor FM17522 clone
 			reference = FM17522_firmware_reference;
+			break;
+		case 0x90:	// Version 0.0
+			reference = MFRC522_firmware_referenceV0_0;
 			break;
 		case 0x91:	// Version 1.0
 			reference = MFRC522_firmware_referenceV1_0;
