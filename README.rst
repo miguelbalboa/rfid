@@ -114,7 +114,7 @@ Troubleshooting
 * **My tag/card doesn't work.**
   
   #. Distance between antenna and token too huge (>1cm).
-  #. You got wrong PICC. Is it really 13.56MGhz? Is it really a Mifare Type A?
+  #. You got wrong PICC. Is it really 13.56 MHz? Is it really a Mifare Type A?
   #. NFC tokens are not supported. Some may work.
   #. Animal marker are not supported. They use other frequency.
   #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
