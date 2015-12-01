@@ -1177,7 +1177,7 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 	}
 	//http://www.nxp.com/documents/application_note/AN10833.pdf 
 	//3.2 Coding of Select Acknowledge (SAK)
-	//ignore 7-bit
+	//ignore 8-bit
 	sak&=0x7F;
 	switch (sak) {
 		case 0x09:	return PICC_TYPE_MIFARE_MINI;	break;
