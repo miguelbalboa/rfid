@@ -1175,7 +1175,10 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 	if (sak & 0x04) { // UID not complete
 		return PICC_TYPE_NOT_COMPLETE;
 	}
-	
+	//http://www.nxp.com/documents/application_note/AN10833.pdf 
+	//3.2 Coding of Select Acknowledge (SAK)
+	//ignore 8-bit
+	sak&=0x7F;
 	switch (sak) {
 		case 0x09:	return PICC_TYPE_MIFARE_MINI;	break;
 		case 0x08:	return PICC_TYPE_MIFARE_1K;		break;
