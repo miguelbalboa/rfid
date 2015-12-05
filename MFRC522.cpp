@@ -14,7 +14,6 @@
  * Constructor.
  */
 MFRC522::MFRC522() {
-  
 } // End constructor
 
 /**
@@ -45,11 +44,11 @@ void MFRC522::setSPIConfig() {
  * Writes a byte to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-void MFRC522::PCD_WriteRegister(byte reg,		///< The register to write to. One of the PCD_Register enums.
-				byte value		///< The value to write.
-				) {
+void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One of the PCD_Register enums.
+									byte value		///< The value to write.
+								) {
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
-	SPI.transfer(reg & 0x7E);			// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
+	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	SPI.transfer(value);
 	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
 } // End PCD_WriteRegister()
@@ -58,10 +57,10 @@ void MFRC522::PCD_WriteRegister(byte reg,		///< The register to write to. One of
  * Writes a number of bytes to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-void MFRC522::PCD_WriteRegister(byte reg,		///< The register to write to. One of the PCD_Register enums.
-				byte count,		///< The number of bytes to write to the register
-				byte *values	///< The values to write. Byte array.
-				) {
+void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One of the PCD_Register enums.
+									byte count,		///< The number of bytes to write to the register
+									byte *values	///< The values to write. Byte array.
+								) {
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	for (byte index = 0; index < count; index++) {
@@ -225,42 +224,14 @@ void MFRC522::PCD_Init() {
 /**
  * Initializes the MFRC522 chip.
  */
-void MFRC522::PCD_Init(byte chipSelectPin, byte resetPowerDownPin) {
+void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
+		        byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+		      ) {
 	_chipSelectPin = chipSelectPin;
-	_resetPowerDownPin = resetPowerDownPin;
-	
+	_resetPowerDownPin = resetPowerDownPin; 
 	// Set the chipSelectPin as digital output, do not select the slave yet
-	pinMode(_chipSelectPin, OUTPUT);
-	digitalWrite(_chipSelectPin, HIGH);
-
-	// Set the resetPowerDownPin as digital output, do not reset or power down.
-	pinMode(_resetPowerDownPin, OUTPUT);
-
-	// Set SPI bus to work with MFRC522 chip.
-	setSPIConfig();
-
-	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
-		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
-		delay(50);
-	}
-	else { // Perform a soft reset
-		PCD_Reset();
-	}
-	
-	// When communicating with a PICC we need a timeout if something goes wrong.
-	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
-	// TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg.
-	PCD_WriteRegister(TModeReg, 0x80);			// TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds
-	PCD_WriteRegister(TPrescalerReg, 0xA9);		// TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25�s.
-	PCD_WriteRegister(TReloadRegH, 0x03);		// Reload timer with 0x3E8 = 1000, ie 25ms before timeout.
-	PCD_WriteRegister(TReloadRegL, 0xE8);
-	
-	PCD_WriteRegister(TxASKReg, 0x40);		// Default 0x00. Force a 100 % ASK modulation independent of the ModGsPReg register setting
-	PCD_WriteRegister(ModeReg, 0x3D);		// Default 0x3F. Set the preset value for the CRC coprocessor for the CalcCRC command to 0x6363 (ISO 14443-3 part 6.2.4)
-	PCD_AntennaOn();						// Enable the antenna driver pins TX1 and TX2 (they were disabled by the reset)
+	PCD_Init();
 } // End PCD_Init()
-
 
 /**
  * Performs a soft reset on the MFRC522 chip and waits for it to be ready again.
@@ -406,14 +377,14 @@ bool MFRC522::PCD_PerformSelfTest() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PCD_TransceiveData(byte *sendData,		///< Pointer to the data to transfer to the FIFO.
-					byte sendLen,		///< Number of bytes to transfer to the FIFO.
-					byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
-					byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
-					byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default NULL.
-					byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
-					bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
-					) {
+byte MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to transfer to the FIFO.
+									byte sendLen,		///< Number of bytes to transfer to the FIFO.
+									byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
+									byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
+									byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default NULL.
+									byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
+									bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
+								 ) {
 	byte waitIRq = 0x30;		// RxIRq and IdleIRq
 	return PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, sendData, sendLen, backData, backLen, validBits, rxAlign, checkCRC);
 } // End PCD_TransceiveData()
@@ -425,15 +396,15 @@ byte MFRC522::PCD_TransceiveData(byte *sendData,		///< Pointer to the data to tr
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
 byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execute. One of the PCD_Command enums.
-					byte waitIRq,		///< The bits in the ComIrqReg register that signals successful completion of the command.
-					byte *sendData,		///< Pointer to the data to transfer to the FIFO.
-					byte sendLen,		///< Number of bytes to transfer to the FIFO.
-					byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
-					byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
-					byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits.
-					byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
-					bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
-					 ) {
+										byte waitIRq,		///< The bits in the ComIrqReg register that signals successful completion of the command.
+										byte *sendData,		///< Pointer to the data to transfer to the FIFO.
+										byte sendLen,		///< Number of bytes to transfer to the FIFO.
+										byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
+										byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
+										byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits.
+										byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
+										bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
+									 ) {
 	byte n, _validBits;
 	unsigned int i;
 	
@@ -524,8 +495,8 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
 byte MFRC522::PICC_RequestA(byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
-			byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
-			) {
+							byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
+							) {
 	return PICC_REQA_or_WUPA(PICC_CMD_REQA, bufferATQA, bufferSize);
 } // End PICC_RequestA()
 
@@ -1221,7 +1192,10 @@ byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select
 	if (sak & 0x04) { // UID not complete
 		return PICC_TYPE_NOT_COMPLETE;
 	}
-	
+	//http://www.nxp.com/documents/application_note/AN10833.pdf 
+	//3.2 Coding of Select Acknowledge (SAK)
+	//ignore 8-bit
+	sak&=0x7F;
 	switch (sak) {
 		case 0x09:	return PICC_TYPE_MIFARE_MINI;	break;
 		case 0x08:	return PICC_TYPE_MIFARE_1K;		break;
