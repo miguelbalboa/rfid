@@ -1,3 +1,8 @@
+5 Dec 2015
+- recognize infineon cards correctly @mayatforest
+- added multi reader support, see example @lmmeng
+- functions return MFRC522::StatusCode instead of generic byte @rotzbua
+
 10 Nov 2014
 - Updated the changelog.
 - Added makefile.
