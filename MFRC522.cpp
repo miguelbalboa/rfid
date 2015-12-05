@@ -1189,14 +1189,13 @@ const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	/
  */
 MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select().
 										) {
-	if (sak & 0x04) { // UID not complete
-		return PICC_TYPE_NOT_COMPLETE;
-	}
-	//http://www.nxp.com/documents/application_note/AN10833.pdf 
-	//3.2 Coding of Select Acknowledge (SAK)
-	//ignore 8-bit
-	sak&=0x7F;
+	// http://www.nxp.com/documents/application_note/AN10833.pdf 
+	// 3.2 Coding of Select Acknowledge (SAK)
+	// ignore 8-bit (iso14443 starts with LSBit = bit 1)
+	// fixes wrong type for manufacturer Infineon (http://nfc-tools.org/index.php?title=ISO14443A)
+	sak &= 0x7F;
 	switch (sak) {
+		case 0x04:	return PICC_TYPE_NOT_COMPLETE;	// UID not complete
 		case 0x09:	return PICC_TYPE_MIFARE_MINI;
 		case 0x08:	return PICC_TYPE_MIFARE_1K;
 		case 0x18:	return PICC_TYPE_MIFARE_4K;
@@ -1204,17 +1203,10 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
 		case 0x10:
 		case 0x11:	return PICC_TYPE_MIFARE_PLUS;
 		case 0x01:	return PICC_TYPE_TNP3XXX;
+		case 0x20:	return PICC_TYPE_ISO_14443_4;
+		case 0x40:	return PICC_TYPE_ISO_18092;
+		default:	return PICC_TYPE_UNKNOWN;
 	}
-	
-	if (sak & 0x20) {
-		return PICC_TYPE_ISO_14443_4;
-	}
-	
-	if (sak & 0x40) {
-		return PICC_TYPE_ISO_18092;
-	}
-	
-	return PICC_TYPE_UNKNOWN;
 } // End PICC_GetType()
 
 /**
