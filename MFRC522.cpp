@@ -1169,16 +1169,16 @@ MFRC522::StatusCode MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointe
 const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	///< One of the StatusCode enums.
 										) {
 	switch (code) {
-		case STATUS_OK:				return F("Success.");										break;
-		case STATUS_ERROR:			return F("Error in communication.");						break;
-		case STATUS_COLLISION:		return F("Collission detected.");							break;
-		case STATUS_TIMEOUT:		return F("Timeout in communication.");						break;
-		case STATUS_NO_ROOM:		return F("A buffer is not big enough.");					break;
-		case STATUS_INTERNAL_ERROR:	return F("Internal error in the code. Should not happen.");	break;
-		case STATUS_INVALID:		return F("Invalid argument.");								break;
-		case STATUS_CRC_WRONG:		return F("The CRC_A does not match.");						break;
-		case STATUS_MIFARE_NACK:	return F("A MIFARE PICC responded with NAK.");				break;
-		default:					return F("Unknown error");									break;
+		case STATUS_OK:				return F("Success.");
+		case STATUS_ERROR:			return F("Error in communication.");
+		case STATUS_COLLISION:		return F("Collission detected.");
+		case STATUS_TIMEOUT:		return F("Timeout in communication.");
+		case STATUS_NO_ROOM:		return F("A buffer is not big enough.");
+		case STATUS_INTERNAL_ERROR:	return F("Internal error in the code. Should not happen.");
+		case STATUS_INVALID:		return F("Invalid argument.");
+		case STATUS_CRC_WRONG:		return F("The CRC_A does not match.");
+		case STATUS_MIFARE_NACK:	return F("A MIFARE PICC responded with NAK.");
+		default:					return F("Unknown error");
 	}
 } // End GetStatusCodeName()
 
@@ -1197,14 +1197,13 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
 	//ignore 8-bit
 	sak&=0x7F;
 	switch (sak) {
-		case 0x09:	return PICC_TYPE_MIFARE_MINI;	break;
-		case 0x08:	return PICC_TYPE_MIFARE_1K;		break;
-		case 0x18:	return PICC_TYPE_MIFARE_4K;		break;
-		case 0x00:	return PICC_TYPE_MIFARE_UL;		break;
+		case 0x09:	return PICC_TYPE_MIFARE_MINI;
+		case 0x08:	return PICC_TYPE_MIFARE_1K;
+		case 0x18:	return PICC_TYPE_MIFARE_4K;
+		case 0x00:	return PICC_TYPE_MIFARE_UL;
 		case 0x10:
-		case 0x11:	return PICC_TYPE_MIFARE_PLUS;	break;
-		case 0x01:	return PICC_TYPE_TNP3XXX;		break;
-		default:	break;
+		case 0x11:	return PICC_TYPE_MIFARE_PLUS;
+		case 0x01:	return PICC_TYPE_TNP3XXX;
 	}
 	
 	if (sak & 0x20) {
@@ -1226,17 +1225,17 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
 const __FlashStringHelper *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
 										) {
 	switch (piccType) {
-		case PICC_TYPE_ISO_14443_4:		return F("PICC compliant with ISO/IEC 14443-4");	break;
-		case PICC_TYPE_ISO_18092:		return F("PICC compliant with ISO/IEC 18092 (NFC)");break;
-		case PICC_TYPE_MIFARE_MINI:		return F("MIFARE Mini, 320 bytes");					break;
-		case PICC_TYPE_MIFARE_1K:		return F("MIFARE 1KB");								break;
-		case PICC_TYPE_MIFARE_4K:		return F("MIFARE 4KB");								break;
-		case PICC_TYPE_MIFARE_UL:		return F("MIFARE Ultralight or Ultralight C");		break;
-		case PICC_TYPE_MIFARE_PLUS:		return F("MIFARE Plus");							break;
-		case PICC_TYPE_TNP3XXX:			return F("MIFARE TNP3XXX");							break;
-		case PICC_TYPE_NOT_COMPLETE:	return F("SAK indicates UID is not complete.");		break;
+		case PICC_TYPE_ISO_14443_4:		return F("PICC compliant with ISO/IEC 14443-4");
+		case PICC_TYPE_ISO_18092:		return F("PICC compliant with ISO/IEC 18092 (NFC)");
+		case PICC_TYPE_MIFARE_MINI:		return F("MIFARE Mini, 320 bytes");
+		case PICC_TYPE_MIFARE_1K:		return F("MIFARE 1KB");
+		case PICC_TYPE_MIFARE_4K:		return F("MIFARE 4KB");
+		case PICC_TYPE_MIFARE_UL:		return F("MIFARE Ultralight or Ultralight C");
+		case PICC_TYPE_MIFARE_PLUS:		return F("MIFARE Plus");
+		case PICC_TYPE_TNP3XXX:			return F("MIFARE TNP3XXX");
+		case PICC_TYPE_NOT_COMPLETE:	return F("SAK indicates UID is not complete.");
 		case PICC_TYPE_UNKNOWN:
-		default:						return F("Unknown type");							break;
+		default:						return F("Unknown type");
 	}
 } // End PICC_GetTypeName()
 
