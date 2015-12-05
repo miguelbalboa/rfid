@@ -319,7 +319,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
-        MFRC522();
+	MFRC522();
 	MFRC522(byte chipSelectPin, byte resetPowerDownPin);
 	void setSPIConfig();
 	
@@ -333,7 +333,7 @@ public:
 	void setBitMask(unsigned char reg, unsigned char mask);
 	void PCD_SetRegisterBitMask(byte reg, byte mask);
 	void PCD_ClearRegisterBitMask(byte reg, byte mask);
-	byte PCD_CalculateCRC(byte *data, byte length, byte *result);
+	MFRC522::StatusCode PCD_CalculateCRC(byte *data, byte length, byte *result);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for manipulating the MFRC522
@@ -350,37 +350,37 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
-	byte PCD_TransceiveData(byte *sendData, byte sendLen, byte *backData, byte *backLen, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
-	byte PCD_CommunicateWithPICC(byte command, byte waitIRq, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
-	byte PICC_RequestA(byte *bufferATQA, byte *bufferSize);
-	byte PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
-	byte PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
-	byte PICC_Select(Uid *uid, byte validBits = 0);
-	byte PICC_HaltA();
+	MFRC522::StatusCode PCD_TransceiveData(byte *sendData, byte sendLen, byte *backData, byte *backLen, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
+	MFRC522::StatusCode PCD_CommunicateWithPICC(byte command, byte waitIRq, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
+	MFRC522::StatusCode PICC_RequestA(byte *bufferATQA, byte *bufferSize);
+	MFRC522::StatusCode PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
+	MFRC522::StatusCode PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
+	MFRC522::StatusCode PICC_Select(Uid *uid, byte validBits = 0);
+	MFRC522::StatusCode PICC_HaltA();
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
-	byte PCD_Authenticate(byte command, byte blockAddr, MIFARE_Key *key, Uid *uid);
+	MFRC522::StatusCode PCD_Authenticate(byte command, byte blockAddr, MIFARE_Key *key, Uid *uid);
 	void PCD_StopCrypto1();
-	byte MIFARE_Read(byte blockAddr, byte *buffer, byte *bufferSize);
-	byte MIFARE_Write(byte blockAddr, byte *buffer, byte bufferSize);
-	byte MIFARE_Decrement(byte blockAddr, long delta);
-	byte MIFARE_Increment(byte blockAddr, long delta);
-	byte MIFARE_Restore(byte blockAddr);
-	byte MIFARE_Transfer(byte blockAddr);
-	byte MIFARE_Ultralight_Write(byte page, byte *buffer, byte bufferSize);
-	byte MIFARE_GetValue(byte blockAddr, long *value);
-	byte MIFARE_SetValue(byte blockAddr, long value);
+	MFRC522::StatusCode MIFARE_Read(byte blockAddr, byte *buffer, byte *bufferSize);
+	MFRC522::StatusCode MIFARE_Write(byte blockAddr, byte *buffer, byte bufferSize);
+	MFRC522::StatusCode MIFARE_Ultralight_Write(byte page, byte *buffer, byte bufferSize);
+	MFRC522::StatusCode MIFARE_Decrement(byte blockAddr, long delta);
+	MFRC522::StatusCode MIFARE_Increment(byte blockAddr, long delta);
+	MFRC522::StatusCode MIFARE_Restore(byte blockAddr);
+	MFRC522::StatusCode MIFARE_Transfer(byte blockAddr);
+	MFRC522::StatusCode MIFARE_GetValue(byte blockAddr, long *value);
+	MFRC522::StatusCode MIFARE_SetValue(byte blockAddr, long value);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Support functions
 	/////////////////////////////////////////////////////////////////////////////////////
-	byte PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
+	MFRC522::StatusCode PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *GetStatusCodeName(byte code);
-	const __FlashStringHelper *GetStatusCodeName(byte code);
-	byte PICC_GetType(byte sak);
+	const __FlashStringHelper *GetStatusCodeName(MFRC522::StatusCode code);
+	MFRC522::PICC_Type PICC_GetType(byte sak);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
 	const __FlashStringHelper *PICC_GetTypeName(byte type);
@@ -402,7 +402,7 @@ public:
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
-	byte MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
+	MFRC522::StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
 };
 
 #endif
