@@ -95,7 +95,7 @@ void loop() {
     byte valueBlockA    = 5;
     byte valueBlockB    = 6;
     byte trailerBlock   = 7;
-    byte status;
+    MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
     long value;
@@ -278,7 +278,7 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
 void formatValueBlock(byte blockAddr) {
     byte buffer[18];
     byte size = sizeof(buffer);
-    byte status;
+    MFRC522::StatusCode status;
 
     Serial.print(F("Reading block ")); Serial.println(blockAddr);
     status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);

@@ -58,7 +58,8 @@ void loop() {
          
         byte buffer[34];  
         byte block;
-        byte status, len;
+        MFRC522::StatusCode status;
+        byte len;
         
         Serial.setTimeout(20000L) ;     // wait until 20 seconds for input from serial
         // Ask personal data: Family name

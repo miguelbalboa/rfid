@@ -99,7 +99,7 @@ void loop() {
         0x0c, 0x0d, 0x0e, 0x0f  // 13, 14,  15, 16
     };
     byte trailerBlock   = 7;
-    byte status;
+    MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
 

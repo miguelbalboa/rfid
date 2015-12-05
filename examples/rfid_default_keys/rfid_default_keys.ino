@@ -80,7 +80,7 @@ boolean try_key(MFRC522::MIFARE_Key *key)
     boolean result = false;
     byte buffer[18];
     byte block = 0;
-    byte status;
+    MFRC522::StatusCode status;
     
     // Serial.println(F("Authenticating using key A..."));
     status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, key, &(mfrc522.uid));
