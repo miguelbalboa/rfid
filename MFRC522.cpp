@@ -1752,7 +1752,7 @@ bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
 bool MFRC522::PICC_IsNewCardPresent() {
 	byte bufferATQA[2];
 	byte bufferSize = sizeof(bufferATQA);
-	byte result = PICC_RequestA(bufferATQA, &bufferSize);
+	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
 	return (result == STATUS_OK || result == STATUS_COLLISION);
 } // End PICC_IsNewCardPresent()
 
@@ -1765,7 +1765,7 @@ bool MFRC522::PICC_IsNewCardPresent() {
  * @return bool
  */
 bool MFRC522::PICC_ReadCardSerial() {
-	byte result = PICC_Select(&uid);
+	MFRC522::StatusCode result = PICC_Select(&uid);
 	return (result == STATUS_OK);
 } // End PICC_ReadCardSerial()
  
