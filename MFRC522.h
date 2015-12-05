@@ -380,12 +380,12 @@ public:
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *GetStatusCodeName(byte code);
 	const __FlashStringHelper *GetStatusCodeName(MFRC522::StatusCode code);
-	MFRC522::PICC_Type PICC_GetType(byte sak);
+	PICC_Type PICC_GetType(byte sak);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
-	const __FlashStringHelper *PICC_GetTypeName(byte type);
+	const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	void PICC_DumpToSerial(Uid *uid);
-	void PICC_DumpMifareClassicToSerial(Uid *uid, byte piccType, MIFARE_Key *key);
+	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
