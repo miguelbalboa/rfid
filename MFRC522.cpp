@@ -150,7 +150,7 @@ void MFRC522::PCD_ClearRegisterBitMask(	byte reg,	///< The register to update. O
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to transfer to the FIFO for CRC calculation.
+MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to the data to transfer to the FIFO for CRC calculation.
 								byte length,	///< In: The number of bytes to transfer.
 								byte *result	///< Out: Pointer to result buffer. Result is written to result[0..1], low byte first.
 					 ) {
@@ -377,7 +377,7 @@ bool MFRC522::PCD_PerformSelfTest() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to transfer to the FIFO.
+MFRC522::StatusCode MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to transfer to the FIFO.
 									byte sendLen,		///< Number of bytes to transfer to the FIFO.
 									byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
 									byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
@@ -395,7 +395,7 @@ byte MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to t
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execute. One of the PCD_Command enums.
+MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execute. One of the PCD_Command enums.
 										byte waitIRq,		///< The bits in the ComIrqReg register that signals successful completion of the command.
 										byte *sendData,		///< Pointer to the data to transfer to the FIFO.
 										byte sendLen,		///< Number of bytes to transfer to the FIFO.
@@ -476,9 +476,9 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
 		}
 		// Verify CRC_A - do our own calculation and store the control in controlBuffer.
 		byte controlBuffer[2];
-		n = PCD_CalculateCRC(&backData[0], *backLen - 2, &controlBuffer[0]);
-		if (n != STATUS_OK) {
-			return n;
+		MFRC522::StatusCode status = PCD_CalculateCRC(&backData[0], *backLen - 2, &controlBuffer[0]);
+		if (status != STATUS_OK) {
+			return status;
 		}
 		if ((backData[*backLen - 2] != controlBuffer[0]) || (backData[*backLen - 1] != controlBuffer[1])) {
 			return STATUS_CRC_WRONG;
@@ -494,7 +494,7 @@ byte MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The command to execut
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_RequestA(byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
+MFRC522::StatusCode MFRC522::PICC_RequestA(byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
 							byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 							) {
 	return PICC_REQA_or_WUPA(PICC_CMD_REQA, bufferATQA, bufferSize);
@@ -506,7 +506,7 @@ byte MFRC522::PICC_RequestA(byte *bufferATQA,	///< The buffer to store the ATQA 
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_WakeupA(	byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
+MFRC522::StatusCode MFRC522::PICC_WakeupA(	byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
 							byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 							) {
 	return PICC_REQA_or_WUPA(PICC_CMD_WUPA, bufferATQA, bufferSize);
@@ -518,12 +518,12 @@ byte MFRC522::PICC_WakeupA(	byte *bufferATQA,	///< The buffer to store the ATQA 
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */ 
-byte MFRC522::PICC_REQA_or_WUPA(	byte command, 		///< The command to send - PICC_CMD_REQA or PICC_CMD_WUPA
+MFRC522::StatusCode MFRC522::PICC_REQA_or_WUPA(	byte command, 		///< The command to send - PICC_CMD_REQA or PICC_CMD_WUPA
 									byte *bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
 									byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 							   ) {
 	byte validBits;
-	byte status;
+	MFRC522::StatusCode status;
 	
 	if (bufferATQA == NULL || *bufferSize < 2) {	// The ATQA response is 2 bytes long.
 		return STATUS_NO_ROOM;
@@ -557,14 +557,14 @@ byte MFRC522::PICC_REQA_or_WUPA(	byte command, 		///< The command to send - PICC
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
+MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
 							byte validBits		///< The number of known UID bits supplied in *uid. Normally 0. If set you must also supply uid->size.
 						 ) {
 	bool uidComplete;
 	bool selectDone;
 	bool useCascadeTag;
 	byte cascadeLevel = 1;
-	byte result;
+	MFRC522::StatusCode result;
 	byte count;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
@@ -698,8 +698,8 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
 			// Transmit the buffer and receive the response.
 			result = PCD_TransceiveData(buffer, bufferUsed, responseBuffer, &responseLength, &txLastBits, rxAlign);
 			if (result == STATUS_COLLISION) { // More than one PICC in the field => collision.
-				result = PCD_ReadRegister(CollReg); // CollReg[7..0] bits are: ValuesAfterColl reserved CollPosNotValid CollPos[4:0]
-				if (result & 0x20) { // CollPosNotValid
+				byte valueOfCollReg = PCD_ReadRegister(CollReg); // CollReg[7..0] bits are: ValuesAfterColl reserved CollPosNotValid CollPos[4:0]
+				if (valueOfCollReg & 0x20) { // CollPosNotValid
 					return STATUS_COLLISION; // Without a valid collision position we cannot continue
 				}
 				byte collisionPos = result & 0x1F; // Values 0-31, 0 means bit 32.
@@ -772,8 +772,8 @@ byte MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally outp
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */ 
-byte MFRC522::PICC_HaltA() {
-	byte result;
+MFRC522::StatusCode MFRC522::PICC_HaltA() {
+	MFRC522::StatusCode result;
 	byte buffer[4];
 	
 	// Build command buffer
@@ -817,7 +817,7 @@ byte MFRC522::PICC_HaltA() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise. Probably STATUS_TIMEOUT if you supply the wrong key.
  */
-byte MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
+MFRC522::StatusCode MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
 								byte blockAddr, 	///< The block number. See numbering in the comments in the .h file.
 								MIFARE_Key *key,	///< Pointer to the Crypteo1 key to use (6 bytes)
 								Uid *uid			///< Pointer to Uid struct. The first 4 bytes of the UID is used.
@@ -864,11 +864,11 @@ void MFRC522::PCD_StopCrypto1() {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The first page to return data from.
+MFRC522::StatusCode MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The first page to return data from.
 							byte *buffer,		///< The buffer to store the data in
 							byte *bufferSize	///< Buffer size, at least 18 bytes. Also number of bytes returned if STATUS_OK.
 						) {
-	byte result;
+	MFRC522::StatusCode result;
 	
 	// Sanity check
 	if (buffer == NULL || *bufferSize < 18) {
@@ -899,11 +899,11 @@ byte MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: The block (0-0x
  * * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The page (2-15) to write to.
+MFRC522::StatusCode MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The page (2-15) to write to.
 							byte *buffer,	///< The 16 bytes to write to the PICC
 							byte bufferSize	///< Buffer size, must be at least 16 bytes. Exactly 16 bytes are written.
 						) {
-	byte result;
+	MFRC522::StatusCode result;
 	
 	// Sanity check
 	if (buffer == NULL || bufferSize < 16) {
@@ -934,11 +934,11 @@ byte MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: The block (0-0x
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page (2-15) to write to.
+MFRC522::StatusCode MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page (2-15) to write to.
 										byte *buffer,	///< The 4 bytes to write to the PICC
 										byte bufferSize	///< Buffer size, must be at least 4 bytes. Exactly 4 bytes are written.
 									) {
-	byte result;
+	MFRC522::StatusCode result;
 	
 	// Sanity check
 	if (buffer == NULL || bufferSize < 4) {
@@ -967,7 +967,7 @@ byte MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page (2-15) to writ
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
+MFRC522::StatusCode MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
 								long delta		///< This number is subtracted from the value of block blockAddr.
 							) {
 	return MIFARE_TwoStepHelper(PICC_CMD_MF_DECREMENT, blockAddr, delta);
@@ -981,7 +981,7 @@ byte MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Increment(	byte blockAddr, ///< The block (0-0xff) number.
+MFRC522::StatusCode MFRC522::MIFARE_Increment(	byte blockAddr, ///< The block (0-0xff) number.
 								long delta		///< This number is added to the value of block blockAddr.
 							) {
 	return MIFARE_TwoStepHelper(PICC_CMD_MF_INCREMENT, blockAddr, delta);
@@ -995,7 +995,7 @@ byte MFRC522::MIFARE_Increment(	byte blockAddr, ///< The block (0-0xff) number.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Restore(	byte blockAddr ///< The block (0-0xff) number.
+MFRC522::StatusCode MFRC522::MIFARE_Restore(	byte blockAddr ///< The block (0-0xff) number.
 							) {
 	// The datasheet describes Restore as a two step operation, but does not explain what data to transfer in step 2.
 	// Doing only a single step does not work, so I chose to transfer 0L in step two.
@@ -1007,11 +1007,11 @@ byte MFRC522::MIFARE_Restore(	byte blockAddr ///< The block (0-0xff) number.
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_TwoStepHelper(	byte command,	///< The command to use
+MFRC522::StatusCode MFRC522::MIFARE_TwoStepHelper(	byte command,	///< The command to use
 									byte blockAddr,	///< The block (0-0xff) number.
 									long data		///< The data to transfer in step 2
 									) {
-	byte result;
+	MFRC522::StatusCode result;
 	byte cmdBuffer[2]; // We only need room for 2 bytes.
 	
 	// Step 1: Tell the PICC the command and block address
@@ -1038,9 +1038,9 @@ byte MFRC522::MIFARE_TwoStepHelper(	byte command,	///< The command to use
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0xff) number.
+MFRC522::StatusCode MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0xff) number.
 							) {
-	byte result;
+	MFRC522::StatusCode result;
 	byte cmdBuffer[2]; // We only need room for 2 bytes.
 	
 	// Tell the PICC we want to transfer the result into block blockAddr.
@@ -1064,8 +1064,8 @@ byte MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0xff) number.
  * @param[out]  value       Current value of the Value Block.
  * @return STATUS_OK on success, STATUS_??? otherwise.
   */
-byte MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
-	byte status;
+MFRC522::StatusCode MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
+	MFRC522::StatusCode status;
 	byte buffer[18];
 	byte size = sizeof(buffer);
 	
@@ -1089,7 +1089,7 @@ byte MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
  * @param[in]   value       New value of the Value Block.
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::MIFARE_SetValue(byte blockAddr, long value) {
+MFRC522::StatusCode MFRC522::MIFARE_SetValue(byte blockAddr, long value) {
 	byte buffer[18];
 	
 	// Translate the long into 4 bytes; repeated 2x in value block
@@ -1120,11 +1120,11 @@ byte MFRC522::MIFARE_SetValue(byte blockAddr, long value) {
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data to transfer to the FIFO. Do NOT include the CRC_A.
+MFRC522::StatusCode MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data to transfer to the FIFO. Do NOT include the CRC_A.
 										byte sendLen,		///< Number of bytes in sendData.
 										bool acceptTimeout	///< True => A timeout is also success
 									) {
-	byte result;
+	MFRC522::StatusCode result;
 	byte cmdBuffer[18]; // We need room for 16 bytes data and 2 bytes CRC_A.
 	
 	// Sanity check
@@ -1166,7 +1166,7 @@ byte MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointer to the data t
  * 
  * @return const __FlashStringHelper *
  */
-const __FlashStringHelper *MFRC522::GetStatusCodeName(byte code	///< One of the StatusCode enums.
+const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	///< One of the StatusCode enums.
 										) {
 	switch (code) {
 		case STATUS_OK:				return F("Success.");										break;
@@ -1187,7 +1187,7 @@ const __FlashStringHelper *MFRC522::GetStatusCodeName(byte code	///< One of the 
  * 
  * @return PICC_Type
  */
-byte MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select().
+MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned from PICC_Select().
 							) {
 	if (sak & 0x04) { // UID not complete
 		return PICC_TYPE_NOT_COMPLETE;
@@ -1347,7 +1347,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 													MIFARE_Key *key,	///< Key A for the sector.
 													byte sector			///< The sector to dump, 0..39.
 													) {
-	byte status;
+	MFRC522::StatusCode status;
 	byte firstBlock;		// Address of lowest address to dump actually last block dumped)
 	byte no_of_blocks;		// Number of blocks in sector
 	bool isSectorTrailer;	// Set to true while handling the "last" (ie highest address) in the sector.
@@ -1491,7 +1491,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
  * Dumps memory contents of a MIFARE Ultralight PICC.
  */
 void MFRC522::PICC_DumpMifareUltralightToSerial() {
-	byte status;
+	MFRC522::StatusCode status;
 	byte byteCount;
 	byte buffer[18];
 	byte i;
@@ -1575,7 +1575,7 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
 						  this will contain amount of valid response bits. */
 	byte response[32]; // Card's response is written here
 	byte received;
-	byte status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
+	MFRC522::StatusCode status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
 	if(status != STATUS_OK) {
 		if(logErrors) {
 			Serial.println(F("Card did not respond to 0x40 after HALT command. Are you sure it is a UID changeable one?"));
@@ -1641,7 +1641,7 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 	
 	// Authenticate for reading
 	MIFARE_Key key = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	byte status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
+	MFRC522::StatusCode status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
 	if (status != STATUS_OK) {
 		
 		if (status == STATUS_TIMEOUT) {
@@ -1737,7 +1737,7 @@ bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
 	byte block0_buffer[] = {0x01, 0x02, 0x03, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	
 	// Write modified block 0 back to card
-	byte status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
+	MFRC522::StatusCode status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
 	if (status != STATUS_OK) {
 		if (logErrors) {
 			Serial.print(F("MIFARE_Write() failed: "));
