@@ -105,7 +105,7 @@ void loop() {
 
     // Authenticate using key A
     Serial.println(F("Authenticating using key A..."));
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+    status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("PCD_Authenticate() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -120,7 +120,7 @@ void loop() {
     // Read data from the block
     Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Read() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -131,7 +131,7 @@ void loop() {
 
     // Authenticate using key B
     Serial.println(F("Authenticating again using key B..."));
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
+    status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("PCD_Authenticate() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -142,7 +142,7 @@ void loop() {
     Serial.print(F("Writing data into block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
     dump_byte_array(dataBlock, 16); Serial.println();
-    status = mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Write() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -152,7 +152,7 @@ void loop() {
     // Read data from the block (again, should now be what we have written)
     Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Read() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
