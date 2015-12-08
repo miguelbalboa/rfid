@@ -1,7 +1,8 @@
 5 Dec 2015
 - recognize infineon cards correctly @mayatforest
 - added multi reader support, see example @lmmeng
-- functions return MFRC522::StatusCode instead of generic byte @rotzbua
+- functions return MFRC522::StatusCode and MFRC522::PICC_Type instead of generic byte @rotzbua
+- removed int-values of MFRC522::StatusCode and MFRC522::PICC_Type @rotzbua
 
 10 Nov 2014
 - Updated the changelog.
