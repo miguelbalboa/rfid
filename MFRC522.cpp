@@ -293,7 +293,7 @@ void MFRC522::PCD_SetAntennaGain(byte mask) {
  * Performs a self-test of the MFRC522
  * See 16.1.1 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
  * 
- * @return Whether or not the test passed.
+ * @return Whether or not the test passed. Or false if no firmware reference is available.
  */
 bool MFRC522::PCD_PerformSelfTest() {
 	// This follows directly the steps outlined in 16.1.1
@@ -353,7 +353,7 @@ bool MFRC522::PCD_PerformSelfTest() {
 			reference = MFRC522_firmware_referenceV2_0;
 			break;
 		default:	// Unknown version
-			return false;
+			return false; // abort test
 	}
 	
 	// Verify that the results match up to our expectations
