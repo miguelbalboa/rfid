@@ -8,6 +8,7 @@
 MFRC522	KEYWORD1
 PCD_Register	KEYWORD1
 PCD_Command	KEYWORD1
+PCD_RxGain	KEYWORD1
 PICC_Command	KEYWORD1
 MIFARE_Misc	KEYWORD1
 PICC_Type	KEYWORD1
@@ -18,7 +19,10 @@ MIFARE_Key	KEYWORD1
 #######################################
 # KEYWORD2 Methods and functions
 #######################################
+# Functions for setting up the Arduino
 setSPIConfig	KEYWORD2
+
+# Basic interface functions for communicating with the MFRC522
 PCD_WriteRegister	KEYWORD2
 PCD_WriteRegister	KEYWORD2
 PCD_ReadRegister	KEYWORD2
@@ -27,9 +31,17 @@ setBitMask	KEYWORD2
 PCD_SetRegisterBitMask	KEYWORD2
 PCD_ClearRegisterBitMask	KEYWORD2
 PCD_CalculateCRC	KEYWORD2
+
+# Functions for manipulating the MFRC522
 PCD_Init	KEYWORD2
 PCD_Reset	KEYWORD2
 PCD_AntennaOn	KEYWORD2
+PCD_AntennaOff	KEYWORD2
+PCD_GetAntennaGain	KEYWORD2
+PCD_SetAntennaGain	KEYWORD2
+PCD_PerformSelfTest	KEYWORD2
+
+# Functions for communicating with PICCs
 PCD_TransceiveData	KEYWORD2
 PCD_CommunicateWithPICC	KEYWORD2
 PICC_RequestA	KEYWORD2
@@ -37,19 +49,32 @@ PICC_WakeupA	KEYWORD2
 PICC_REQA_or_WUPA	KEYWORD2
 PICC_Select	KEYWORD2
 PICC_HaltA	KEYWORD2
+
+# Functions for communicating with MIFARE PICCs
 PCD_Authenticate	KEYWORD2
 PCD_StopCrypto1	KEYWORD2
 MIFARE_Read	KEYWORD2
 MIFARE_Write	KEYWORD2
 MIFARE_Increment	KEYWORD2
 MIFARE_Ultralight_Write	KEYWORD2
+MIFARE_GetValue	KEYWORD2
+MIFARE_SetValue	KEYWORD2
+
+# Support functions
 PCD_MIFARE_Transceive	KEYWORD2
+GetStatusCodeName	KEYWORD2
 PICC_GetType	KEYWORD2
+PICC_GetTypeName	KEYWORD2
 PICC_DumpToSerial	KEYWORD2
 PICC_DumpMifareClassicToSerial	KEYWORD2
 PICC_DumpMifareClassicSectorToSerial	KEYWORD2
 PICC_DumpMifareUltralightToSerial	KEYWORD2
 MIFARE_SetAccessBits	KEYWORD2
+MIFARE_OpenUidBackdoor	KEYWORD2
+MIFARE_SetUid	KEYWORD2
+MIFARE_UnbrickUidSector	KEYWORD2
+
+# Convenience functions - does not add extra functionality
 PICC_IsNewCardPresent	KEYWORD2
 PICC_ReadCardSerial	KEYWORD2
 
@@ -120,6 +145,17 @@ PCD_Receive	LITERAL1
 PCD_Transceive 	LITERAL1
 PCD_MFAuthent 	LITERAL1
 PCD_SoftReset	LITERAL1
+RxGain_18dB	LITERAL1
+RxGain_23dB	LITERAL1
+RxGain_18dB_2	LITERAL1
+RxGain_23dB_2	LITERAL1
+RxGain_33dB	LITERAL1
+RxGain_38dB	LITERAL1
+RxGain_43dB	LITERAL1
+RxGain_48dB	LITERAL1
+RxGain_min	LITERAL1
+RxGain_avg	LITERAL1
+RxGain_max	LITERAL1
 PICC_CMD_REQA	LITERAL1
 PICC_CMD_WUPA	LITERAL1
 PICC_CMD_CT	LITERAL1
@@ -158,4 +194,3 @@ STATUS_INVALID	LITERAL1
 STATUS_CRC_WRONG	LITERAL1
 STATUS_MIFARE_NACK	LITERAL1
 FIFO_SIZE	LITERAL1
-

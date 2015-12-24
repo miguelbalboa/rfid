@@ -1,9 +1,57 @@
-Renamed library from RFID to MFRC522 (RFID seemed to generic).
-Register names changed to comply with datasheet.
-Global defines moved into class.
-All constants, functions and parameters are now commented in English.
-Code refactored, most function names have changed.
-Now supports ISO-14443-3 anti collission and 4/7/10 byte UIDs (cascade levels).
-Added functions for MIFARE Classic Decrement/Increment/Restore/Transfer and MIFARE Ultralight Write.
-New examples written.
+5 Dec 2015
+- recognize infineon cards correctly @mayatforest
+- added multi reader support, see example @lmmeng
+- functions return MFRC522::StatusCode instead of generic byte @rotzbua
 
+10 Nov 2014
+- Updated the changelog.
+- Added makefile.
+
+24 Oct 2014
+- Added PlatformIO-based manifest file.
+
+17 Jul 2014
+- Written documentation for the library.
+- Added rfid_default_keys example.
+
+11 Jun 2014
+- Updated example: ReadAndWrite.
+
+14 Apr 2014
+- Updated examples: DumpInfo, MifareClassicValueBlock, and ReadAndWrite.
+
+12 Feb 2014
+- Fixed resetPowerDownPin initial state.
+
+29 Jan 2014
+- Fixed chipSelectPin initial state.
+
+30 Nov 2013
+- Examples put in their own folders.
+- Updated the keywords.txt file.
+
+12 Nov 2013
+- Updated examples: DumpInfo, MifareClassicValueBlock, and ReadAndWrite.
+
+20 Oct 2013
+- All constants, functions and parameters are now commented in English.
+- Code refactored, most function names have changed.
+- Support ISO-14443-3 anti collission and 4/7/10 byte UIDs (cascade levels).
+- Added functions for MIFARE Classic Decrement/Increment/Restore/Transfer
+  and MIFARE Ultralight Write.
+- New examples written.
+
+19 Oct 2013
+- Renamed library from RFID to MFRC522 (RFID seemed to generic).
+- Register names changed to comply with datasheet.
+- Global defines moved into class.
+
+24 Sep 2013
+- Turn off encryption when tag is halted.
+
+27 Jan 2013
+- Added README and small TODO list.
+- Added example to show Serial on LCD display.
+
+09 Sep 2012
+- Initial commit to GitHub.
