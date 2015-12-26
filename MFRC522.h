@@ -25,8 +25,8 @@
  * If only the PICC UID is wanted, the above documents has all the needed information.
  * To read and write from MIFARE PICCs, the MIFARE protocol is used after the PICC has been selected.
  * The MIFARE Classic chips and protocol is described in the datasheets:
- *		1K:   http://www.nxp.com/documents/data_sheet/MF1S503x.pdf
- * 		4K:   http://www.nxp.com/documents/data_sheet/MF1S703x.pdf
+ *		1K:   http://www.mouser.com/ds/2/302/MF1S503x-89574.pdf
+ * 		4K:   http://datasheet.octopart.com/MF1S7035DA4,118-NXP-Semiconductors-datasheet-11046188.pdf
  * 		Mini: http://www.idcardmarket.com/download/mifare_S20_datasheet.pdf
  * The MIFARE Ultralight chip and protocol is described in the datasheets:
  *		Ultralight:   http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf
@@ -35,7 +35,7 @@
  * MIFARE Classic 1K (MF1S503x):
  * 		Has 16 sectors * 4 blocks/sector * 16 bytes/block = 1024 bytes.
  * 		The blocks are numbered 0-63.
- * 		Block 3 in each sector is the Sector Trailer. See http://www.nxp.com/documents/data_sheet/MF1S503x.pdf sections 8.6 and 8.7:
+ * 		Block 3 in each sector is the Sector Trailer. See http://www.mouser.com/ds/2/302/MF1S503x-89574.pdf sections 8.6 and 8.7:
  * 				Bytes 0-5:   Key A
  * 				Bytes 6-8:   Access Bits
  * 				Bytes 9:     User data
@@ -249,7 +249,7 @@ public:
 		PICC_CMD_SEL_CL2		= 0x95,		// Anti collision/Select, Cascade Level 2
 		PICC_CMD_SEL_CL3		= 0x97,		// Anti collision/Select, Cascade Level 3
 		PICC_CMD_HLTA			= 0x50,		// HaLT command, Type A. Instructs an ACTIVE PICC to go to state HALT.
-		// The commands used for MIFARE Classic (from http://www.nxp.com/documents/data_sheet/MF1S503x.pdf, Section 9)
+		// The commands used for MIFARE Classic (from http://www.mouser.com/ds/2/302/MF1S503x-89574.pdf, Section 9)
 		// Use PCD_MFAuthent to authenticate access to a sector, then use these commands to read/write/modify the blocks on the sector.
 		// The read/write commands can also be used for MIFARE Ultralight.
 		PICC_CMD_MF_AUTH_KEY_A	= 0x60,		// Perform authentication with Key A
