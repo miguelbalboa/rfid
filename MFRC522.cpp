@@ -27,15 +27,6 @@ MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's S
 	_resetPowerDownPin = resetPowerDownPin;
 } // End constructor
 
-/**
- * Set SPI bus to work with MFRC522 chip.
- * Please call this function if you have changed the SPI config since the MFRC522 constructor was run.
- */
-void MFRC522::setSPIConfig() {
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setDataMode(SPI_MODE0);
-} // End setSPIConfig()
-
 /////////////////////////////////////////////////////////////////////////////////////
 // Basic interface functions for communicating with the MFRC522
 /////////////////////////////////////////////////////////////////////////////////////
@@ -47,10 +38,12 @@ void MFRC522::setSPIConfig() {
 void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One of the PCD_Register enums.
 									byte value		///< The value to write.
 								) {
+	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	SPI.transfer(value);
 	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
+	SPI.endTransaction(); // Stop using the SPI bus
 } // End PCD_WriteRegister()
 
 /**
@@ -61,12 +54,14 @@ void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One o
 									byte count,		///< The number of bytes to write to the register
 									byte *values	///< The values to write. Byte array.
 								) {
+	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	for (byte index = 0; index < count; index++) {
 		SPI.transfer(values[index]);
 	}
 	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
+	SPI.endTransaction(); // Stop using the SPI bus
 } // End PCD_WriteRegister()
 
 /**
@@ -76,10 +71,12 @@ void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One o
 byte MFRC522::PCD_ReadRegister(	byte reg	///< The register to read from. One of the PCD_Register enums.
 								) {
 	byte value;
+	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);			// Select slave
 	SPI.transfer(0x80 | (reg & 0x7E));			// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	value = SPI.transfer(0);					// Read the value back. Send 0 to stop reading.
 	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
+	SPI.endTransaction(); // Stop using the SPI bus
 	return value;
 } // End PCD_ReadRegister()
 
@@ -98,6 +95,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
 	byte address = 0x80 | (reg & 0x7E);		// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
+	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	count--;								// One read is performed outside of the loop
 	SPI.transfer(address);					// Tell MFRC522 which address we want to read
@@ -120,6 +118,7 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	}
 	values[index] = SPI.transfer(0);			// Read the final byte. Send 0 to stop reading.
 	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
+	SPI.endTransaction(); // Stop using the SPI bus
 } // End PCD_ReadRegister()
 
 /**
@@ -195,9 +194,6 @@ void MFRC522::PCD_Init() {
 	
 	// Set the resetPowerDownPin as digital output, do not reset or power down.
 	pinMode(_resetPowerDownPin, OUTPUT);
-	
-	// Set SPI bus to work with MFRC522 chip.
-	setSPIConfig();
 	
 	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
 		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.

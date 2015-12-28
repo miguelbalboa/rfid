@@ -19,8 +19,6 @@ MIFARE_Key	KEYWORD1
 #######################################
 # KEYWORD2 Methods and functions
 #######################################
-# Functions for setting up the Arduino
-setSPIConfig	KEYWORD2
 
 # Basic interface functions for communicating with the MFRC522
 PCD_WriteRegister	KEYWORD2
