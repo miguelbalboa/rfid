@@ -1767,5 +1767,37 @@ bool MFRC522::PICC_IsNewCardPresent() {
 bool MFRC522::PICC_ReadCardSerial() {
 	byte result = PICC_Select(&uid);
 	return (result == STATUS_OK);
-} // End PICC_ReadCardSerial()
- 
+} // End 
+
+PICC_ReadCardSerial()MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte *passWord, byte pACK[]) //Authenticate with 32bit password
+{
+  MFRC522::StatusCode result;
+  byte cmdBuffer[18]; // We need room for 16 bytes data and 2 bytes CRC_A.
+
+cmdBuffer[0] = 0x1B; //Comando de autentificacion
+
+ for(byte i = 0; i < 4; i++)
+	cmdBuffer[i + 1] = passWord[i];
+
+  result = PCD_CalculateCRC(cmdBuffer, 5, &cmdBuffer[5]);
+
+  if (result != STATUS_OK) {
+    return result;
+  }
+
+  // Transceive the data, store the reply in cmdBuffer[]
+  byte waitIRq = 0x30;    // RxIRq and IdleIRq
+  byte cmdBufferSize = sizeof(cmdBuffer);
+  byte validBits = 0;
+byte rxlength = 5;
+  result = PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, cmdBuffer, 7, cmdBuffer, &rxlength, &validBits);
+
+pACK[0] = cmdBuffer[0];
+pACK[1] = cmdBuffer[1];
+
+  if (result != STATUS_OK) {
+    return result;
+  }
+
+  return STATUS_OK;
+}
