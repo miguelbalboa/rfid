@@ -372,6 +372,8 @@ public:
 	MFRC522::StatusCode MIFARE_Transfer(byte blockAddr);
 	MFRC522::StatusCode MIFARE_GetValue(byte blockAddr, long *value);
 	MFRC522::StatusCode MIFARE_SetValue(byte blockAddr, long value);
+	MFRC522::StatusCode PCD_NTAG216_AUTH(byte *passWord);
+
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Support functions
