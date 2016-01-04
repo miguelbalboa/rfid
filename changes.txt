@@ -1,6 +1,7 @@
 3 Jan 2016
-- Added Authentication with Ntag 213,215,216 returns the pACK MFRC522::PCD_NTAG216_AUTH
+- Added Authentication with Ntag 213,215,216 returns the pACK MFRC522::PCD_NTAG216_AUTH @Gargantuanman
 - Starting to use versions http://semver.org/
+- Continuous Integration @ivankravets 
 
 5 Dec 2015
 - recognize infineon cards correctly @mayatforest
