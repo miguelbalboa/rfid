@@ -50,7 +50,7 @@ void loop() {
     if ( ! rfid.PICC_IsNewCardPresent())
         return;
 
-    // Lee tarjeta
+    // Verifica si el NUID ha sido leído
     if ( ! rfid.PICC_ReadCardSerial())
         return;
 
