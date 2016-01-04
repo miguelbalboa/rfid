@@ -74,6 +74,7 @@ There are three hardware components involved:
 * One or two might be included with the Reader or *"starter kit"* already.
 
 
+.. _protocol:
 Protocols
 ---------
 
@@ -95,6 +96,14 @@ Protocols
   * The reader do not support ISO/IEC 14443-3 Type B.
 
 
+.. _security:
+Security
+-------
+This library only supports crypto1-encrypted communication. Crypto1 is for a few years `broken`_. So it do NOT offer ANY security, it is like a unencrypted communication. **Do not use it for any security related application!**
+This library do not offer 3DES or AES authentification used by e.g. Mifare DESFire, maybe it can be implemented because the datasheet says there ist a support. We hope for pull requests :).
+
+
+.. _troubleshooting:
 Troubleshooting
 -------
 
@@ -103,6 +112,7 @@ Troubleshooting
   #. Check your connection, see `Pin Layout`_ .
   #. Check voltage. Most breakouts work with 3.3V.
   #. The SPI only works with 3.3V, most breakouts seems 5V tollerant, but try a level shifter.
+  #. According to reports #101, #126, #131 there are maybe a problem with the soldering on the MFRC522 breakout. You maybe can fix it by your own.
 
 
 * **Sometimes I get timeouts** or **tag/card sometimes not work.**
@@ -112,8 +122,8 @@ Troubleshooting
   #. Increase antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
   #. Use better power supply.
   #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
-  
-  
+
+
 * **My tag/card doesn't work.**
   
   #. Distance between antenna and token too huge (>1cm).
@@ -121,19 +131,21 @@ Troubleshooting
   #. NFC tokens are not supported. Some may work.
   #. Animal marker are not supported. They use other frequency.
   #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+  #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentification, see `security`_ or different `protocol`_.
 
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
 
   #. Card simmulation is not supported.
   #. Communication with mobile phones is not supported.
   #. Peer to peer communication is not supported.
-  
+
+
 * **I need more features.**
 
   #. If software: code it and make a pull request.
   #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
-  
-  
+
+
 License
 -------
 This is free and unencumbered software released into the public domain.
@@ -175,8 +187,9 @@ by Søren Thing Andersen (from http://access.thing.dk).
 It has been extended with functionality to alter sector 0 on Chinese UID changeable MIFARE card in Oct 2014 by Tom Clement (from http://tomclement.nl).
 
 
-.. _arduino: http://arduino.cc/
+.. _arduino: https://arduino.cc/
 .. _ebay: http://www.ebay.com/
-.. _iso/iec 14443a: http://en.wikipedia.org/wiki/ISO/IEC_14443
+.. _iso/iec 14443a: https://en.wikipedia.org/wiki/ISO/IEC_14443
 .. _iso/iec 14443-3\:2011 part 3: 
 .. _nxp mfrc522: http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+.. _broken: http://eprint.iacr.org/2008/166
