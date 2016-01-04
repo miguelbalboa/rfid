@@ -293,7 +293,7 @@ void MFRC522::PCD_SetAntennaGain(byte mask) {
  * Performs a self-test of the MFRC522
  * See 16.1.1 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
  * 
- * @return Whether or not the test passed.
+ * @return Whether or not the test passed. Or false if no firmware reference is available.
  */
 bool MFRC522::PCD_PerformSelfTest() {
 	// This follows directly the steps outlined in 16.1.1
@@ -353,7 +353,7 @@ bool MFRC522::PCD_PerformSelfTest() {
 			reference = MFRC522_firmware_referenceV2_0;
 			break;
 		default:	// Unknown version
-			return false;
+			return false; // abort test
 	}
 	
 	// Verify that the results match up to our expectations
@@ -1257,7 +1257,7 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
  * 
  * @return const __FlashStringHelper *
  */
-const __FlashStringHelper *MFRC522::PICC_GetTypeName(byte piccType	///< One of the PICC_Type enums.
+const __FlashStringHelper *MFRC522::PICC_GetTypeName(PICC_Type piccType	///< One of the PICC_Type enums.
 													) {
 	switch (piccType) {
 		case PICC_TYPE_ISO_14443_4:		return F("PICC compliant with ISO/IEC 14443-4");
@@ -1295,7 +1295,7 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 	Serial.println();
 	
 	// PICC type
-	byte piccType = PICC_GetType(uid->sak);
+	PICC_Type piccType = PICC_GetType(uid->sak);
 	Serial.print(F("PICC type: "));
 	Serial.println(PICC_GetTypeName(piccType));
 	
@@ -1336,9 +1336,9 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
  * Dumps memory contents of a MIFARE Classic PICC.
  * On success the PICC is halted after dumping the data.
  */
-void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,		///< Pointer to Uid struct returned from a successful PICC_Select().
-												byte piccType,	///< One of the PICC_Type enums.
-												MIFARE_Key *key	///< Key A used for all sectors.
+void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,			///< Pointer to Uid struct returned from a successful PICC_Select().
+												PICC_Type piccType,	///< One of the PICC_Type enums.
+												MIFARE_Key *key		///< Key A used for all sectors.
 											) {
 	byte no_of_sectors = 0;
 	switch (piccType) {
@@ -1795,7 +1795,7 @@ bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
 bool MFRC522::PICC_IsNewCardPresent() {
 	byte bufferATQA[2];
 	byte bufferSize = sizeof(bufferATQA);
-	byte result = PICC_RequestA(bufferATQA, &bufferSize);
+	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
 	return (result == STATUS_OK || result == STATUS_COLLISION);
 } // End PICC_IsNewCardPresent()
 
@@ -1808,6 +1808,6 @@ bool MFRC522::PICC_IsNewCardPresent() {
  * @return bool
  */
 bool MFRC522::PICC_ReadCardSerial() {
-	byte result = PICC_Select(&uid);
+	MFRC522::StatusCode result = PICC_Select(&uid);
 	return (result == STATUS_OK);
 } // End 
