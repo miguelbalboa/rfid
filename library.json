@@ -10,5 +10,5 @@
   "version": "1.1.0",
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "ststm32"]
+  "platforms": ["atmelavr", "ststm32", "teensy"]
 }
