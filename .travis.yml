@@ -18,6 +18,7 @@ env:
     - PLATFORMIO_CI_SRC=examples/ReadUidMultiReader/ReadUidMultiReader.ino
     - PLATFORMIO_CI_SRC=examples/rfid_default_keys/rfid_default_keys.ino
     - PLATFORMIO_CI_SRC=examples/rfid_write_personal_data/rfid_write_personal_data.ino
+    - PLATFORMIO_CI_SRC=examples/Ntag216_AUTH/Ntag216_AUTH.ino
 
 install:
     - pip install -U platformio
