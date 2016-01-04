@@ -1275,6 +1275,28 @@ const __FlashStringHelper *MFRC522::PICC_GetTypeName(PICC_Type piccType	///< One
 } // End PICC_GetTypeName()
 
 /**
+ * Dumps debug info about the connected PCD to Serial.
+ * Shows all known firmware versions
+ */
+void MFRC522::PCD_DumpVersionToSerial() {
+	// Get the MFRC522 firmware version
+	byte v = PCD_ReadRegister(VersionReg);
+	Serial.print(F("Firmware Version: 0x"));
+	Serial.print(v, HEX);
+	// Lookup which version
+	switch(v) {
+		case 0x88: Serial.println(F(" = (clone)"));  break;
+		case 0x90: Serial.println(F(" = v0.0"));     break;
+		case 0x91: Serial.println(F(" = v1.0"));     break;
+		case 0x92: Serial.println(F(" = v2.0"));     break;
+		default:   Serial.println(F(" = (unknown)"));
+	}
+	// When 0x00 or 0xFF is returned, communication probably failed
+	if ((v == 0x00) || (v == 0xFF))
+		Serial.println(F("WARNING: Communication failure, is the MFRC522 properly connected?"));
+} // End PCD_DumpVersionToSerial()
+
+/**
  * Dumps debug info about the selected PICC to Serial.
  * On success the PICC is halted after dumping the data.
  * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried. 

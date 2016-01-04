@@ -46,7 +46,7 @@ void setup() {
   Serial.println(F("*****************************"));
   Serial.println(F("MFRC522 Digital self test"));
   Serial.println(F("*****************************"));
-  ShowReaderVersion();  // Show version of PCD - MFRC522 Card Reader
+  mfrc522.PCD_DumpVersionToSerial();  // Show version of PCD - MFRC522 Card Reader
   Serial.println(F("-----------------------------"));
   Serial.println(F("Only known versions supported"));
   Serial.println(F("-----------------------------"));
@@ -62,24 +62,3 @@ void setup() {
 }
 
 void loop() {} // nothing to do
-
-/**
-* Helper to print MFRC522 module info
-*/
-void ShowReaderVersion() {
-  // Get the MFRC522 firmware version
-  byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
-  Serial.print(F("Firmware Version: 0x"));
-  Serial.print(v, HEX);
-  // Lookup which version
-  switch(v) {
-    case 0x88: Serial.println(F(" = (clone)"));  break;
-    case 0x90: Serial.println(F(" = v0.0"));     break;
-    case 0x91: Serial.println(F(" = v1.0"));     break;
-    case 0x92: Serial.println(F(" = v2.0"));     break;
-    default:   Serial.println(F(" = (unknown)"));
-  }
-  // When 0x00 or 0xFF is returned, communication probably failed
-  if ((v == 0x00) || (v == 0xFF))
-    Serial.println(F("WARNING: Communication failure, is the MFRC522 properly connected?"));
-}
