@@ -59,12 +59,14 @@ MIFARE_Increment	KEYWORD2
 MIFARE_Ultralight_Write	KEYWORD2
 MIFARE_GetValue	KEYWORD2
 MIFARE_SetValue	KEYWORD2
+PCD_NTAG216_AUTH	KEYWORD2
 
 # Support functions
 PCD_MIFARE_Transceive	KEYWORD2
 GetStatusCodeName	KEYWORD2
 PICC_GetType	KEYWORD2
 PICC_GetTypeName	KEYWORD2
+PCD_DumpVersionToSerial	KEYWORD2
 PICC_DumpToSerial	KEYWORD2
 PICC_DumpMifareClassicToSerial	KEYWORD2
 PICC_DumpMifareClassicSectorToSerial	KEYWORD2

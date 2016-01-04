@@ -53,7 +53,7 @@ void loop() {
           Serial.print(mfrc522.uid.uidByte[i], HEX);
         } 
         Serial.print(F(" PICC type: "));   // Dump PICC type
-        byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+        MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
         Serial.println(mfrc522.PICC_GetTypeName(piccType));
          
         byte buffer[34];  
