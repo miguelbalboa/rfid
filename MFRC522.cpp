@@ -1769,7 +1769,7 @@ bool MFRC522::PICC_ReadCardSerial() {
 	return (result == STATUS_OK);
 } // End 
 
-PICC_ReadCardSerial()MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte *passWord, byte pACK[]) //Authenticate with 32bit password
+MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte *passWord, byte pACK[]) //Authenticate with 32bit password
 {
   MFRC522::StatusCode result;
   byte cmdBuffer[18]; // We need room for 16 bytes data and 2 bytes CRC_A.
