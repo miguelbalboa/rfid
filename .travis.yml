@@ -24,4 +24,4 @@ install:
     - pip install -U platformio
 
 script:
-    - platformio ci --lib=. --board=uno --board=megaatmega1280
+    - platformio ci --lib=. --board=uno --board=megaatmega1280 --board=teensy31
