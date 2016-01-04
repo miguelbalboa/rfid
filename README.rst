@@ -1,6 +1,9 @@
 MFRC522
 =======
 
+.. image:: https://travis-ci.org/miguelbalboa/rfid.svg?branch=master
+    :target: https://travis-ci.org/miguelbalboa/rfid
+
 Arduino library for MFRC522 and other RFID RC522 based modules.
 
 Read and write different types of Radio-Frequency IDentification (RFID) cards
