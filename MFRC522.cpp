@@ -434,7 +434,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
 			return STATUS_TIMEOUT;
 		}
-		if (--i == 0) {						// The emergency break. If all other condions fail we will eventually terminate on this one after 35.7ms. Communication with the MFRC522 might be down.
+		if (--i == 0) {						// The emergency break. If all other conditions fail we will eventually terminate on this one after 35.7ms. Communication with the MFRC522 might be down.
 			return STATUS_TIMEOUT;
 		}
 	}
@@ -586,7 +586,7 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 	//		Byte 6: BCC					Block Check Character - XOR of bytes 2-5
 	//		Byte 7: CRC_A
 	//		Byte 8: CRC_A
-	// The BCC and CRC_A is only transmitted if we know all the UID bits of the current Cascade Level.
+	// The BCC and CRC_A are only transmitted if we know all the UID bits of the current Cascade Level.
 	//
 	// Description of bytes 2-5: (Section 6.5.4 of the ISO/IEC 14443-3 draft: UID contents and cascade levels)
 	//		UID size	Cascade level	Byte2	Byte3	Byte4	Byte5
@@ -692,7 +692,7 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 			}
 			
 			// Set bit adjustments
-			rxAlign = txLastBits;											// Having a seperate variable is overkill. But it makes the next line easier to read.
+			rxAlign = txLastBits;											// Having a separate variable is overkill. But it makes the next line easier to read.
 			PCD_WriteRegister(BitFramingReg, (rxAlign << 4) + txLastBits);	// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 			
 			// Transmit the buffer and receive the response.
@@ -789,7 +789,7 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
 	// The standard says:
 	//		If the PICC responds with any modulation during a period of 1 ms after the end of the frame containing the
 	//		HLTA command, this response shall be interpreted as 'not acknowledge'.
-	// We interpret that this way: Only STATUS_TIMEOUT is an success.
+	// We interpret that this way: Only STATUS_TIMEOUT is a success.
 	result = PCD_TransceiveData(buffer, sizeof(buffer), NULL, 0);
 	if (result == STATUS_TIMEOUT) {
 		return STATUS_OK;
@@ -1521,7 +1521,7 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 } // End PICC_DumpMifareUltralightToSerial()
 
 /**
- * Calculates the bit pattern needed for the specified access bits. In the [C1 C2 C3] tupples C1 is MSB (=4) and C3 is LSB (=1).
+ * Calculates the bit pattern needed for the specified access bits. In the [C1 C2 C3] tuples C1 is MSB (=4) and C3 is LSB (=1).
  */
 void MFRC522::MIFARE_SetAccessBits(	byte *accessBitBuffer,	///< Pointer to byte 6, 7 and 8 in the sector trailer. Bytes [0..2] will be set.
 									byte g0,				///< Access bits [C1 C2 C3] for block 0 (for sectors 0-31) or blocks 0-4 (for sectors 32-39)
