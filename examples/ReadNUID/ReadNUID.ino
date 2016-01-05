@@ -66,7 +66,7 @@ void loop() {
         return;
 
     Serial.print(F("PICC type: "));
-    byte piccType = rfid.PICC_GetType(rfid.uid.sak);
+    MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
     Serial.println(rfid.PICC_GetTypeName(piccType));
 
     // Check is the PICC of Classic MIFARE type
@@ -96,7 +96,7 @@ void loop() {
         printDec(rfid.uid.uidByte, rfid.uid.size);
         Serial.println();
     }
-    else Serial.println("Card read previously.");
+    else Serial.println(F("Card read previously."));
 
     // Halt PICC
     rfid.PICC_HaltA();
