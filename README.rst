@@ -93,14 +93,14 @@ Protocols
   * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
     of the final draft (which might be outdated in some areas).
     
-  * The reader do not support ISO/IEC 14443-3 Type B.
+  * The reader does not support ISO/IEC 14443-3 Type B.
 
 
 .. _security:
 Security
 -------
-This library only supports crypto1-encrypted communication. Crypto1 is for a few years `broken`_. So it do NOT offer ANY security, it is like a unencrypted communication. **Do not use it for any security related application!**
-This library do not offer 3DES or AES authentification used by e.g. Mifare DESFire, maybe it can be implemented because the datasheet says there ist a support. We hope for pull requests :).
+This library only supports crypto1-encrypted communication. Crypto1 has been known as `broken`_ for a few years, so it does NOT offer ANY security, it is virtually unencrypted communication. **Do not use it for any security related applications!**
+This library does not offer 3DES or AES authentication used by cars like the Mifare DESFire, it may be possible to be implemented because the datasheet says there is support. We hope for pull requests :).
 
 
 .. _troubleshooting:
@@ -111,26 +111,26 @@ Troubleshooting
 
   #. Check your connection, see `Pin Layout`_ .
   #. Check voltage. Most breakouts work with 3.3V.
-  #. The SPI only works with 3.3V, most breakouts seems 5V tollerant, but try a level shifter.
-  #. According to reports #101, #126, #131 there are maybe a problem with the soldering on the MFRC522 breakout. You maybe can fix it by your own.
+  #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
+  #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
-* **Sometimes I get timeouts** or **tag/card sometimes not work.**
+* **Sometimes I get timeouts** or **sometimes tag/card does not work.**
 
-  #. Try other site of the antenna.
+  #. Try other side of the antenna.
   #. Try to decrease distance between MFRC522.
   #. Increase antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
   #. Use better power supply.
-  #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+  #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
 
 
 * **My tag/card doesn't work.**
   
-  #. Distance between antenna and token too huge (>1cm).
-  #. You got wrong PICC. Is it really 13.56 MHz? Is it really a Mifare Type A?
+  #. Distance between antenna and token too large (>1cm).
+  #. You got the wrong type PICC. Is it really 13.56 MHz? Is it really a Mifare Type A?
   #. NFC tokens are not supported. Some may work.
-  #. Animal marker are not supported. They use other frequency.
-  #. Hardware corrupted, most products are from china and sometimes the quality is really low. Contact your seller.
+  #. Animal RFID tags are not supported. They use a different frequency (125 kHz).
+  #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
   #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentification, see `security`_ or different `protocol`_.
 
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
