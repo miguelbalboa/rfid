@@ -1,6 +1,6 @@
 /*
-Copy the RFID card data into variables and then 
-scan the second empty card to copy all the date
+ * Copy the RFID card data into variables and then 
+ * scan the second empty card to copy all the date
  * ----------------------------------------------------------------------------
  * Example sketch/program which will try the most used default keys listed in 
  * https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys to dump the
@@ -213,7 +213,7 @@ Serial.println("Insert new card...");
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
     
     // Try the known default keys
@@ -292,7 +292,7 @@ void keuze1(){ //Read card
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
     
     // Try the known default keys
