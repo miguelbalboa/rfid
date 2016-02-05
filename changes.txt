@@ -1,3 +1,27 @@
+16 Jan 2016, v1.1.7
+- README.rst Spelling and Grammar Tweak @cuthbertnibbles
+- Added examples/servo_motor/servo_motor.ino example, Arduino RFID Access Control with a Servo Motor @techied
+- Added examples/RFID-Cloner/RFID-Cloner.ino Copy from rfid cards with standard authentication @stefanblommaert
+- Fix compile error at examples/RFID-Cloner/RFID-Cloner.ino, using MFRC522:::PICC_Type, @Rotzbua
+
+06 Jan 2016, v1.1.6
+- Fixed compilation error for examples/ReadNUID/ReadNUID.ino example. @Rotzbua
+
+04 Jan 2016, v1.1.5
+- Use settings functions on SPI libraries, setSPIConfig was deleted, now the library use SPI.beginTransaction() and SPI.endTransaction() @sophiekovalevsky
+- Added examples/ReadNUID/ReadNUID.ino example, showing how to read new NUID from a PICC to serial. @sophiekovalevsky
+
+03 Jan 2016, v1.1.4
+- Added Authentication with Ntag 213,215,216 returns the pACK MFRC522::PCD_NTAG216_AUTH @Gargantuanman
+- Starting to use versions http://semver.org/
+- Continuous Integration @ivankravets 
+- functions return MFRC522::StatusCode and MFRC522::PICC_Type instead of generic byte @rotzbua
+- removed int-values of MFRC522::StatusCode and MFRC522::PICC_Type @rotzbua
+
+05 Dec 2015
+- recognize infineon cards correctly @mayatforest
+- added multi reader support, see example @lmmeng
+
 10 Nov 2014
 - Updated the changelog.
 - Added makefile.

@@ -1,0 +1,30 @@
+language: python
+python:
+    - "2.7"
+
+# Cache PlatformIO packages using Travis CI container-based infrastructure
+sudo: false
+cache:
+    directories:
+        - "~/.platformio"
+
+env:
+    - PLATFORMIO_CI_SRC=examples/ChangeUID/ChangeUID.ino
+    - PLATFORMIO_CI_SRC=examples/DumpInfo/DumpInfo.ino
+    - PLATFORMIO_CI_SRC=examples/firmware_check/firmware_check.ino
+    - PLATFORMIO_CI_SRC=examples/FixBrickedUID/FixBrickedUID.ino
+    - PLATFORMIO_CI_SRC=examples/MifareClassicValueBlock/MifareClassicValueBlock.ino
+    - PLATFORMIO_CI_SRC=examples/ReadAndWrite/ReadAndWrite.ino
+    - PLATFORMIO_CI_SRC=examples/ReadUidMultiReader/ReadUidMultiReader.ino
+    - PLATFORMIO_CI_SRC=examples/rfid_default_keys/rfid_default_keys.ino
+    - PLATFORMIO_CI_SRC=examples/rfid_write_personal_data/rfid_write_personal_data.ino
+    - PLATFORMIO_CI_SRC=examples/Ntag216_AUTH/Ntag216_AUTH.ino
+    - PLATFORMIO_CI_SRC=examples/ReadNUID/ReadNUID.ino
+    - PLATFORMIO_CI_SRC=examples/servo_motor/servo_motor.ino
+    - PLATFORMIO_CI_SRC=examples/RFID-Cloner/RFID-Cloner.ino
+
+install:
+    - pip install -U platformio
+
+script:
+    - platformio ci --lib=. --board=uno --board=megaatmega1280 --board=teensy31
