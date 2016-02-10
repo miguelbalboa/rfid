@@ -381,11 +381,11 @@ public:
 	StatusCode PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *GetStatusCodeName(byte code);
-	const __FlashStringHelper *GetStatusCodeName(StatusCode code);
-	PICC_Type PICC_GetType(byte sak);
+	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
+	static PICC_Type PICC_GetType(byte sak);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
-	const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
+	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	void PCD_DumpVersionToSerial();
 	void PICC_DumpToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
