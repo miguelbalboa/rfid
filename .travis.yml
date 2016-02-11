@@ -14,6 +14,7 @@ env:
     - PLATFORMIO_CI_SRC=examples/firmware_check/firmware_check.ino
     - PLATFORMIO_CI_SRC=examples/FixBrickedUID/FixBrickedUID.ino
     - PLATFORMIO_CI_SRC=examples/MifareClassicValueBlock/MifareClassicValueBlock.ino
+    - PLATFORMIO_CI_SRC=examples/MinimalInterrupt/MinimalInterrupt.ino
     - PLATFORMIO_CI_SRC=examples/ReadAndWrite/ReadAndWrite.ino
     - PLATFORMIO_CI_SRC=examples/ReadUidMultiReader/ReadUidMultiReader.ino
     - PLATFORMIO_CI_SRC=examples/rfid_default_keys/rfid_default_keys.ino
