@@ -13,8 +13,14 @@ Interface (SPI) interface.
 Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
 
 
-.. _pin layout:
+.. _compatible boards:
+Compatible boards
+----------
 
+This library is compatible to Teensy and ESP8266, but not all examples are available for every board. Also you have to change pins, see `pin layout`_.
+
+
+.. _pin layout:
 Pin Layout
 ----------
 
@@ -43,6 +49,7 @@ The following table shows the typical pin layout used:
 .. [3] The SDA pin might be labeled SS on some/older MFRC522 boards. 
 
 
+.. _hardware:
 Hardware
 --------
 
@@ -133,6 +140,7 @@ Troubleshooting
   #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
   #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentification, see `security`_ or different `protocol`_.
 
+
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
 
   #. Card simmulation is not supported.
@@ -146,6 +154,7 @@ Troubleshooting
   #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
 
 
+.. _license:
 License
 -------
 This is free and unencumbered software released into the public domain.
