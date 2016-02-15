@@ -1,3 +1,8 @@
+11 Feb 2016, v1.1.8
+- Added examples/MinimalInterrupt/MinimalInterrupt.ino example, Interrupt example @lmmeng
+- Added .gitignore file allows the project to be more easily used as a subproject. @BenWiederhake
+- Added Added Teensy 2.0 & Tensy++ 2.0 pinouts to README.rst @jkutianski
+
 16 Jan 2016, v1.1.7
 - README.rst Spelling and Grammar Tweak @cuthbertnibbles
 - Added examples/servo_motor/servo_motor.ino example, Arduino RFID Access Control with a Servo Motor @techied
