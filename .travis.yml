@@ -15,6 +15,7 @@ env:
     - PLATFORMIO_CI_SRC=examples/firmware_check/firmware_check.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/FixBrickedUID/FixBrickedUID.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/MifareClassicValueBlock/MifareClassicValueBlock.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
+    - PLATFORMIO_CI_SRC=examples/MinimalInterrupt/MinimalInterrupt.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/ReadAndWrite/ReadAndWrite.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/ReadUidMultiReader/ReadUidMultiReader.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/rfid_default_keys/rfid_default_keys.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
