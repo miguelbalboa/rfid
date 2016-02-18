@@ -272,8 +272,8 @@ public:
 	};
 	
 	// PICC types we can detect. Remember to update PICC_GetTypeName() if you add more.
-	// last value set to 255, hints compiler to use byte instead of default integer, works for arduino ide to save ram and flash
-	enum PICC_Type {
+	// last value set to 0xff, then compiler uses less ram, it seems some optimisations are triggered
+	enum PICC_Type : byte {
 		PICC_TYPE_UNKNOWN		,
 		PICC_TYPE_ISO_14443_4	,	// PICC compliant with ISO/IEC 14443-4 
 		PICC_TYPE_ISO_18092		, 	// PICC compliant with ISO/IEC 18092 (NFC)
@@ -283,12 +283,12 @@ public:
 		PICC_TYPE_MIFARE_UL		,	// MIFARE Ultralight or Ultralight C
 		PICC_TYPE_MIFARE_PLUS	,	// MIFARE Plus
 		PICC_TYPE_TNP3XXX		,	// Only mentioned in NXP AN 10833 MIFARE Type Identification Procedure
-		PICC_TYPE_NOT_COMPLETE	= 255	// SAK indicates UID is not complete.
+		PICC_TYPE_NOT_COMPLETE	= 0xff	// SAK indicates UID is not complete.
 	};
 	
 	// Return codes from the functions in this class. Remember to update GetStatusCodeName() if you add more.
-	// last value set to 255, hints compiler to use byte instead of default integer, works for arduino ide to save ram and flash
-	enum StatusCode {
+	// last value set to 0xff, then compiler uses less ram, it seems some optimisations are triggered
+	enum StatusCode : byte {
 		STATUS_OK				,	// Success
 		STATUS_ERROR			,	// Error in communication
 		STATUS_COLLISION		,	// Collission detected
@@ -297,7 +297,7 @@ public:
 		STATUS_INTERNAL_ERROR	,	// Internal error in the code. Should not happen ;-)
 		STATUS_INVALID			,	// Invalid argument.
 		STATUS_CRC_WRONG		,	// The CRC_A does not match
-		STATUS_MIFARE_NACK		= 255	// A MIFARE PICC responded with NAK.
+		STATUS_MIFARE_NACK		= 0xff	// A MIFARE PICC responded with NAK.
 	};
 	
 	// A struct used for passing the UID of a PICC.
@@ -381,16 +381,21 @@ public:
 	StatusCode PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *GetStatusCodeName(byte code);
-	const __FlashStringHelper *GetStatusCodeName(StatusCode code);
-	PICC_Type PICC_GetType(byte sak);
+	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
+	static PICC_Type PICC_GetType(byte sak);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
-	const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
+	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
+	
+	// Support functions for debuging
 	void PCD_DumpVersionToSerial();
 	void PICC_DumpToSerial(Uid *uid);
+	void PICC_DumpDetailsToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
+	
+	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
 	bool MIFARE_OpenUidBackdoor(bool logErrors);
 	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
