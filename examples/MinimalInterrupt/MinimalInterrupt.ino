@@ -76,7 +76,7 @@ void setup() {
 
     do{ //clear a spourious interrupt at start
       ;
-    }while(!bNewInt);
+    }while(bNewInt);
     bNewInt = false;
 }
 
@@ -95,6 +95,7 @@ void loop() {
       Serial.println();
      
       clearInt(mfrc522);
+      mfrc522.PICC_HaltA();
    }
 
 // The receiving block needs regular retriggering (tell the tag it should transmit??)
