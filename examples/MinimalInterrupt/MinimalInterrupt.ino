@@ -71,13 +71,13 @@ void setup() {
 
     /*Activate the interrupt*/
     attachInterrupt(digitalPinToInterrupt(IRQ_PIN), readCard, FALLING);
-
-    Serial.println("End setup"); 
-
+    
     do{ //clear a spourious interrupt at start
       ;
     }while(!bNewInt);
     bNewInt = false;
+
+    Serial.println("End setup"); 
 }
 
 /**
@@ -86,7 +86,6 @@ void setup() {
 void loop() {
    
    if(bNewInt){  //new read interrupt
-      bNewInt = false;
       Serial.print("Interrupt. ");
       mfrc522.PICC_ReadCardSerial(); //read the tag data
       // Show some details of the PICC (that is: the tag/card)
@@ -95,6 +94,8 @@ void loop() {
       Serial.println();
      
       clearInt(mfrc522);
+      mfrc522.PICC_HaltA();
+      bNewInt = false;
    }
 
 // The receiving block needs regular retriggering (tell the tag it should transmit??)
@@ -134,4 +135,5 @@ void activateRec(MFRC522 mfrc522){
 void clearInt(MFRC522 mfrc522){
    mfrc522.PCD_WriteRegister(mfrc522.ComIrqReg,0x7F);
 }
+
 
