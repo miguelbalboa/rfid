@@ -167,8 +167,9 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 	PCD_WriteRegister(FIFODataReg, length, data);	// Write data to the FIFO
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);		// Start the calculation
 	
-	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73�s.
-	word i = 5000;
+	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73μs.
+	// TODO check/modify for other architectures than Arduino Uno 16bit
+	uint16_t i = 5000;
 	byte n;
 	while (1) {
 		n = PCD_ReadRegister(DivIrqReg);	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
@@ -205,7 +206,7 @@ void MFRC522::PCD_Init() {
 	
 	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
 		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
+		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
 		delay(50);
 	}
 	else { // Perform a soft reset
@@ -216,7 +217,7 @@ void MFRC522::PCD_Init() {
 	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
 	// TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg.
 	PCD_WriteRegister(TModeReg, 0x80);			// TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds
-	PCD_WriteRegister(TPrescalerReg, 0xA9);		// TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25�s.
+	PCD_WriteRegister(TPrescalerReg, 0xA9);		// TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25μs.
 	PCD_WriteRegister(TReloadRegH, 0x03);		// Reload timer with 0x3E8 = 1000, ie 25ms before timeout.
 	PCD_WriteRegister(TReloadRegL, 0xE8);
 	
@@ -252,7 +253,7 @@ void MFRC522::PCD_Reset() {
 	PCD_WriteRegister(CommandReg, PCD_SoftReset);	// Issue the SoftReset command.
 	// The datasheet does not mention how long the SoftRest command takes to complete.
 	// But the MFRC522 might have been in soft power-down mode (triggered by bit 4 of CommandReg) 
-	// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74�s. Let us be generous: 50ms.
+	// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
 	delay(50);
 	// Wait for the PowerDown bit in CommandReg to be cleared
 	while (PCD_ReadRegister(CommandReg) & (1<<4)) {
@@ -328,9 +329,8 @@ bool MFRC522::PCD_PerformSelfTest() {
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);
 	
 	// 6. Wait for self-test to complete
-	word i;
 	byte n;
-	for (i = 0; i < 0xFF; i++) {
+	for (uint8_t i = 0; i < 0xFF; i++) {
 		// The datasheet does not specify exact completion condition except
 		// that FIFO buffer should contain 64 bytes.
 		// While selftest is initiated by CalcCRC command
@@ -376,7 +376,7 @@ bool MFRC522::PCD_PerformSelfTest() {
 	}
 	
 	// Verify that the results match up to our expectations
-	for (i = 0; i < 64; i++) {
+	for (uint8_t i = 0; i < 64; i++) {
 		if (result[i] != pgm_read_byte(&(reference[i]))) {
 			return false;
 		}
@@ -425,7 +425,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 														bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 									 ) {
 	byte n, _validBits;
-	unsigned int i;
+	uint16_t i;
 	
 	// Prepare values for BitFramingReg
 	byte txLastBits = validBits ? *validBits : 0;
@@ -443,7 +443,8 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	
 	// Wait for the command to complete.
 	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
-	// Each iteration of the do-while-loop takes 17.86�s.
+	// Each iteration of the do-while-loop takes 17.86μs.
+	// TODO check/modify for other architectures than Arduino Uno 16bit
 	i = 2000;
 	while (1) {
 		n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
@@ -991,7 +992,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
 MFRC522::StatusCode MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0-0xff) number.
-												long delta		///< This number is subtracted from the value of block blockAddr.
+												int32_t delta		///< This number is subtracted from the value of block blockAddr.
 											) {
 	return MIFARE_TwoStepHelper(PICC_CMD_MF_DECREMENT, blockAddr, delta);
 } // End MIFARE_Decrement()
@@ -1005,7 +1006,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Decrement(	byte blockAddr, ///< The block (0
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
 MFRC522::StatusCode MFRC522::MIFARE_Increment(	byte blockAddr, ///< The block (0-0xff) number.
-												long delta		///< This number is added to the value of block blockAddr.
+												int32_t delta		///< This number is added to the value of block blockAddr.
 											) {
 	return MIFARE_TwoStepHelper(PICC_CMD_MF_INCREMENT, blockAddr, delta);
 } // End MIFARE_Increment()
@@ -1032,7 +1033,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Restore(	byte blockAddr ///< The block (0-0x
  */
 MFRC522::StatusCode MFRC522::MIFARE_TwoStepHelper(	byte command,	///< The command to use
 													byte blockAddr,	///< The block (0-0xff) number.
-													long data		///< The data to transfer in step 2
+													int32_t data		///< The data to transfer in step 2
 													) {
 	MFRC522::StatusCode result;
 	byte cmdBuffer[2]; // We only need room for 2 bytes.
@@ -1087,7 +1088,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Transfer(	byte blockAddr ///< The block (0-0
  * @param[out]  value       Current value of the Value Block.
  * @return STATUS_OK on success, STATUS_??? otherwise.
   */
-MFRC522::StatusCode MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
+MFRC522::StatusCode MFRC522::MIFARE_GetValue(byte blockAddr, int32_t *value) {
 	MFRC522::StatusCode status;
 	byte buffer[18];
 	byte size = sizeof(buffer);
@@ -1096,7 +1097,7 @@ MFRC522::StatusCode MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
 	status = MIFARE_Read(blockAddr, buffer, &size);
 	if (status == STATUS_OK) {
 		// Extract the value
-		*value = (long(buffer[3])<<24) | (long(buffer[2])<<16) | (long(buffer[1])<<8) | long(buffer[0]);
+		*value = (int32_t(buffer[3])<<24) | (int32_t(buffer[2])<<16) | (int32_t(buffer[1])<<8) | int32_t(buffer[0]);
 	}
 	return status;
 } // End MIFARE_GetValue()
@@ -1112,10 +1113,10 @@ MFRC522::StatusCode MFRC522::MIFARE_GetValue(byte blockAddr, long *value) {
  * @param[in]   value       New value of the Value Block.
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-MFRC522::StatusCode MFRC522::MIFARE_SetValue(byte blockAddr, long value) {
+MFRC522::StatusCode MFRC522::MIFARE_SetValue(byte blockAddr, int32_t value) {
 	byte buffer[18];
 	
-	// Translate the long into 4 bytes; repeated 2x in value block
+	// Translate the int32_t into 4 bytes; repeated 2x in value block
 	buffer[0] = buffer[ 8] = (value & 0xFF);
 	buffer[1] = buffer[ 9] = (value & 0xFF00) >> 8;
 	buffer[2] = buffer[10] = (value & 0xFF0000) >> 16;
@@ -1572,7 +1573,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		}
 		
 		if (group != 3 && (g[group] == 1 || g[group] == 6)) { // Not a sector trailer, a value block
-			long value = (long(buffer[3])<<24) | (long(buffer[2])<<16) | (long(buffer[1])<<8) | long(buffer[0]);
+			int32_t value = (int32_t(buffer[3])<<24) | (int32_t(buffer[2])<<16) | (int32_t(buffer[1])<<8) | int32_t(buffer[0]);
 			Serial.print(F(" Value=0x")); Serial.print(value, HEX);
 			Serial.print(F(" Adr=0x")); Serial.print(buffer[12], HEX);
 		}
@@ -1786,7 +1787,7 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 	
 	// Write new UID to the data we just read, and calculate BCC byte
 	byte bcc = 0;
-	for (int i = 0; i < uidSize; i++) {
+	for (uint8_t i = 0; i < uidSize; i++) {
 		block0_buffer[i] = newUid[i];
 		bcc ^= newUid[i];
 	}

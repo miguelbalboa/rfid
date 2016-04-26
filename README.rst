@@ -84,6 +84,13 @@ Support/issue
     Open an issue on github.
 
 
+.. _code style:
+Code style
+----------
+
+Please use ``fixed integers``, see `stdint.h`_. Why? This library is compatible to different boards which use different architectures (16bit vs 32bit). So unfixed ``int`` has different sizes on different environments and may cause unpredictable behaviour.
+
+
 .. _pin layout:
 Pin Layout
 ----------
@@ -269,3 +276,4 @@ It has been extended with functionality to alter sector 0 on Chinese UID changea
 .. _broken: https://eprint.iacr.org/2008/166
 .. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
 .. _Arduino forum: https://forum.arduino.cc
+.. _stdint.h: https://en.wikibooks.org/wiki/C_Programming/C_Reference/stdint.h

@@ -369,12 +369,12 @@ public:
 	StatusCode MIFARE_Read(byte blockAddr, byte *buffer, byte *bufferSize);
 	StatusCode MIFARE_Write(byte blockAddr, byte *buffer, byte bufferSize);
 	StatusCode MIFARE_Ultralight_Write(byte page, byte *buffer, byte bufferSize);
-	StatusCode MIFARE_Decrement(byte blockAddr, long delta);
-	StatusCode MIFARE_Increment(byte blockAddr, long delta);
+	StatusCode MIFARE_Decrement(byte blockAddr, int32_t delta);
+	StatusCode MIFARE_Increment(byte blockAddr, int32_t delta);
 	StatusCode MIFARE_Restore(byte blockAddr);
 	StatusCode MIFARE_Transfer(byte blockAddr);
-	StatusCode MIFARE_GetValue(byte blockAddr, long *value);
-	StatusCode MIFARE_SetValue(byte blockAddr, long value);
+	StatusCode MIFARE_GetValue(byte blockAddr, int32_t *value);
+	StatusCode MIFARE_SetValue(byte blockAddr, int32_t value);
 	StatusCode PCD_NTAG216_AUTH(byte *passWord, byte pACK[]);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -412,7 +412,7 @@ public:
 private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
-	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
+	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
 };
 
 #endif
