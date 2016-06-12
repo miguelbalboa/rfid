@@ -5,7 +5,9 @@ CXXFLAGS=-g -Wall -std=gnu++11
 CPPFLAGS=-Ilinux -I.
 LDFLAGS=-lstdc++
 
-SOURCES=$(wildcard examples/*/*.ino)
+BROKEN=examples/MinimalInterrupt/MinimalInterrupt.ino examples/servo_motor/servo_motor.ino
+
+SOURCES=$(filter-out $(BROKEN), $(wildcard examples/*/*.ino))
 
 all:	package examples
 
