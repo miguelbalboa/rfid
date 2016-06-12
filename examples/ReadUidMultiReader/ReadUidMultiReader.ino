@@ -41,6 +41,8 @@ byte ssPins[] = {SS_1_PIN, SS_2_PIN};
 
 MFRC522 mfrc522[NR_OF_READERS];   // Create MFRC522 instance.
 
+void dump_byte_array(byte *buffer, byte bufferSize);
+
 /**
  * Initialize.
  */

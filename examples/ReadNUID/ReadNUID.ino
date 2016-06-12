@@ -41,6 +41,9 @@ MFRC522::MIFARE_Key key;
 // Init array that will store new NUID 
 byte nuidPICC[3];
 
+void printHex(byte *buffer, byte bufferSize);
+void printDec(byte *buffer, byte bufferSize);
+
 void setup() { 
   Serial.begin(9600);
   SPI.begin(); // Init SPI bus
