@@ -107,7 +107,7 @@ Protocols
 Security
 -------
 This library only supports crypto1-encrypted communication. Crypto1 has been known as `broken`_ for a few years, so it does NOT offer ANY security, it is virtually unencrypted communication. **Do not use it for any security related applications!**
-This library does not offer 3DES or AES authentication used by cars like the Mifare DESFire, it may be possible to be implemented because the datasheet says there is support. We hope for pull requests :).
+This library does not offer 3DES or AES authentication used by cards like the Mifare DESFire, it may be possible to be implemented because the datasheet says there is support. We hope for pull requests :).
 
 
 .. _troubleshooting:
