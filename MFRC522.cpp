@@ -21,7 +21,7 @@ MFRC522::MFRC522() {
  * Prepares the output pins.
  */
 MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
-				): MFRC522(SS, resetPowerDownPin) {
+				): MFRC522(SS, resetPowerDownPin) { // SS is defined in pins_arduino.h
 } // End constructor
 
 /**
@@ -230,7 +230,7 @@ void MFRC522::PCD_Init() {
  */
 void MFRC522::PCD_Init(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
-	PCD_Init(SS, resetPowerDownPin);
+	PCD_Init(SS, resetPowerDownPin); // SS is defined in pins_arduino.h
 } // End PCD_Init()
 
 /**
