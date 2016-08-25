@@ -12,12 +12,54 @@ Interface (SPI) interface.
 
 Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
 
+.. _development:
+Development
+----------
+**The development by owner miguelbalboa has ended**. Further development will be done by community. This library is still maintained by miguelbalboa, so make pull request if you like some new features or fixes. Support/issues should be solved by community.
+
+.. _what works and not:
+What works and not?
+----------
+
+* **Works**
+  
+  #. Communication (Crypto1) with MIFARE Classic (1k, 4k, Mini).
+  #. Communication (Crypto1) with MIFARE Classic compatible PICCs.
+  #. Firmware self check of MFRC522.
+
+* **Partial**
+
+  #. Communication with MIFARE Ultralight.
+
+* **Works not**
+  
+  #. MIFARE DESFire, MIFARE DESFire EV1/EV2, not supported by software.
+  #. Communication with DES3 or AES, not supported by software.
+  #. Peer-to-peer (ISO/IEC 18092), not `supported by hardware`_.
+  #. Communication with smart phone, not `supported by hardware`_.
+  #. Card emulation, not `supported by hardware`_.
+
+* **Need more?**
+
+  #. If software: code it and make a pull request.
+  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
+
+
+.. _compatible ide:
+Compatible IDE
+----------
+This library works with Arduino IDE 1.6, older versions are **not supported** and will cause compile errors. The built-in library manager is supported.
+
+If you use your own compiler, you have to enable ``c++11``-support.
+
 
 .. _compatible boards:
 Compatible boards
 ----------
 
 This library is compatible to Teensy and ESP8266, but not all examples are available for every board. Also you have to change pins, see `pin layout`_.
+
+Note that the main target/support of library is still Arduino.
 
 
 .. _pin layout:
@@ -202,3 +244,4 @@ It has been extended with functionality to alter sector 0 on Chinese UID changea
 .. _iso/iec 14443-3\:2011 part 3: 
 .. _nxp mfrc522: http://www.nxp.com/documents/data_sheet/MFRC522.pdf
 .. _broken: http://eprint.iacr.org/2008/166
+.. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
