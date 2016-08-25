@@ -83,7 +83,7 @@
 // Hint: if needed, you can remove unused self-test data to save flash memory
 //
 // Version 0.0 (0x90)
-// Philips Semiconductors; Preliminary Specification Revision 2.0 - 01 August 2005; 16.1 Sefttest
+// Philips Semiconductors; Preliminary Specification Revision 2.0 - 01 August 2005; 16.1 self-test
 const byte MFRC522_firmware_referenceV0_0[] PROGMEM = {
 	0x00, 0x87, 0x98, 0x0f, 0x49, 0xFF, 0x07, 0x19,
 	0xBF, 0x22, 0x30, 0x49, 0x59, 0x63, 0xAD, 0xCA,
@@ -95,7 +95,7 @@ const byte MFRC522_firmware_referenceV0_0[] PROGMEM = {
 	0x35, 0x96, 0x98, 0x9E, 0x4F, 0x30, 0x32, 0x8D
 };
 // Version 1.0 (0x91)
-// NXP Semiconductors; Rev. 3.8 - 17 September 2014; 16.1.1 Self test
+// NXP Semiconductors; Rev. 3.8 - 17 September 2014; 16.1.1 self-test
 const byte MFRC522_firmware_referenceV1_0[] PROGMEM = {
 	0x00, 0xC6, 0x37, 0xD5, 0x32, 0xB7, 0x57, 0x5C,
 	0xC2, 0xD8, 0x7C, 0x4D, 0xD9, 0x70, 0xC7, 0x73,
@@ -107,7 +107,7 @@ const byte MFRC522_firmware_referenceV1_0[] PROGMEM = {
 	0xD9, 0x0F, 0xB5, 0x5E, 0x25, 0x1D, 0x29, 0x79
 };
 // Version 2.0 (0x92)
-// NXP Semiconductors; Rev. 3.8 - 17 September 2014; 16.1.1 Self test
+// NXP Semiconductors; Rev. 3.8 - 17 September 2014; 16.1.1 self-test
 const byte MFRC522_firmware_referenceV2_0[] PROGMEM = {
 	0x00, 0xEB, 0x66, 0xBA, 0x57, 0xBF, 0x23, 0x95,
 	0xD0, 0xE3, 0x0D, 0x3D, 0x27, 0x89, 0x5C, 0xDE,
@@ -197,7 +197,7 @@ public:
 		TestPinEnReg			= 0x33 << 1,	// enables pin output driver on pins D1 to D7
 		TestPinValueReg			= 0x34 << 1,	// defines the values for D1 to D7 when it is used as an I/O bus
 		TestBusReg				= 0x35 << 1,	// shows the status of the internal test bus
-		AutoTestReg				= 0x36 << 1,	// controls the digital self test
+		AutoTestReg				= 0x36 << 1,	// controls the digital self-test
 		VersionReg				= 0x37 << 1,	// shows the software version
 		AnalogTestReg			= 0x38 << 1,	// controls the pins AUX1 and AUX2
 		TestDAC1Reg				= 0x39 << 1,	// defines the test value for TestDAC1
@@ -214,7 +214,7 @@ public:
 		PCD_Idle				= 0x00,		// no action, cancels current command execution
 		PCD_Mem					= 0x01,		// stores 25 bytes into the internal buffer
 		PCD_GenerateRandomID	= 0x02,		// generates a 10-byte random ID number
-		PCD_CalcCRC				= 0x03,		// activates the CRC coprocessor or performs a self test
+		PCD_CalcCRC				= 0x03,		// activates the CRC coprocessor or performs a self-test
 		PCD_Transmit			= 0x04,		// transmits data from the FIFO buffer
 		PCD_NoCmdChange			= 0x07,		// no command change, can be used to modify the CommandReg register bits without affecting the command, for example, the PowerDown bit
 		PCD_Receive				= 0x08,		// activates the receiver circuits
