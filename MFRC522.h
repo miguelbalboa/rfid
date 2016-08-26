@@ -78,6 +78,18 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#if defined(__SAM3X8E__)
+  #include <include/pio.h>
+  #define PROGMEM
+  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+  #define pgm_read_word(addr) (*(const unsigned short *)(addr))
+  typedef unsigned char prog_uchar;
+#elif defined(__AVR__)
+  #include <avr/pgmspace.h>
+#elif defined(ESP8266)
+  #include <pgmspace.h>
+#endif
+
 // Firmware data for self-test
 // Reference values based on firmware version
 // Hint: if needed, you can remove unused self-test data to save flash memory
@@ -322,7 +334,7 @@ public:
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
 	MFRC522();
-	MFRC522(byte chipSelectPin, byte resetPowerDownPin);
+	MFRC522(byte chipSelectPin, byte resetPowerDownPin=-1);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Basic interface functions for communicating with the MFRC522
@@ -408,9 +420,18 @@ public:
 	bool PICC_ReadCardSerial();
 	
 private:
-	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
-	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+	//byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
+	//byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
+	
+#if defined(__AVR__) || defined(CORE_TEENSY)
+	uint8_t  _chipSelectPin,_resetPowerDownPin;
+#elif defined(__arm__)
+	uint32_t  _chipSelectPin,_resetPowerDownPin;
+#elif defined(ESP8266)
+    uint32_t  _chipSelectPin,_resetPowerDownPin;
+#endif
+	
 };
 
 #endif
