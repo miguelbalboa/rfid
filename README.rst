@@ -10,8 +10,6 @@ Read and write different types of Radio-Frequency IDentification (RFID) cards
 on your Arduino using a RC522 based reader connected via the Serial Peripheral
 Interface (SPI) interface.
 
-Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
-
 .. _development:
 Development
 ----------
@@ -26,23 +24,26 @@ What works and not?
   #. Communication (Crypto1) with MIFARE Classic (1k, 4k, Mini).
   #. Communication (Crypto1) with MIFARE Classic compatible PICCs.
   #. Firmware self check of MFRC522.
+  #. Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
 
 * **Partial**
 
   #. Communication with MIFARE Ultralight.
+  #. Other PICCs (Ntag216).
 
 * **Works not**
   
   #. MIFARE DESFire, MIFARE DESFire EV1/EV2, not supported by software.
-  #. Communication with DES3 or AES, not supported by software.
+  #. Communication with 3DES or AES, not supported by software.
   #. Peer-to-peer (ISO/IEC 18092), not `supported by hardware`_.
   #. Communication with smart phone, not `supported by hardware`_.
   #. Card emulation, not `supported by hardware`_.
+  #. Use of IRQ pin. But there is a proof-of-concept example.
 
 * **Need more?**
 
   #. If software: code it and make a pull request.
-  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
+  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15).
 
 
 .. _compatible ide:
@@ -149,6 +150,7 @@ Protocols
 Security
 -------
 This library only supports crypto1-encrypted communication. Crypto1 has been known as `broken`_ for a few years, so it does NOT offer ANY security, it is virtually unencrypted communication. **Do not use it for any security related applications!**
+
 This library does not offer 3DES or AES authentication used by cards like the Mifare DESFire, it may be possible to be implemented because the datasheet says there is support. We hope for pull requests :).
 
 
