@@ -10,10 +10,12 @@ Read and write different types of Radio-Frequency IDentification (RFID) cards
 on your Arduino using a RC522 based reader connected via the Serial Peripheral
 Interface (SPI) interface.
 
+
 .. _development:
 Development
 ----------
 **The development by owner miguelbalboa has ended**. Further development will be done by community. This library is still maintained by miguelbalboa, so make pull request if you like some new features or fixes. Support/issues should be solved by community.
+
 
 .. _what works and not:
 What works and not?
@@ -224,7 +226,7 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-For more information, please refer to http://unlicense.org/
+For more information, please refer to https://unlicense.org/
 
 
 History
@@ -241,9 +243,9 @@ It has been extended with functionality to alter sector 0 on Chinese UID changea
 
 
 .. _arduino: https://arduino.cc/
-.. _ebay: http://www.ebay.com/
+.. _ebay: https://www.ebay.com/
 .. _iso/iec 14443a: https://en.wikipedia.org/wiki/ISO/IEC_14443
 .. _iso/iec 14443-3\:2011 part 3: 
-.. _nxp mfrc522: http://www.nxp.com/documents/data_sheet/MFRC522.pdf
-.. _broken: http://eprint.iacr.org/2008/166
+.. _nxp mfrc522: https://www.nxp.com/documents/data_sheet/MFRC522.pdf
+.. _broken: https://eprint.iacr.org/2008/166
 .. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
