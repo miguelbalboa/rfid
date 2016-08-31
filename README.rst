@@ -60,9 +60,28 @@ If you use your own compiler, you have to enable ``c++11``-support.
 Compatible boards
 ----------
 
-This library is compatible to Teensy and ESP8266, but not all examples are available for every board. Also you have to change pins, see `pin layout`_.
+**!!!Only for advanced user!!!**
+
+This library is compatible to Teensy and ESP8266, if you use board plugin of the Arduino IDE. Not all examples are available for every board. You also have to change pins, see `pin layout`_.
+
+Some user made some patches/suggestions/ports for other boards:
+
+* Linux: https://github.com/miguelbalboa/rfid/pull/216
+* chipKIT: https://github.com/miguelbalboa/rfid/pull/230
+* ESP8266 (native): https://github.com/miguelbalboa/rfid/pull/235
 
 Note that the main target/support of library is still Arduino.
+
+.. _support issue:
+Support/issue
+----------
+1. First checkout `what works and not`_ and `troubleshooting`_ .
+
+2. It seems to be a hardware issue or you need support to program your project?
+    Please ask in the official `Arduino forum`_, there you would get a much faster answer then on github.
+
+3. It seems to be a software issue?
+    Open an issue on github.
 
 
 .. _pin layout:
@@ -249,3 +268,4 @@ It has been extended with functionality to alter sector 0 on Chinese UID changea
 .. _nxp mfrc522: https://www.nxp.com/documents/data_sheet/MFRC522.pdf
 .. _broken: https://eprint.iacr.org/2008/166
 .. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
+.. _Arduino forum: https://forum.arduino.cc
