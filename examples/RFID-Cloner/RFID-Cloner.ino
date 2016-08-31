@@ -67,7 +67,7 @@ void setup() {
     }
 }
 
-
+void start();
 
  //Via seriele monitor de bytes uitlezen in hexadecimaal
  
@@ -153,6 +153,10 @@ void loop() {
   start();
     
 }
+
+void keuze1();
+void keuze2();
+void keuze3();
 
 void start(){
   choice = Serial.read();

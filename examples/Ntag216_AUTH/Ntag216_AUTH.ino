@@ -46,9 +46,6 @@ void loop() {
   Serial.print(pACK[0], HEX);
   Serial.println(pACK[1], HEX);
 
-  byte WBuff[] = {0x00, 0x00, 0x00, 0x04};
-  byte RBuff[18];
-
   //Serial.print("CHG BLK: ");
   //Serial.println(mfrc522.MIFARE_Ultralight_Write(0xE3, WBuff, 4));  //How to write to a page
 

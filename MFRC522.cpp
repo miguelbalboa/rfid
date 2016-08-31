@@ -1149,7 +1149,6 @@ MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte* passWord, byte pACK[]) //Aut
 	
 	// Transceive the data, store the reply in cmdBuffer[]
 	byte waitIRq		= 0x30;	// RxIRq and IdleIRq
-	byte cmdBufferSize	= sizeof(cmdBuffer);
 	byte validBits		= 0;
 	byte rxlength		= 5;
 	result = PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, cmdBuffer, 7, cmdBuffer, &rxlength, &validBits);
