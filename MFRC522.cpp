@@ -5,7 +5,7 @@
 */
 
 #include <Arduino.h>
-#include <MFRC522.h>
+#include "MFRC522.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for setting up the Arduino
@@ -107,21 +107,17 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	count--;								// One read is performed outside of the loop
 	SPI.transfer(address);					// Tell MFRC522 which address we want to read
+	if (rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
+		// Create bit mask for bit positions rxAlign..7
+		byte mask = (0xFF << rxAlign) & 0xFF;
+		// Read value and tell that we want to read the same address again.
+		byte value = SPI.transfer(address);
+		// Apply mask to both current value of values[0] and the new data in value.
+		values[0] = (values[index] & ~mask) | (value & mask);
+		index++;
+	}
 	while (index < count) {
-		if (index == 0 && rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
-			// Create bit mask for bit positions rxAlign..7
-			byte mask = 0;
-			for (byte i = rxAlign; i <= 7; i++) {
-				mask |= (1 << i);
-			}
-			// Read value and tell that we want to read the same address again.
-			byte value = SPI.transfer(address);
-			// Apply mask to both current value of values[0] and the new data in value.
-			values[0] = (values[index] & ~mask) | (value & mask);
-		}
-		else { // Normal case
-			values[index] = SPI.transfer(address);	// Read value and tell that we want to read the same address again.
-		}
+		values[index] = SPI.transfer(address);	// Read value and tell that we want to read the same address again.
 		index++;
 	}
 	values[index] = SPI.transfer(0);			// Read the final byte. Send 0 to stop reading.
