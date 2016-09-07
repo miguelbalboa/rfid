@@ -78,6 +78,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#define MFRC522_SPICLOCK		(F_CPU / 2)
+
 // Firmware data for self-test
 // Reference values based on firmware version
 // Hint: if needed, you can remove unused self-test data to save flash memory
@@ -268,7 +270,8 @@ public:
 	// MIFARE constants that does not fit anywhere else
 	enum MIFARE_Misc {
 		MF_ACK					= 0xA,		// The MIFARE Classic uses a 4 bit ACK/NAK. Any other value than 0xA is NAK.
-		MF_KEY_SIZE				= 6			// A Mifare Crypto1 key is 6 bytes.
+		MF_KEY_SIZE				= 6,		// A Mifare Crypto1 key is 6 bytes.
+		FIFO_SIZE				= 64		// The MFRC522 FIFO is 64 bytes.
 	};
 	
 	// PICC types we can detect. Remember to update PICC_GetTypeName() if you add more.
@@ -315,9 +318,6 @@ public:
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
 	
-	// Size of the MFRC522 FIFO
-	static const byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
-	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -328,13 +328,14 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Basic interface functions for communicating with the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
-	void PCD_WriteRegister(byte reg, byte value);
-	void PCD_WriteRegister(byte reg, byte count, byte *values);
-	byte PCD_ReadRegister(byte reg);
-	void PCD_ReadRegister(byte reg, byte count, byte *values, byte rxAlign = 0);
-	void setBitMask(unsigned char reg, unsigned char mask);
-	void PCD_SetRegisterBitMask(byte reg, byte mask);
-	void PCD_ClearRegisterBitMask(byte reg, byte mask);
+	void PCD_WriteRegister(PCD_Register reg, byte value);
+	void PCD_WriteRegister(PCD_Register reg, byte count, byte *values);
+	byte PCD_ReadRegister(PCD_Register reg);
+	void PCD_ReadRegister(PCD_Register reg, byte count, byte *values, byte rxAlign = 0);
+	//void setBitMask(unsigned char reg, unsigned char mask); // why this thing is here?
+	void PCD_SetRegisterBitMask(PCD_Register reg, byte mask);
+	void PCD_ClearRegisterBitMask(PCD_Register reg, byte mask);
+	void PCD_WriteRegisterBitMask(PCD_Register reg, byte value, byte mask);
 	StatusCode PCD_CalculateCRC(byte *data, byte length, byte *result);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -381,11 +382,10 @@ public:
 	// Support functions
 	/////////////////////////////////////////////////////////////////////////////////////
 	StatusCode PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
+	static PICC_Type PICC_GetType(byte sak);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *GetStatusCodeName(byte code);
 	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
-	static PICC_Type PICC_GetType(byte sak);
-	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
 	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	
@@ -396,13 +396,13 @@ public:
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
-	
+
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
 	bool MIFARE_OpenUidBackdoor(bool logErrors);
 	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
 	bool MIFARE_UnbrickUidSector(bool logErrors);
-	
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -414,5 +414,4 @@ private:
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, long data);
 };
-
 #endif
