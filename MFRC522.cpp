@@ -114,7 +114,7 @@ void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from
 		// Read value and tell that we want to read the same address again.
 		byte value = SPI.transfer(address);
 		// Apply mask to both current value of values[0] and the new data in value.
-		values[0] = (values[index] & ~mask) | (value & mask);
+		values[0] = (values[0] & ~mask) | (value & mask);
 		index++;
 	}
 	while (index < count) {
