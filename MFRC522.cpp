@@ -843,8 +843,12 @@ MFRC522::StatusCode MFRC522::PCD_Authenticate(byte command,		///< PICC_CMD_MF_AU
 	for (byte i = 0; i < MF_KEY_SIZE; i++) {	// 6 key bytes
 		sendData[2+i] = key->keyByte[i];
 	}
-	for (byte i = 0; i < 4; i++) {				// The first 4 bytes of the UID
-		sendData[8+i] = uid->uidByte[i];
+	// Use the last uid bytes as specified in http://cache.nxp.com/documents/application_note/AN10927.pdf
+	// section 3.2.5 "MIFARE Classic Authentication".
+	// The only missed case is the MF1Sxxxx shortcut activation,
+	// but it requires cascade tag (CT) byte, that is not part of uid.
+	for (byte i = 0; i < 4; i++) {				// The last 4 bytes of the UID
+		sendData[8+i] = uid->uidByte[i+uid->size-4];
 	}
 	
 	// Start the authentication.
