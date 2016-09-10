@@ -331,8 +331,15 @@ bool MFRC522::PCD_PerformSelfTest() {
 	word i;
 	byte n;
 	for (i = 0; i < 0xFF; i++) {
-		n = PCD_ReadRegister(DivIrqReg);	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
-		if (n & 0x04) {						// CRCIRq bit set - calculation done
+		// The datasheet does not specify exact completion condition except
+		// that FIFO buffer should contain 64 bytes.
+		// While selftest is initiated by CalcCRC command
+		// it behaves differently from normal CRC computation,
+		// so one can't reliably use DivIrqReg to check for completion.
+		// It is reported that some devices does not trigger CRCIRq flag
+		// during selftest.
+		n = PCD_ReadRegister(FIFOLevelReg);
+		if (n >= 64) {
 			break;
 		}
 	}
