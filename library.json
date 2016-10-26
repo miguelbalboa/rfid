@@ -10,5 +10,5 @@
   "version": "1.1.8",
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "ststm32", "teensy", "espressif"]
+  "platforms": ["atmelavr", "ststm32", "teensy", "espressif8266"]
 }
