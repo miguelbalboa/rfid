@@ -98,7 +98,7 @@ void loop() {
     MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
-    long value;
+    int32_t value;
 
     // Authenticate using key A
     Serial.println(F("Authenticating using key A..."));
