@@ -277,4 +277,4 @@ It has been extended with functionality to alter sector 0 on Chinese UID changea
 .. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
 .. _Arduino forum: https://forum.arduino.cc
 .. _stdint.h: https://en.wikibooks.org/wiki/C_Programming/C_Reference/stdint.h
-.. _Mikro Elektronika: http://forum.mikroe.com/viewtopic.php?f=147&t=64203
+.. _Mikro Elektronika: https://forum.mikroe.com/viewtopic.php?f=147&t=64203
