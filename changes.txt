@@ -1,3 +1,6 @@
+12 November 2016 v1.1.??
+- Plain C LPCOpen version first commit 
+
 11 Feb 2016, v1.1.8
 - Added examples/MinimalInterrupt/MinimalInterrupt.ino example, Interrupt example @lmmeng
 - Added .gitignore file allows the project to be more easily used as a subproject. @BenWiederhake
