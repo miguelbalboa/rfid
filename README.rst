@@ -23,6 +23,8 @@ I ported all the functions to plain C code, and transformed the object initializ
   #. Read and write in the cards available memory space.
   #. Multiple readers instances, one per SPI interface.
 
+* All the other functions should be working, but need further testing.
+
 .. _compatible ide:
 Compatible IDE
 ----------
@@ -47,23 +49,23 @@ Pin Layout
 
 The following table shows the pin layout used in the project for the board LPCXpresso 4337:
 
-+-----------+----------+-----------------------------------------+
++-----------+----------+-------------+---------------------------+
 |           | PCD      | Arduino     | LPCXpresso 4337           |
-|           +----------+-------------+---------+---------+-------+
+|           +----------+-------------+--------------+------------+
 |           | MFRC522  | Uno         | using SSP1   | using SSP0 |
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 | Signal    | Pin      | Pin         | Pin          | Pin        | 
-+===========+==========+=============+=========+=========+=======+
++===========+==========+=============+==============+============+
 | RST/Reset | RST      | 9           | P2_9 [1]_    | P2_13 [1]_ | 
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 | SPI SS    | SDA [2]_ | 10          | P2_12 [1]_   | P1_7 [1]_  | 
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 | SPI MOSI  | MOSI     | 11          | P1_4         | P1_2       |
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 | SPI MISO  | MISO     | 12          | P1_3         | P1_1       |
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 | SPI SCK   | SCK      | 13          | PF_4         | P3_0       |
-+-----------+----------+-------------+---------+---------+-------+
++-----------+----------+-------------+--------------+------------+
 
 .. [1] You can use any GPIO pin to drive the RST and SS signals.
 
@@ -72,9 +74,10 @@ The following table shows the pin layout used in the project for the board LPCXp
 * Check schematics at : https://www.lpcware.com/system/files/LPCX4337_V3_Schematic_RevA3.pdf
 * Also check two images that resume the board pin layout:
     https://developer.mbed.org/media/uploads/MACRUM/xlpcxpresso4337_arduino1_enabled.png.pagespeed.ic.dLhpKgSTBu.png
+
     https://developer.mbed.org/media/uploads/MACRUM/lpcxpresso4337_arduino2_enabled.png   
-    
-The images and mathematics are also available in the docs folder.
+
+The images and schematics are also available in the docs folder.
 
 
 .. _hardware:
