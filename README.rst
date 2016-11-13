@@ -4,7 +4,7 @@ MFRC522_PLCOpen
 
 LPCOpen compatible C library for MFRC522 and other RFID RC522 based modules.
 It is useful when you have to do a plain C project. 
-Based on the MFRC522 Arduino library
+Based on the MFRC522 Arduino library made by Miguel Balboa: https://github.com/miguelbalboa/rfid.git
 
 
 .. _development:
