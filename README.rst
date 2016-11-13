@@ -1,123 +1,83 @@
-MFRC522
+MFRC522_PLCOpen
 =======
 
-.. image:: https://travis-ci.org/miguelbalboa/rfid.svg?branch=master
-    :target: https://travis-ci.org/miguelbalboa/rfid
 
-Arduino library for MFRC522 and other RFID RC522 based modules.
-
-Read and write different types of Radio-Frequency IDentification (RFID) cards
-on your Arduino using a RC522 based reader connected via the Serial Peripheral
-Interface (SPI) interface.
+LPCOpen compatible C library for MFRC522 and other RFID RC522 based modules.
+It is useful when you have to do a plain C project. 
+Based on the MFRC522 Arduino library made by Miguel Balboa: https://github.com/miguelbalboa/rfid.git
 
 
 .. _development:
 Development
 ----------
-**The development by owner miguelbalboa has ended**. Further development will be done by community. This library is still maintained by miguelbalboa, so make pull request if you like some new features or fixes. Support/issues should be solved by community.
+**This library was used for a project using NXP LPCXpresso 4337 board**. But it is compatible to any devices that uses LPCOpen CMSIS libraries. The user only have to configure the board GPIO pins and SPI interface. I will provide only one release, further development could be done by community. 
 
 
 .. _what works and not:
 What works and not?
 ----------
 
-* **Works**
-  
-  #. Communication (Crypto1) with MIFARE Classic (1k, 4k, Mini).
-  #. Communication (Crypto1) with MIFARE Classic compatible PICCs.
-  #. Firmware self check of MFRC522.
-  #. Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
+I ported all the functions to plain C code, and transformed the object initialization functions to C using ADT pointers. In my project I was able to:
+ 
+  #. Communication (Crypto1) with MIFARE Classic (1k, 4k, Mini). The only type of card tested. 
+  #. Read and write in the cards available memory space.
+  #. Multiple readers instances, one per SPI interface.
 
-* **Partial**
-
-  #. Communication with MIFARE Ultralight.
-  #. Other PICCs (Ntag216).
-
-* **Works not**
-  
-  #. MIFARE DESFire, MIFARE DESFire EV1/EV2, not supported by software.
-  #. Communication with 3DES or AES, not supported by software.
-  #. Peer-to-peer (ISO/IEC 18092), not `supported by hardware`_.
-  #. Communication with smart phone, not `supported by hardware`_.
-  #. Card emulation, not `supported by hardware`_.
-  #. Use of IRQ pin. But there is a proof-of-concept example.
-
-* **Need more?**
-
-  #. If software: code it and make a pull request.
-  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15).
-
+* All the other functions should be working, but need further testing.
 
 .. _compatible ide:
 Compatible IDE
 ----------
-This library works with Arduino IDE 1.6, older versions are **not supported** and will cause compile errors. The built-in library manager is supported.
+This library works with the Eclipse based LPCXpresso IDE 8.2 and further versions.
 
-If you use your own compiler, you have to enable ``c++11``-support.
+Download at:
+http://www.nxp.com/products/software-and-tools/software-development-tools/software-tools/lpc-microcontroller-utilities/lpcxpresso-ide-v8.2.2:LPCXPRESSO
 
 
 .. _compatible boards:
 Compatible boards
 ----------
+In my project I used th LPCXpresso 4337 board. But any NXP board with SPI interface and LPCOpen support should work.
 
-**!!!Only for advanced user!!!**
-
-This library is compatible to Teensy and ESP8266, if you use board plugin of the Arduino IDE. Not all examples are available for every board. You also have to change pins, see `pin layout`_.
-
-Some user made some patches/suggestions/ports for other boards:
-
-* Linux: https://github.com/miguelbalboa/rfid/pull/216
-* chipKIT: https://github.com/miguelbalboa/rfid/pull/230
-* ESP8266 (native): https://github.com/miguelbalboa/rfid/pull/235
-
-Note that the main target/support of library is still Arduino.
-
-.. _support issue:
-Support/issue
-----------
-1. First checkout `what works and not`_ and `troubleshooting`_ .
-
-2. It seems to be a hardware issue or you need support to program your project?
-    Please ask in the official `Arduino forum`_, there you would get a much faster answer then on github.
-
-3. It seems to be a software issue?
-    Open an issue on github.
-
-
-.. _code style:
-Code style
-----------
-
-Please use ``fixed integers``, see `stdint.h`_. Why? This library is compatible to different boards which use different architectures (16bit vs 32bit). So unfixed ``int`` has different sizes on different environments and may cause unpredictable behaviour.
+See LPCOPen examples at:
+http://www.nxp.com/products/microcontrollers-and-processors/arm-processors/lpc-cortex-m-mcus/software-tools/lpcopen-libraries-and-examples:LPC-OPEN-LIBRARIES
 
 
 .. _pin layout:
 Pin Layout
 ----------
 
-The following table shows the typical pin layout used:
+The following table shows the pin layout used in the project for the board LPCXpresso 4337:
 
-+-----------+----------+---------------------------------------------------------------+--------------------------+
-|           | PCD      | Arduino                                                       | Teensy                   |
-|           +----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-|           | MFRC522  | Uno / 101   | Mega    | Nano v3 |Leonardo / Micro | Pro Micro | 2.0    | ++ 2.0 | 3.1    |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-| Signal    | Pin      | Pin         | Pin     | Pin     | Pin             | Pin       | Pin    | Pin    | Pin    |
-+===========+==========+=============+=========+=========+=================+===========+========+========+========+
-| RST/Reset | RST      | 9 [1]_      | 5 [1]_  | D9      | RESET / ICSP-5  | RST       | 7      | 4      | 9      |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-| SPI SS    | SDA [3]_ | 10 [2]_     | 53 [2]_ | D10     | 10              | 10        | 0      | 20     | 10     |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-| SPI MOSI  | MOSI     | 11 / ICSP-4 | 51      | D11     | ICSP-4          | 16        | 2      | 22     | 11     |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-| SPI MISO  | MISO     | 12 / ICSP-1 | 50      | D12     | ICSP-1          | 14        | 3      | 23     | 12     |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
-| SPI SCK   | SCK      | 13 / ICSP-3 | 52      | D13     | ICSP-3          | 15        | 1      | 21     | 13     |
-+-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
++-----------+----------+-------------+---------------------------+
+|           | PCD      | Arduino     | LPCXpresso 4337           |
+|           +----------+-------------+--------------+------------+
+|           | MFRC522  | Uno         | using SSP1   | using SSP0 |
++-----------+----------+-------------+--------------+------------+
+| Signal    | Pin      | Pin         | Pin          | Pin        | 
++===========+==========+=============+==============+============+
+| RST/Reset | RST      | 9           | P2_9 [1]_    | P2_13 [1]_ | 
++-----------+----------+-------------+--------------+------------+
+| SPI SS    | SDA [2]_ | 10          | P2_12 [1]_   | P1_7 [1]_  | 
++-----------+----------+-------------+--------------+------------+
+| SPI MOSI  | MOSI     | 11          | P1_4         | P1_2       |
++-----------+----------+-------------+--------------+------------+
+| SPI MISO  | MISO     | 12          | P1_3         | P1_1       |
++-----------+----------+-------------+--------------+------------+
+| SPI SCK   | SCK      | 13          | PF_4         | P3_0       |
++-----------+----------+-------------+--------------+------------+
 
-.. [1] Configurable, typically defined as RST_PIN in sketch/program.
-.. [2] Configurable, typically defined as SS_PIN in sketch/program.
-.. [3] The SDA pin might be labeled SS on some/older MFRC522 boards. 
+.. [1] You can use any GPIO pin to drive the RST and SS signals.
+
+.. [2] The SDA pin might be labeled SS on some/older MFRC522 boards. 
+
+* Check schematics at : https://www.lpcware.com/system/files/LPCX4337_V3_Schematic_RevA3.pdf
+* Also check two images that resume the board pin layout:
+    https://developer.mbed.org/media/uploads/MACRUM/xlpcxpresso4337_arduino1_enabled.png.pagespeed.ic.dLhpKgSTBu.png
+
+    https://developer.mbed.org/media/uploads/MACRUM/lpcxpresso4337_arduino2_enabled.png   
+
+The images and schematics are also available in the docs folder.
 
 
 .. _hardware:
@@ -128,12 +88,6 @@ There are three hardware components involved:
 
 1. **Micro Controller**:
 
-* An `Arduino`_ or compatible executing the Sketch using this library.
-
-* Prices vary from USD 7 for clones, to USD 75 for "starter kits" (which
-  might be a good choice if this is your first exposure to Arduino;
-  check if such kit already includes the Arduino, Reader, and some Tags).
-
 2. **Proximity Coupling Device (PCD)**:
 
 * The PCD is the actual RFID **Reader** based on `NXP MFRC522`_ Contactless
@@ -142,7 +96,7 @@ There are three hardware components involved:
 * Readers can be found on `eBay`_ for around USD 5: search for *"rc522"*.
 
 * You can also find them at several web stores, they are often included in
-  *"starter kits"*; so check your favourite electronics provider as well.
+  *"starter kits"*; so check your favorite electronics provider as well.
 
 3. **Proximity Integrated Circuit Card (PICC)**:
 
@@ -166,7 +120,7 @@ Protocols
 
 * The protocol is defined in ISO/IEC 14443-3:2011 Part 3 Type A.
 
-  * Details are found in chapter 6 *"Type A – Initialization and anticollision"*.
+  * Details are found in chapter 6 *"Type A – Initialization and anti-collision"*.
   
   * See http://wg8.de/wg8n1496_17n3613_Ballot_FCD14443-3.pdf for a free version
     of the final draft (which might be outdated in some areas).
@@ -190,7 +144,7 @@ Troubleshooting
 
   #. Check your connection, see `Pin Layout`_ .
   #. Check voltage. Most breakouts work with 3.3V.
-  #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
+  #. SPI only works with 3.3V, most breakouts seem 5V tolerant, but try a level shifter.
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
@@ -210,12 +164,12 @@ Troubleshooting
   #. NFC tokens are not supported. Some may work.
   #. Animal RFID tags are not supported. They use a different frequency (125 kHz).
   #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
-  #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentification, see `security`_ or different `protocol`_.
+  #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentication, see `security`_ or different `protocol`_.
   #. Some boards bought from chinese manufactures do not use the best components and this can affect the detection of different types of tag/card. In some of these boards, the L1 and L2 inductors do not have a high enough current so the signal generated is not enough to get Ultralight C and NTAG203 tags to work, replacing those with same inductance (2.2uH) but higher operating current inductors should make things work smoothly. Also, in some of those boards the  harmonic and matching circuit needs to be tuned, for this replace C4 and C5 with 33pf capacitors and you are all set. (Source: `Mikro Elektronika`_) 
 
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
 
-  #. Card simmulation is not supported.
+  #. Card simulation is not supported.
   #. Communication with mobile phones is not supported.
   #. Peer to peer communication is not supported.
 

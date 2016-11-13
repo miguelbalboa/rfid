@@ -1,6 +1,74 @@
-MFRC522.zip
+# ------------ C Files  -------------------------
+# Prerequisites
+*.d
 
-# ignore IDE files
-.idea
-cmake
-CMakeLists.txt
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+
+# ------------ LPCxpresso -------------------------
+#General build artifacts
+*.mk
+*.o
+*.a
+*.elf
+*.hex
+*.axf
+*.d
+*.lst
+*.map
+*.plg
+*.lnp
+*.crf
+*.tra
+*.sct
+*.bak
+*.dep
+
+#MDK-ARM
+*.__i
+*.htm
+*.uvgui.*
+*.uvopt
+*.axf
+
+#Eclipse
+.metadata
+
+#Mac
+Debug
+/lpc_board_nxp_lpcxpresso_4337/*.cproject
+/lpc_board_nxp_lpcxpresso_4337/*.project
+Debug
+/lpc_chip_43xx/*.cproject
+/lpc_chip_43xx/*.project
