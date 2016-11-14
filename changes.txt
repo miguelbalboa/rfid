@@ -3,7 +3,7 @@
 14 Nov 2016, unreleased
 - Removed problematic example examples/servo_motor/servo_motor.ino
 - Added examples/AccessControl/AccessControl.ino
-
+- Fixed minor issues reported in #211
 
 
 26 Aug 2016, v1.1.9
