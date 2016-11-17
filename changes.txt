@@ -1,3 +1,17 @@
+-- Add changes to unreleased tag until we make a release.
+
+14 Nov 2016, unreleased
+- Removed problematic example examples/servo_motor/servo_motor.ino
+- Added examples/AccessControl/AccessControl.ino
+- Fixed minor issues reported in #211
+
+
+26 Aug 2016, v1.1.9
+- Warning: Only Arduino IDE version 1.6 is supported, please update your IDE to 1.6 to use this Library.
+- Added ESP8266 platform support @Rotzbua
+- Changed README.rst content to show more info @Rotzbua
+- Minor Changes to examples/ReadUidMultiReader/ReadUidMultiReader.ino example @Rotzbua
+
 11 Feb 2016, v1.1.8
 - Added examples/MinimalInterrupt/MinimalInterrupt.ino example, Interrupt example @lmmeng
 - Added .gitignore file allows the project to be more easily used as a subproject. @BenWiederhake
