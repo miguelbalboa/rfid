@@ -1,10 +1,18 @@
 -- Add changes to unreleased tag until we make a release.
 
-14 Nov 2016, unreleased
-- Removed problematic example examples/servo_motor/servo_motor.ino
-- Added examples/AccessControl/AccessControl.ino
-- Fixed minor issues reported in #211
+unreleased
+- tba
 
+3 Jan 2017, v1.2.0
+- Warning: This version introduce usage of stdint.h, usage of not well defined int types are abandoned.
+           Interface has changed: e.g. long -> int32_t
+           @Rotzbua
+- Removed problematic example examples/servo_motor/servo_motor.ino @omersiar
+- Added examples/AccessControl/AccessControl.ino @omersiar
+- Fixed minor issues reported in #211 @omersiar
+- Added bad components hint to README @danielcbit
+- Fixed selftest @surr
+- Fixed auth problem with long UIDs @surr
 
 26 Aug 2016, v1.1.9
 - Warning: Only Arduino IDE version 1.6 is supported, please update your IDE to 1.6 to use this Library.
