@@ -249,6 +249,7 @@ public:
 		PICC_CMD_SEL_CL2		= 0x95,		// Anti collision/Select, Cascade Level 2
 		PICC_CMD_SEL_CL3		= 0x97,		// Anti collision/Select, Cascade Level 3
 		PICC_CMD_HLTA			= 0x50,		// HaLT command, Type A. Instructs an ACTIVE PICC to go to state HALT.
+		PICC_CMD_RATS           = 0xE0,     // Request command for Answer To Reset.
 		// The commands used for MIFARE Classic (from http://www.mouser.com/ds/2/302/MF1S503x-89574.pdf, Section 9)
 		// Use PCD_MFAuthent to authenticate access to a sector, then use these commands to read/write/modify the blocks on the sector.
 		// The read/write commands can also be used for MIFARE Ultralight.
@@ -307,6 +308,12 @@ public:
 		byte		sak;			// The SAK (Select acknowledge) byte returned from the PICC after successful selection.
 	} Uid;
 	
+	// A struct used for passing the ATS of a PICC.
+	typedef struct {
+		byte		size;			// Number of bytes in the ATS.
+		byte		atsByte[16];
+	} Ats;
+
 	// A struct used for passing a MIFARE Crypto1 key
 	typedef struct {
 		byte		keyByte[MF_KEY_SIZE];
@@ -314,6 +321,7 @@ public:
 	
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
+	Ats ats;								// used by PICC_RATS().
 	
 	// Size of the MFRC522 FIFO
 	static const byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
@@ -360,6 +368,7 @@ public:
 	StatusCode PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
 	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
+	StatusCode PICC_RATS(byte *bufferATS, byte *bufferSize);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
@@ -396,6 +405,7 @@ public:
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
+	void PICC_DumpISO14443_4();
 	
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);

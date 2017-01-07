@@ -820,6 +820,41 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
 	return result;
 } // End PICC_HaltA()
 
+/**
+ * Transmits a Request command for Answer To Select (ATS).
+ *
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+ */
+MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store the ATS (Answer to select) in
+	byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
+) {
+	byte count;
+	MFRC522::StatusCode result;
+
+	ats.size = 0;
+
+	// Build command buffer
+	bufferATS[0] = PICC_CMD_RATS;
+	bufferATS[1] = 0x50; // FSD=128, CID=0
+
+	// Calculate CRC_A
+	result = PCD_CalculateCRC(bufferATS, 2, &bufferATS[2]);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// Transmit the buffer and receive the response, validate CRC_A.
+	result = PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
+
+	if (result == STATUS_OK) {
+		ats.size = *bufferSize;
+		for (count = 0; count < *bufferSize; count++) {
+			ats.atsByte[count] = bufferATS[count];
+		}
+	}
+
+	return result;
+} // End PICC_RATS()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with MIFARE PICCs
@@ -1350,6 +1385,9 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 			break;
 			
 		case PICC_TYPE_ISO_14443_4:
+			PICC_DumpISO14443_4();
+			Serial.println(F("Dumping memory contents not implemented for that PICC type."));
+			break;
 		case PICC_TYPE_ISO_18092:
 		case PICC_TYPE_MIFARE_PLUS:
 		case PICC_TYPE_TNP3XXX:
@@ -1624,6 +1662,30 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 		}
 	}
 } // End PICC_DumpMifareUltralightToSerial()
+
+/**
+ * Dumps memory contents of a ISO-14443-4 PICC.
+ */
+void MFRC522::PICC_DumpISO14443_4()
+{
+	MFRC522::StatusCode atsStatus;
+	byte ats[16];
+	byte atsSize = 16;
+
+	atsStatus = PICC_RATS(ats, &atsSize);
+	if (atsStatus == STATUS_OK) {
+		// Dump data
+		Serial.print(F("Card ATS:"));
+		for (byte offset = 0; offset < atsSize; offset++) {
+			if (ats[offset] < 0x10)
+				Serial.print(F(" 0"));
+			else
+				Serial.print(F(" "));
+			Serial.print(ats[offset], HEX);
+		}
+		Serial.println();
+	}
+} // End PICC_DumpISO14443_4
 
 /**
  * Calculates the bit pattern needed for the specified access bits. In the [C1 C2 C3] tuples C1 is MSB (=4) and C3 is LSB (=1).
