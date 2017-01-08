@@ -831,8 +831,6 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 	byte count;
 	MFRC522::StatusCode result;
 
-	ats.size = 0;
-
 	// Build command buffer
 	bufferATS[0] = PICC_CMD_RATS;
 	bufferATS[1] = 0x50; // FSD=128, CID=0
@@ -844,16 +842,7 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 	}
 
 	// Transmit the buffer and receive the response, validate CRC_A.
-	result = PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
-
-	if (result == STATUS_OK) {
-		ats.size = *bufferSize;
-		for (count = 0; count < *bufferSize; count++) {
-			ats.atsByte[count] = bufferATS[count];
-		}
-	}
-
-	return result;
+	return PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
 } // End PICC_RATS()
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1285,6 +1274,36 @@ const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	/
 } // End GetStatusCodeName()
 
 /**
+ * Get the PICC type.
+ *
+ * @return PICC_Type
+ */
+MFRC522::PICC_Type MFRC522::PICC_GetType(CardInfo *card		///< The CardInfo returned from PICC_Select().
+) {
+	// http://www.nxp.com/documents/application_note/AN10833.pdf 
+	// 3.2 Coding of Select Acknowledge (SAK)
+	// ignore 8-bit (iso14443 starts with LSBit = bit 1)
+	// fixes wrong type for manufacturer Infineon (http://nfc-tools.org/index.php?title=ISO14443A)
+	byte sak = card->uid.sak & 0x7F;
+	switch (sak) {
+	case 0x04:	return PICC_TYPE_NOT_COMPLETE;	// UID not complete
+	case 0x09:	return PICC_TYPE_MIFARE_MINI;
+	case 0x08:	return PICC_TYPE_MIFARE_1K;
+	case 0x18:	return PICC_TYPE_MIFARE_4K;
+	case 0x00:	return PICC_TYPE_MIFARE_UL;
+	case 0x10:
+	case 0x11:	return PICC_TYPE_MIFARE_PLUS;
+	case 0x01:	return PICC_TYPE_TNP3XXX;
+	case 0x20:
+		if (card->atqa == 0x0344)
+			return PICC_TYPE_MIFARE_DESFIRE;
+		return PICC_TYPE_ISO_14443_4;
+	case 0x40:	return PICC_TYPE_ISO_18092;
+	default:	return PICC_TYPE_UNKNOWN;
+	}
+} // End PICC_GetType()
+
+/**
  * Translates the SAK (Select Acknowledge) to a PICC type.
  * 
  * @return PICC_Type
@@ -1326,6 +1345,7 @@ const __FlashStringHelper *MFRC522::PICC_GetTypeName(PICC_Type piccType	///< One
 		case PICC_TYPE_MIFARE_4K:		return F("MIFARE 4KB");
 		case PICC_TYPE_MIFARE_UL:		return F("MIFARE Ultralight or Ultralight C");
 		case PICC_TYPE_MIFARE_PLUS:		return F("MIFARE Plus");
+		case PICC_TYPE_MIFARE_DESFIRE:	return F("MIFARE DESFire");
 		case PICC_TYPE_TNP3XXX:			return F("MIFARE TNP3XXX");
 		case PICC_TYPE_NOT_COMPLETE:	return F("SAK indicates UID is not complete.");
 		case PICC_TYPE_UNKNOWN:
@@ -1358,7 +1378,58 @@ void MFRC522::PCD_DumpVersionToSerial() {
 /**
  * Dumps debug info about the selected PICC to Serial.
  * On success the PICC is halted after dumping the data.
- * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried. 
+ * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried.
+ */
+void MFRC522::PICC_DumpToSerial(CardInfo *card)
+{
+	MIFARE_Key key;
+
+	// Dump UID, SAK and Type
+	PICC_DumpDetailsToSerial(card);
+
+	// Dump contents
+	PICC_Type piccType = PICC_GetType(card->uid.sak);
+	switch (piccType) {
+	case PICC_TYPE_MIFARE_MINI:
+	case PICC_TYPE_MIFARE_1K:
+	case PICC_TYPE_MIFARE_4K:
+		// All keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
+		for (byte i = 0; i < 6; i++) {
+			key.keyByte[i] = 0xFF;
+		}
+		PICC_DumpMifareClassicToSerial(&card->uid, piccType, &key);
+		break;
+
+	case PICC_TYPE_MIFARE_UL:
+		PICC_DumpMifareUltralightToSerial();
+		break;
+
+	case PICC_TYPE_ISO_14443_4:
+	case PICC_TYPE_MIFARE_DESFIRE:
+		PICC_DumpISO14443_4(card);
+		break;
+	case PICC_TYPE_ISO_18092:
+	case PICC_TYPE_MIFARE_PLUS:
+	case PICC_TYPE_TNP3XXX:
+		Serial.println(F("Dumping memory contents not implemented for that PICC type."));
+		break;
+
+	case PICC_TYPE_UNKNOWN:
+	case PICC_TYPE_NOT_COMPLETE:
+	default:
+		break; // No memory dump here
+	}
+
+	Serial.println();
+	PICC_HaltA(); // Already done if it was a MIFARE Classic PICC.
+}
+
+/**
+ * Dumps debug info about the selected PICC to Serial.
+ * On success the PICC is halted after dumping the data.
+ * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried.  
+ *
+ * @DEPRECATED Kept for bakward compatibility
  */
 void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned from a successful PICC_Select().
 								) {
@@ -1385,9 +1456,7 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 			break;
 			
 		case PICC_TYPE_ISO_14443_4:
-			PICC_DumpISO14443_4();
-			Serial.println(F("Dumping memory contents not implemented for that PICC type."));
-			break;
+		case PICC_TYPE_MIFARE_DESFIRE:
 		case PICC_TYPE_ISO_18092:
 		case PICC_TYPE_MIFARE_PLUS:
 		case PICC_TYPE_TNP3XXX:
@@ -1406,6 +1475,47 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 
 /**
  * Dumps card info (UID,SAK,Type) about the selected PICC to Serial.
+ */
+void MFRC522::PICC_DumpDetailsToSerial(CardInfo *card	///< Pointer to CardInfo struct returned from a successful PICC_Select().
+) {
+	// ATQA
+	Serial.print(F("Card ATQA:"));
+	if (((card->atqa & 0xFF00u) >> 8) < 0x10)
+		Serial.print(F(" 0"));
+	Serial.print((card->atqa & 0xFF00u) >> 8, HEX);
+	if ((card->atqa & 0x00FFu) < 0x10)
+		Serial.print(F("0"));
+	else
+		Serial.print(F(" "));
+	Serial.println(card->atqa & 0x00FFu, HEX);
+
+	// UID
+	Serial.print(F("Card UID:"));
+	for (byte i = 0; i < card->uid.size; i++) {
+		if (card->uid.uidByte[i] < 0x10)
+			Serial.print(F(" 0"));
+		else
+			Serial.print(F(" "));
+		Serial.print(card->uid.uidByte[i], HEX);
+	}
+	Serial.println();
+
+	// SAK
+	Serial.print(F("Card SAK: "));
+	if (card->uid.sak < 0x10)
+		Serial.print(F("0"));
+	Serial.println(card->uid.sak, HEX);
+
+	// (suggested) PICC type
+	PICC_Type piccType = PICC_GetType(card);
+	Serial.print(F("PICC type: "));
+	Serial.println(PICC_GetTypeName(piccType));
+} // End PICC_DumpDetailsToSerial()
+
+/**
+ * Dumps card info (UID,SAK,Type) about the selected PICC to Serial.
+ *
+ * @DEPRECATED kept for backward compatibility
  */
 void MFRC522::PICC_DumpDetailsToSerial(Uid *uid	///< Pointer to Uid struct returned from a successful PICC_Select().
 									) {
@@ -1666,25 +1776,21 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 /**
  * Dumps memory contents of a ISO-14443-4 PICC.
  */
-void MFRC522::PICC_DumpISO14443_4()
+void MFRC522::PICC_DumpISO14443_4(CardInfo *card)
 {
-	MFRC522::StatusCode atsStatus;
-	byte ats[16];
-	byte atsSize = 16;
-
-	atsStatus = PICC_RATS(ats, &atsSize);
-	if (atsStatus == STATUS_OK) {
-		// Dump data
+	// ATS
+	if (card->ats[0] > 0x00) {	// The first byte is the ATS length including the length byte
 		Serial.print(F("Card ATS:"));
-		for (byte offset = 0; offset < atsSize; offset++) {
-			if (ats[offset] < 0x10)
+		for (byte offset = 0; offset < card->ats[0]; offset++) {
+			if (card->ats[offset] < 0x10)
 				Serial.print(F(" 0"));
 			else
 				Serial.print(F(" "));
-			Serial.print(ats[offset], HEX);
+			Serial.print(card->ats[offset], HEX);
 		}
 		Serial.println();
 	}
+	
 } // End PICC_DumpISO14443_4
 
 /**
@@ -1920,7 +2026,13 @@ bool MFRC522::PICC_IsNewCardPresent() {
 	byte bufferATQA[2];
 	byte bufferSize = sizeof(bufferATQA);
 	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
-	return (result == STATUS_OK || result == STATUS_COLLISION);
+
+	if (result == STATUS_OK || result == STATUS_COLLISION) {
+		card.atqa = ((uint16_t)bufferATQA[1] << 8) | bufferATQA[0];
+		memset(card.ats, 0, sizeof(card.ats));
+		return true;
+	}
+	return false;
 } // End PICC_IsNewCardPresent()
 
 /**
@@ -1932,6 +2044,27 @@ bool MFRC522::PICC_IsNewCardPresent() {
  * @return bool
  */
 bool MFRC522::PICC_ReadCardSerial() {
-	MFRC522::StatusCode result = PICC_Select(&uid);
-	return (result == STATUS_OK);
+	MFRC522::StatusCode result = PICC_Select(&card.uid);
+
+	// Backward compatibility
+	uid.size = card.uid.size;
+	uid.sak = card.uid.sak;
+	memcpy(uid.uidByte, card.uid.uidByte, sizeof(card.uid.uidByte));
+	
+	if (result != STATUS_OK)
+		return false;
+
+	// RATS for SAK with sixth bit on.
+	if ((card.uid.sak & 0x20) == 0x20) {
+		byte atsBuffer[16];
+		byte atsBufferSize = 16;
+
+		result = PICC_RATS(atsBuffer, &atsBufferSize);
+		if (result == STATUS_OK) {
+			memset(card.ats, 0, sizeof(card.ats));
+			memcpy(card.ats, atsBuffer, atsBufferSize);
+		}
+	}
+
+	return true;
 } // End 

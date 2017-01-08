@@ -283,6 +283,7 @@ public:
 		PICC_TYPE_MIFARE_4K		,	// MIFARE Classic protocol, 4KB
 		PICC_TYPE_MIFARE_UL		,	// MIFARE Ultralight or Ultralight C
 		PICC_TYPE_MIFARE_PLUS	,	// MIFARE Plus
+		PICC_TYPE_MIFARE_DESFIRE,	// MIFARE DESFire
 		PICC_TYPE_TNP3XXX		,	// Only mentioned in NXP AN 10833 MIFARE Type Identification Procedure
 		PICC_TYPE_NOT_COMPLETE	= 0xff	// SAK indicates UID is not complete.
 	};
@@ -307,12 +308,13 @@ public:
 		byte		uidByte[10];
 		byte		sak;			// The SAK (Select acknowledge) byte returned from the PICC after successful selection.
 	} Uid;
-	
-	// A struct used for passing the ATS of a PICC.
+
+	// A struct used for passing the PICC information
 	typedef struct {
-		byte		size;			// Number of bytes in the ATS.
-		byte		atsByte[16];
-	} Ats;
+		uint16_t	atqa;
+		Uid			uid;
+		byte		ats[16];
+	} CardInfo;
 
 	// A struct used for passing a MIFARE Crypto1 key
 	typedef struct {
@@ -321,7 +323,7 @@ public:
 	
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
-	Ats ats;								// used by PICC_RATS().
+	CardInfo card;
 	
 	// Size of the MFRC522 FIFO
 	static const byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
@@ -394,18 +396,21 @@ public:
 	//const char *GetStatusCodeName(byte code);
 	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
 	static PICC_Type PICC_GetType(byte sak);
+	static PICC_Type PICC_GetType(CardInfo *card);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
 	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	
 	// Support functions for debuging
 	void PCD_DumpVersionToSerial();
+	void PICC_DumpToSerial(CardInfo *card);
 	void PICC_DumpToSerial(Uid *uid);
+	void PICC_DumpDetailsToSerial(CardInfo *card);
 	void PICC_DumpDetailsToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
-	void PICC_DumpISO14443_4();
+	void PICC_DumpISO14443_4(CardInfo *card);
 	
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
