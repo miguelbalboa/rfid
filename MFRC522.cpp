@@ -1407,6 +1407,7 @@ void MFRC522::PICC_DumpToSerial(CardInfo *card)
 	case PICC_TYPE_ISO_14443_4:
 	case PICC_TYPE_MIFARE_DESFIRE:
 		PICC_DumpISO14443_4(card);
+		Serial.println(F("Dumping memory contents not implemented for that PICC type."));
 		break;
 	case PICC_TYPE_ISO_18092:
 	case PICC_TYPE_MIFARE_PLUS:
