@@ -842,8 +842,40 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 	}
 
 	// Transmit the buffer and receive the response, validate CRC_A.
-	return PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
+	result = PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
+	if (result != STATUS_OK) {
+		PICC_HaltA();
+	}
+
+	return result;
 } // End PICC_RATS()
+
+/**
+ * Transmits Protocol and Parameter Selection Request (PPS) 
+ *
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+ */
+MFRC522::StatusCode MFRC522::PICC_PPS(byte cid,			///< The lower nibble indicates the CID of the selected PICC in the range of 0x00 and 0x0E
+                                      byte parameter,   ///< PPS0 and PPS1
+                                      byte data			///< 
+) {
+	StatusCode result;
+
+	byte ppsBuffer[5];
+	byte ppsBufferSize = 5;
+	ppsBuffer[0] = 0xD0 | (cid & 0x0F);
+	ppsBuffer[1] = parameter;
+	ppsBuffer[2] = data;
+
+	// Calculate CRC_A
+	result = PCD_CalculateCRC(ppsBuffer, 3, &ppsBuffer[3]);
+	if (result != STATUS_OK) {
+		return result;
+	}
+	
+	// Transmit the buffer and receive the response, validate CRC_A.
+	return PCD_TransceiveData(ppsBuffer, 5, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+} // End PICC_PPS()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with MIFARE PICCs
@@ -2064,6 +2096,13 @@ bool MFRC522::PICC_ReadCardSerial() {
 		if (result == STATUS_OK) {
 			memset(card.ats, 0, sizeof(card.ats));
 			memcpy(card.ats, atsBuffer, atsBufferSize);
+
+			// I'm only taking care of MIFARE DESFire so the PPS
+			// Command is oriented to this type of card
+			PICC_Type piccType = PICC_GetType(&card);
+			if (piccType == PICC_TYPE_MIFARE_DESFIRE) {
+				result = PICC_PPS(0x00, 0x11, 0x00);
+			}
 		}
 	}
 

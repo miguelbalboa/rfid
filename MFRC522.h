@@ -371,6 +371,7 @@ public:
 	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
 	StatusCode PICC_RATS(byte *bufferATS, byte *bufferSize);
+	StatusCode PICC_PPS(byte cid, byte parameter = 0x11, byte data = 0x00);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
