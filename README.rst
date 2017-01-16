@@ -41,6 +41,9 @@ What works and not?
   #. Communication with smart phone, not `supported by hardware`_.
   #. Card emulation, not `supported by hardware`_.
   #. Use of IRQ pin. But there is a proof-of-concept example.
+  #. With Arduino Yun like `#111 <https://github.com/miguelbalboa/rfid/issues/111>`_, not supported by software.
+  #. Power reduction modes `#269 <https://github.com/miguelbalboa/rfid/issues/269>`_, not supported by software.
+  #. I2C instead of SPI `#240 <https://github.com/miguelbalboa/rfid/issues/240>`_, not supported by software.
 
 * **Need more?**
 
