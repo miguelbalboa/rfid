@@ -330,13 +330,13 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Basic interface functions for communicating with the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
-	void PCD_WriteRegister(byte reg, byte value);
-	void PCD_WriteRegister(byte reg, byte count, byte *values);
-	byte PCD_ReadRegister(byte reg);
-	void PCD_ReadRegister(byte reg, byte count, byte *values, byte rxAlign = 0);
+	void PCD_WriteRegister(PCD_Register reg, byte value);
+	void PCD_WriteRegister(PCD_Register reg, byte count, byte *values);
+	byte PCD_ReadRegister(PCD_Register reg);
+	void PCD_ReadRegister(PCD_Register reg, byte count, byte *values, byte rxAlign = 0);
 	void setBitMask(unsigned char reg, unsigned char mask);
-	void PCD_SetRegisterBitMask(byte reg, byte mask);
-	void PCD_ClearRegisterBitMask(byte reg, byte mask);
+	void PCD_SetRegisterBitMask(PCD_Register reg, byte mask);
+	void PCD_ClearRegisterBitMask(PCD_Register reg, byte mask);
 	StatusCode PCD_CalculateCRC(byte *data, byte length, byte *result);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
