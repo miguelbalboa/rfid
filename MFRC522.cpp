@@ -159,7 +159,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 					 ) {
 	PCD_WriteRegister(CommandReg, PCD_Idle);		// Stop any active command.
 	PCD_WriteRegister(DivIrqReg, 0x04);				// Clear the CRCIRq interrupt request bit
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);		// FlushBuffer = 1, FIFO initialization
+	PCD_WriteRegister(FIFOLevelReg, 0x80);			// FlushBuffer = 1, FIFO initialization
 	PCD_WriteRegister(FIFODataReg, length, data);	// Write data to the FIFO
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);		// Start the calculation
 	
@@ -309,7 +309,7 @@ bool MFRC522::PCD_PerformSelfTest() {
 	
 	// 2. Clear the internal buffer by writing 25 bytes of 00h
 	byte ZEROES[25] = {0x00};
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);	// flush the FIFO buffer
+	PCD_WriteRegister(FIFOLevelReg, 0x80);		// flush the FIFO buffer
 	PCD_WriteRegister(FIFODataReg, 25, ZEROES);	// write 25 bytes of 00h to FIFO
 	PCD_WriteRegister(CommandReg, PCD_Mem);		// transfer to internal buffer
 	
@@ -418,16 +418,13 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 														byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
 														bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 									 ) {
-	byte n, _validBits;
-	uint16_t i;
-	
 	// Prepare values for BitFramingReg
 	byte txLastBits = validBits ? *validBits : 0;
 	byte bitFraming = (rxAlign << 4) + txLastBits;		// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 	
 	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop any active command.
 	PCD_WriteRegister(ComIrqReg, 0x7F);					// Clear all seven interrupt request bits
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);			// FlushBuffer = 1, FIFO initialization
+	PCD_WriteRegister(FIFOLevelReg, 0x80);				// FlushBuffer = 1, FIFO initialization
 	PCD_WriteRegister(FIFODataReg, sendLen, sendData);	// Write sendData to the FIFO
 	PCD_WriteRegister(BitFramingReg, bitFraming);		// Bit adjustments
 	PCD_WriteRegister(CommandReg, command);				// Execute the command
@@ -439,18 +436,19 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
 	// Each iteration of the do-while-loop takes 17.86μs.
 	// TODO check/modify for other architectures than Arduino Uno 16bit
-	i = 2000;
-	while (1) {
-		n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
+	word i;
+	for (i = 2000; i > 0; i--) {
+		byte n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
 			break;
 		}
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
 			return STATUS_TIMEOUT;
 		}
-		if (--i == 0) {						// The emergency break. If all other conditions fail we will eventually terminate on this one after 35.7ms. Communication with the MFRC522 might be down.
-			return STATUS_TIMEOUT;
-		}
+	}
+	// 35.7ms and nothing happend. Communication with the MFRC522 might be down.
+	if (i == 0) {
+		return STATUS_TIMEOUT;
 	}
 	
 	// Stop now if any errors except collisions were detected.
@@ -459,9 +457,11 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		return STATUS_ERROR;
 	}	
 
+	byte _validBits;
+	
 	// If the caller wants data back, get it from the MFRC522.
 	if (backData && backLen) {
-		n = PCD_ReadRegister(FIFOLevelReg);			// Number of bytes in the FIFO
+		byte n = PCD_ReadRegister(FIFOLevelReg);	// Number of bytes in the FIFO
 		if (n > *backLen) {
 			return STATUS_NO_ROOM;
 		}
