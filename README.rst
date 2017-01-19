@@ -32,6 +32,7 @@ What works and not?
 
   #. Communication with MIFARE Ultralight.
   #. Other PICCs (Ntag216).
+  #. More than 2 modules, require a multiplexer `#191 <https://github.com/miguelbalboa/rfid/issues/191#issuecomment-242631153>`_.
 
 * **Works not**
   
