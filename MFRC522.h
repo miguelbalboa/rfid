@@ -321,6 +321,28 @@ public:
 
 	typedef struct {
 		byte size;
+		byte fsc;                 // Frame size for proximity card
+
+		struct {
+			bool transmitted;
+			bool        sameD;	// Only the same D for both directions supported
+			TagBitRates ds;		// Send D
+			TagBitRates dr;		// Receive D
+		} ta1;
+
+		struct {
+			bool transmitted;
+			byte fwi;			// Frame waiting time integer
+			byte sfgi;			// Start-up frame guard time integer
+		} tb1;
+
+		struct {
+			bool transmitted;
+			bool supportsCID;
+			bool supportsNAD;
+		} tc1;
+
+		// Raw data from ATS
 		byte data[FIFO_SIZE - 2]; // ATS cannot be bigger than FSD - 2 bytes (CRC), according to ISO 14443-4 5.2.2
 	} Ats;
 

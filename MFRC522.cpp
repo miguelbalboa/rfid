@@ -865,7 +865,144 @@ MFRC522::StatusCode MFRC522::PICC_RATS(Ats *ats)
 		PICC_HaltA();
 	}
 
+	// Set the ats structure data
 	ats->size = bufferATS[0];
+
+	// T0 byte:
+	//
+	// b8 | b7 | b6 | b5 | b4 | b3 | b2 | b1 | Meaning
+	//----+----+----+----+----+----+----+----+---------------------------
+	//  0 | ...| ...| ...| ...|... | ...| ...| Set to 0 (RFU)
+	//  0 |  1 | x  |  x | ...|... | ...| ...| TC1 transmitted
+	//  0 |  x | 1  |  x | ...|... | ...| ...| TB1 transmitted
+	//  0 |  x | x  |  1 | ...|... | ...| ...| TA1 transmitted
+	//  0 | ...| ...| ...|  x |  x |  x | x  | Maximum frame size (FSCI)
+	//
+	// FSCI        |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9-F
+	// ------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----------
+	// FSC (bytes) |  16 |  24 |  32 |  40 |  48 |  64 |  96 | 128 | 256 | RFU > 256
+	//
+	// Default FSCI is 2 (32 bytes)
+	if (ats->size > 0x01)
+	{
+		// TC1, TB1 and TA1 where NOT transmitted
+		ats->ta1.transmitted = (bool)(bufferATS[1] & 0x40);
+		ats->tb1.transmitted = (bool)(bufferATS[1] & 0x20);
+		ats->tc1.transmitted = (bool)(bufferATS[1] & 0x10);
+
+		// Decode FSCI
+		switch (bufferATS[1] & 0x0F)
+		{
+			case 0x00:
+				ats->fsc = 16;
+				break;
+			case 0x01:
+				ats->fsc = 24;
+				break;
+			case 0x02:
+				ats->fsc = 32;
+				break;
+			case 0x03:
+				ats->fsc = 40;
+				break;
+			case 0x04:
+				ats->fsc = 48;
+				break;
+			case 0x05:
+				ats->fsc = 64;
+				break;
+			case 0x06:
+				ats->fsc = 96;
+				break;
+			case 0x07:
+				ats->fsc = 128;
+				break;
+			case 0x08:
+				// This value cannot be hold by a byte
+				// The reason I ignore it is that MFRC255 FIFO is 64 bytes so this is not a possible value (or atleast it shouldn't)
+				//ats->fsc = 256;
+				break;
+				// TODO: What to do with RFU (Reserved for future use)?
+		}
+
+		// TA1
+		if (ats->ta1.transmitted)
+		{
+			ats->ta1.sameD = (bool)(bufferATS[2] & 0x80);
+			ats->ta1.ds = (TagBitRates)((bufferATS[2] & 0x70) >> 4);
+			ats->ta1.dr = (TagBitRates)(bufferATS[2] & 0x07);
+		}
+		else
+		{
+			// Default TA1
+			ats->ta1.ds = BITRATE_106KBITS;
+			ats->ta1.dr = BITRATE_106KBITS;
+		}
+
+		// TB1
+		if (ats->tb1.transmitted)
+		{
+			uint8_t tb1Index = 2;
+
+			if (ats->ta1.transmitted)
+				tb1Index++;
+			
+			ats->tb1.fwi = (bufferATS[tb1Index] & 0xF0) >> 4;
+			ats->tb1.sfgi = bufferATS[tb1Index] & 0x0F;
+		}
+		else
+		{
+			// Defaults for TB1
+			ats->tb1.fwi = 0;	// TODO: Don't know the default for this!
+			ats->tb1.sfgi = 0;	// The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
+		}
+
+		// TC1
+		if (ats->tc1.transmitted)
+		{
+			uint8_t tc1Index = 2;
+
+			if (ats->ta1.transmitted)
+				tc1Index++;
+			if (ats->tb1.transmitted)
+				tc1Index++;
+
+			ats->tc1.supportsCID = (bool)(bufferATS[tc1Index] & 0x02);
+			ats->tc1.supportsNAD = (bool)(bufferATS[tc1Index] & 0x01);
+		}
+		else
+		{
+			// Defaults for TC1
+			ats->tc1.supportsCID = true;
+			ats->tc1.supportsNAD = false;
+		}
+	}
+	else
+	{
+		// TC1, TB1 and TA1 where NOT transmitted
+		ats->ta1.transmitted = false;
+		ats->tb1.transmitted = false;
+		ats->tc1.transmitted = false;
+
+		// Default FSCI
+		ats->fsc = 32;	// Defaults to FSCI 2 (32 bytes)
+
+		// Default TA1
+		ats->ta1.sameD = false;
+		ats->ta1.ds = BITRATE_106KBITS;
+		ats->ta1.dr = BITRATE_106KBITS;
+
+		// Defaults for TB1
+		ats->tb1.transmitted = false;
+		ats->tb1.fwi = 0;	// TODO: Don't know the default for this!
+		ats->tb1.sfgi = 0;	// The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
+
+		// Defaults for TC1
+		ats->tc1.transmitted = false;
+		ats->tc1.supportsCID = true;
+		ats->tc1.supportsNAD = false;
+	}
+
 	memcpy(ats->data, bufferATS, bufferSize - 2);
 
 	return result;
@@ -2137,6 +2274,24 @@ bool MFRC522::PICC_IsNewCardPresent() {
 	if (result == STATUS_OK || result == STATUS_COLLISION) {
 		card.atqa = ((uint16_t)bufferATQA[1] << 8) | bufferATQA[0];
 		card.ats.size = 0;
+		card.ats.fsc = 32;	// default FSC value
+
+		// Defaults for TA1
+		card.ats.ta1.transmitted = false;
+		card.ats.ta1.sameD = false;
+		card.ats.ta1.ds = BITRATE_106KBITS;
+		card.ats.ta1.dr = BITRATE_106KBITS;
+
+		// Defaults for TB1
+		card.ats.tb1.transmitted = false;
+		card.ats.tb1.fwi = 0;	// TODO: Don't know the default for this!
+		card.ats.tb1.sfgi = 0;	// The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
+
+		// Defaults for TC1
+		card.ats.tc1.transmitted = false;
+		card.ats.tc1.supportsCID = true;
+		card.ats.tc1.supportsNAD = false;
+
 		memset(card.ats.data, 0, FIFO_SIZE - 2);
 		return true;
 	}
@@ -2167,11 +2322,10 @@ bool MFRC522::PICC_ReadCardSerial() {
 		result = PICC_RATS(&(card.ats));
 		if (result == STATUS_OK) {
 			// Check the ATS
-			if (card.ats.size > 0x01)
+			if (card.ats.size > 0)
 			{
-				// card.ats[1] is the format byte
 				// TA1 has been transmitted?
-				if (card.ats.data[1] & 0x10 != 0x00) 
+				if (card.ats.ta1.transmitted) 
 				{
 					// I don't want to change the default bitrate
 					// but if you want to and it is supported by TA1
