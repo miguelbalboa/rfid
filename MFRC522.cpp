@@ -829,11 +829,15 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store the ATS (Answer to select) in
-	byte *bufferSize	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
-) {
+MFRC522::StatusCode MFRC522::PICC_RATS(Ats *ats) 
+{
 	byte count;
 	MFRC522::StatusCode result;
+
+	byte bufferATS[FIFO_SIZE];
+	byte bufferSize = FIFO_SIZE;
+
+	memset(bufferATS, 0, FIFO_SIZE);
 
 	// Build command buffer
 	bufferATS[0] = PICC_CMD_RATS;
@@ -856,10 +860,13 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 	}
 
 	// Transmit the buffer and receive the response, validate CRC_A.
-	result = PCD_TransceiveData(bufferATS, 4, bufferATS, bufferSize, NULL, 0, true);
+	result = PCD_TransceiveData(bufferATS, 4, bufferATS, &bufferSize, NULL, 0, true);
 	if (result != STATUS_OK) {
 		PICC_HaltA();
 	}
+
+	ats->size = bufferATS[0];
+	memcpy(ats->data, bufferATS, bufferSize - 2);
 
 	return result;
 } // End PICC_RATS()
@@ -1874,14 +1881,14 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 void MFRC522::PICC_DumpISO14443_4(CardInfo *card)
 {
 	// ATS
-	if (card->ats[0] > 0x00) {	// The first byte is the ATS length including the length byte
+	if (card->ats.size > 0x00) {	// The first byte is the ATS length including the length byte
 		Serial.print(F("Card ATS:"));
-		for (byte offset = 0; offset < card->ats[0]; offset++) {
-			if (card->ats[offset] < 0x10)
+		for (byte offset = 0; offset < card->ats.size; offset++) {
+			if (card->ats.data[offset] < 0x10)
 				Serial.print(F(" 0"));
 			else
 				Serial.print(F(" "));
-			Serial.print(card->ats[offset], HEX);
+			Serial.print(card->ats.data[offset], HEX);
 		}
 		Serial.println();
 	}
@@ -2129,7 +2136,8 @@ bool MFRC522::PICC_IsNewCardPresent() {
 
 	if (result == STATUS_OK || result == STATUS_COLLISION) {
 		card.atqa = ((uint16_t)bufferATQA[1] << 8) | bufferATQA[0];
-		memset(card.ats, 0, sizeof(card.ats));
+		card.ats.size = 0;
+		memset(card.ats.data, 0, FIFO_SIZE - 2);
 		return true;
 	}
 	return false;
@@ -2156,20 +2164,14 @@ bool MFRC522::PICC_ReadCardSerial() {
 
 	// RATS for SAK with sixth bit on.
 	if ((card.uid.sak & 0x20) == 0x20) {
-		byte atsBuffer[16];
-		byte atsBufferSize = 16;
-
-		result = PICC_RATS(atsBuffer, &atsBufferSize);
+		result = PICC_RATS(&(card.ats));
 		if (result == STATUS_OK) {
-			memset(card.ats, 0, sizeof(card.ats));
-			memcpy(card.ats, atsBuffer, atsBufferSize);
-
 			// Check the ATS
-			if (card.ats[0] > 0x01)
+			if (card.ats.size > 0x01)
 			{
 				// card.ats[1] is the format byte
 				// TA1 has been transmitted?
-				if (card.ats[1] & 0x10 != 0x00) 
+				if (card.ats.data[1] & 0x10 != 0x00) 
 				{
 					// I don't want to change the default bitrate
 					// but if you want to and it is supported by TA1

@@ -133,6 +133,9 @@ const byte FM17522_firmware_reference[] PROGMEM = {
 
 class MFRC522 {
 public:
+	// Size of the MFRC522 FIFO
+	static const byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
+
 	// MFRC522 registers. Described in chapter 9 of the datasheet.
 	// When using SPI all addresses are shifted one bit left in the "SPI address byte" (section 8.1.2.3)
 	enum PCD_Register {
@@ -316,11 +319,16 @@ public:
 		byte		sak;			// The SAK (Select acknowledge) byte returned from the PICC after successful selection.
 	} Uid;
 
+	typedef struct {
+		byte size;
+		byte data[FIFO_SIZE - 2]; // ATS cannot be bigger than FSD - 2 bytes (CRC), according to ISO 14443-4 5.2.2
+	} Ats;
+
 	// A struct used for passing the PICC information
 	typedef struct {
 		uint16_t	atqa;
 		Uid			uid;
-		byte		ats[16];
+		Ats		    ats; 
 	} CardInfo;
 
 	// A struct used for passing a MIFARE Crypto1 key
@@ -331,9 +339,6 @@ public:
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
 	CardInfo card;
-	
-	// Size of the MFRC522 FIFO
-	static const byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
@@ -377,7 +382,7 @@ public:
 	StatusCode PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
 	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
-	StatusCode PICC_RATS(byte *bufferATS, byte *bufferSize);
+	StatusCode PICC_RATS(Ats *ats);
 	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
 	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
 	
