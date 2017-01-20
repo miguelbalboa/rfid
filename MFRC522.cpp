@@ -1032,7 +1032,18 @@ MFRC522::StatusCode MFRC522::PICC_PPS()
 	}
 
 	// Transmit the buffer and receive the response, validate CRC_A.
-	return PCD_TransceiveData(ppsBuffer, 4, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+	result = PCD_TransceiveData(ppsBuffer, 4, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+	if (result == STATUS_OK)
+	{
+		// Enable CRC for T=CL
+		byte txReg = PCD_ReadRegister(TxModeReg) | 0x80;
+		byte rxReg = PCD_ReadRegister(RxModeReg) | 0x80;
+
+		PCD_WriteRegister(TxModeReg, txReg);
+		PCD_WriteRegister(RxModeReg, rxReg);
+	}
+
+	return result;
 } // End PICC_PPS()
 
 /**
@@ -1073,8 +1084,9 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 		byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
 		byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
 
-		txReg = (txReg & 0x8F) | ((sendBitRate & 0x03) << 4);
-		rxReg = (rxReg & 0x8F) | ((receiveBitRate & 0x03) << 4);
+		// Set bit rate and enable CRC for T=CL
+		txReg = (txReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
+		rxReg = (rxReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
 
 		PCD_WriteRegister(TxModeReg, txReg);
 		PCD_WriteRegister(RxModeReg, rxReg);
