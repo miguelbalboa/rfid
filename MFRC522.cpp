@@ -213,6 +213,10 @@ void MFRC522::PCD_Init() {
 		PCD_Reset();
 	}
 	
+	// Reset baud rates
+	PCD_WriteRegister(TxModeReg, 0x00);
+	PCD_WriteRegister(RxModeReg, 0x00);
+
 	// When communicating with a PICC we need a timeout if something goes wrong.
 	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
 	// TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg.
@@ -833,7 +837,17 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 
 	// Build command buffer
 	bufferATS[0] = PICC_CMD_RATS;
-	bufferATS[1] = 0x50; // FSD=128, CID=0
+	
+	// The CID defines the logical number of the addressed card and has a range of 0 
+	// through 14; 15 is reserved for future use (RFU).
+	//
+	// FSDI codes the maximum frame size (FSD) that the terminal can receive.
+	//
+	// FSDI        |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9-F
+	// ------------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----------
+	// FSD (bytes) |  16 |  24 |  32 |  40 |  48 |  64 |  96 | 128 | 256 | RFU > 256
+	//
+	bufferATS[1] = 0x50; // FSD=64, CID=0
 
 	// Calculate CRC_A
 	result = PCD_CalculateCRC(bufferATS, 2, &bufferATS[2]);
@@ -851,21 +865,56 @@ MFRC522::StatusCode MFRC522::PICC_RATS(byte *bufferATS,	///< The buffer to store
 } // End PICC_RATS()
 
 /**
- * Transmits Protocol and Parameter Selection Request (PPS) 
+ * Transmits Protocol and Parameter Selection Request (PPS) without parameter 1 
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-MFRC522::StatusCode MFRC522::PICC_PPS(byte cid,			///< The lower nibble indicates the CID of the selected PICC in the range of 0x00 and 0x0E
-                                      byte parameter,   ///< PPS0 and PPS1
-                                      byte data			///< 
+MFRC522::StatusCode MFRC522::PICC_PPS()
+{
+	StatusCode result;
+
+	byte ppsBuffer[4];
+	byte ppsBufferSize = 4;
+	// Start byte: The start byte (PPS) consists of two parts:
+	//  –The upper nibble(b8–b5) is set to’D'to identify the PPS. All other values are RFU.
+	//  -The lower nibble(b4–b1), which is called the ‘card identifier’ (CID), defines the logical number of the addressed card.
+	ppsBuffer[0] = 0xD0;	// CID is hardcoded as 0 in RATS
+	ppsBuffer[1] = 0x00;	// PPS0 indicates whether PPS1 is present
+
+	// Calculate CRC_A
+	result = PCD_CalculateCRC(ppsBuffer, 2, &ppsBuffer[2]);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// Transmit the buffer and receive the response, validate CRC_A.
+	return PCD_TransceiveData(ppsBuffer, 4, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+} // End PICC_PPS()
+
+/**
+ * Transmits Protocol and Parameter Selection Request (PPS)
+ *
+ * @return STATUS_OK on success, STATUS_??? otherwise.
+ */
+MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
+                                      TagBitRates receiveBitRate		  ///< DR
 ) {
 	StatusCode result;
 
+	byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
+	byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
+
 	byte ppsBuffer[5];
 	byte ppsBufferSize = 5;
-	ppsBuffer[0] = 0xD0 | (cid & 0x0F);
-	ppsBuffer[1] = parameter;
-	ppsBuffer[2] = data;
+	// Start byte: The start byte (PPS) consists of two parts:
+	//  –The upper nibble(b8–b5) is set to’D'to identify the PPS. All other values are RFU.
+	//  -The lower nibble(b4–b1), which is called the ‘card identifier’ (CID), defines the logical number of the addressed card.
+	ppsBuffer[0] = 0xD0;	// CID is hardcoded as 0 in RATS
+	ppsBuffer[1] = 0x11;	// PPS0 indicates whether PPS1 is present
+
+	// Bit 8 - Set to '0' as MFRC522 allows different bit rates for send and receive
+	// Bit 4 - Set to '0' as it is Reserved for future use.
+	ppsBuffer[2] = (((sendBitRate & 0x03) << 4) | (receiveBitRate & 0x03)) & 0xE7;
 
 	// Calculate CRC_A
 	result = PCD_CalculateCRC(ppsBuffer, 3, &ppsBuffer[3]);
@@ -874,7 +923,20 @@ MFRC522::StatusCode MFRC522::PICC_PPS(byte cid,			///< The lower nibble indicate
 	}
 	
 	// Transmit the buffer and receive the response, validate CRC_A.
-	return PCD_TransceiveData(ppsBuffer, 5, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+	result = PCD_TransceiveData(ppsBuffer, 5, ppsBuffer, &ppsBufferSize, NULL, 0, true);
+	if (result == STATUS_OK)
+	{
+		byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
+		byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
+
+		txReg = (txReg & 0x8F) | ((sendBitRate & 0x03) << 4);
+		rxReg = (rxReg & 0x8F) | ((receiveBitRate & 0x03) << 4);
+
+		PCD_WriteRegister(TxModeReg, txReg);
+		PCD_WriteRegister(RxModeReg, rxReg);
+	}
+
+	return result;
 } // End PICC_PPS()
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -2058,6 +2120,11 @@ bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
 bool MFRC522::PICC_IsNewCardPresent() {
 	byte bufferATQA[2];
 	byte bufferSize = sizeof(bufferATQA);
+
+	// Reset baud rates
+	PCD_WriteRegister(TxModeReg, 0x00);
+	PCD_WriteRegister(RxModeReg, 0x00);
+
 	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
 
 	if (result == STATUS_OK || result == STATUS_COLLISION) {
@@ -2097,11 +2164,27 @@ bool MFRC522::PICC_ReadCardSerial() {
 			memset(card.ats, 0, sizeof(card.ats));
 			memcpy(card.ats, atsBuffer, atsBufferSize);
 
-			// I'm only taking care of MIFARE DESFire so the PPS
-			// Command is oriented to this type of card
-			PICC_Type piccType = PICC_GetType(&card);
-			if (piccType == PICC_TYPE_MIFARE_DESFIRE) {
-				result = PICC_PPS(0x00, 0x11, 0x00);
+			// Check the ATS
+			if (card.ats[0] > 0x01)
+			{
+				// card.ats[1] is the format byte
+				// TA1 has been transmitted?
+				if (card.ats[1] & 0x10 != 0x00) 
+				{
+					// I don't want to change the default bitrate
+					// but if you want to and it is supported by TA1
+					// here is the place :)
+					result = PICC_PPS(BITRATE_106KBITS, BITRATE_106KBITS);
+					if (result != STATUS_OK)
+						return false;
+				}
+				else
+				{
+					// NO TA1 we could try to send an empty PPS
+					result = PICC_PPS();
+					if (result != STATUS_OK)
+						return false;
+				}
 			}
 		}
 	}

@@ -301,6 +301,13 @@ public:
 		STATUS_CRC_WRONG		,	// The CRC_A does not match
 		STATUS_MIFARE_NACK		= 0xff	// A MIFARE PICC responded with NAK.
 	};
+
+	enum TagBitRates : byte {
+		BITRATE_106KBITS = 0x00,
+		BITRATE_212KBITS = 0x01,
+		BITRATE_424KBITS = 0x02,
+		BITRATE_848KBITS = 0x03
+	};
 	
 	// A struct used for passing the UID of a PICC.
 	typedef struct {
@@ -371,7 +378,8 @@ public:
 	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
 	StatusCode PICC_RATS(byte *bufferATS, byte *bufferSize);
-	StatusCode PICC_PPS(byte cid, byte parameter = 0x11, byte data = 0x00);
+	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
+	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
