@@ -1135,33 +1135,29 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte
 	else
 		tag->blockNumber = true;
 
-	// If the caller wants data back, get it from the MFRC522.
+	// Returning INF field if requested
 	if (backData && backLen) {
-		if ((inBuffer[0] & 0xE0) == 0x00) {
-			// It is an I-Block
-			byte inBufferOffset = 1;
+		byte infOffset = 1;
 
-			// Advance one if CID is present
-			if (inBuffer[0] & 0x08)
-				inBufferOffset++;
-			
-			// Advance one if NAD is present
-			if (inBuffer[0] & 0x04)
-				inBufferOffset++;
+		// Has CID
+		if (inBuffer[0] & 0x08)
+			infOffset++;
+		// Has NAD
+		if (inBuffer[0] & 0x04)
+			infOffset++;
 
-			*backLen = inBufferSize - inBufferOffset;
-			if (*backLen > 0)
-				memcpy(backData, &inBuffer[inBufferOffset], *backLen);
-
-			return result;
-		}
-		else
-		{
-			*backLen = 0;
-		}
+		*backLen = inBufferSize - infOffset;
+		if (*backLen > 0) 
+			memcpy(backData, &inBuffer[infOffset], *backLen);
 	}
-	
-	// TODO: Other checks such as R-Block
+
+	// If it is an R-Block...
+	if ((inBuffer[0] & 0xC0) == 0x80) 
+	{
+		// Check if NACK bit is set
+		if (inBuffer[0] & 0x20)
+			return STATUS_MIFARE_NACK;
+	}
 
 	return result;
 }
