@@ -1135,32 +1135,8 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte
 	else
 		tag->blockNumber = true;
 
-	// Returning INF field if requested
-	if (backData && backLen) {
-		byte infOffset = 1;
-
-		// Has CID
-		if (inBuffer[0] & 0x08)
-			infOffset++;
-		// Has NAD
-		if (inBuffer[0] & 0x04)
-			infOffset++;
-
-		*backLen = inBufferSize - infOffset;
-		if (*backLen > 0) 
-			memcpy(backData, &inBuffer[infOffset], *backLen);
-	}
-
-	// If it is an R-Block...
-	if ((inBuffer[0] & 0xC0) == 0x80) 
-	{
-		// Check if NACK bit is set
-		if (inBuffer[0] & 0x20)
-			return STATUS_MIFARE_NACK;
-	}
-
-	return result;
-}
+	return TCL_ResponseParser(inBuffer, &inBufferSize, backData, backLen);
+} // End TCL_Transceive()
 
 /**
  * Send an S-Block to deselect the card.
@@ -1189,7 +1165,49 @@ MFRC522::StatusCode MFRC522::TCL_Deselect(CardInfo *tag)
 	// TODO:Maybe do some checks? In my test it returns: CA 00 (Same data as I sent to my card)
 
 	return result;
-}
+} // End TCL_Deselect()
+
+/**
+ * Parse the response for T=CL response.
+ * This method should only be called after a STATUS_OK response of the transceived data.
+ */
+MFRC522::StatusCode MFRC522::TCL_ResponseParser(byte *data, byte *dataLen, byte *backData, byte *backLen)
+{
+	// Returning INF field if requested
+	if (backData && backLen) {
+		byte infOffset = 1;
+
+		// Has CID
+		if (data[0] & 0x08)
+			infOffset++;
+
+		// Has NAD
+		if (data[0] & 0x04)
+			infOffset++;
+
+		if (*dataLen > infOffset)
+		{
+			*backLen = *dataLen - infOffset;
+			memcpy(backData, &data[infOffset], *backLen);
+		}
+		else
+		{
+			*backLen = 0;
+		}
+	}
+
+	// If it is an R-Block...
+	if ((data[0] & 0xC0) == 0x80)
+	{
+		// Check if NACK bit is set
+		if (data[0] & 0x20)
+			return STATUS_MIFARE_NACK;
+		else
+			return STATUS_OK;
+	}
+
+	return STATUS_OK;
+} // End TCL_ResponseParser()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with MIFARE PICCs
