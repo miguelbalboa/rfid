@@ -78,7 +78,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#define MFRC522_SPICLOCK (F_CPU / 2)			// Fastest possible speed (MFRC522 accept upto 10MHz)
+#define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
 
 // Firmware data for self-test
 // Reference values based on firmware version
