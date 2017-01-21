@@ -1095,6 +1095,106 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 	return result;
 } // End PICC_PPS()
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Functions for communicating with ISO/IEC 14433-4 cards
+/////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Send an I-Block (Application)
+ */
+MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen)
+{
+	MFRC522::StatusCode result;
+	byte outBuffer[sendLen + 3];
+	byte outBufferSize = sendLen;
+	byte outBufferOffset = 1;
+	byte inBuffer[FIFO_SIZE];
+	byte inBufferSize = FIFO_SIZE;
+
+	outBuffer[0] = 0x02;
+
+	if (tag->blockNumber)
+		outBuffer[0] |= 0x01;
+
+	if (tag->ats.tc1.supportsCID) { 
+		outBuffer[0] |= 0x08;
+		outBuffer[1] = 0x00;	// CID is currently hardcoded
+		outBufferOffset++;
+	}
+
+	memcpy(&outBuffer[outBufferOffset], sendData, sendLen);
+	result = PCD_TransceiveData(outBuffer, outBufferOffset + sendLen, inBuffer, &inBufferSize);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// Swap block number on success
+	if (tag->blockNumber)
+		tag->blockNumber = false;
+	else
+		tag->blockNumber = true;
+
+	// If the caller wants data back, get it from the MFRC522.
+	if (backData && backLen) {
+		if ((inBuffer[0] & 0xE0) == 0x00) {
+			// It is an I-Block
+			byte inBufferOffset = 1;
+
+			// Advance one if CID is present
+			if (inBuffer[0] & 0x08)
+				inBufferOffset++;
+			
+			// Advance one if NAD is present
+			if (inBuffer[0] & 0x04)
+				inBufferOffset++;
+
+			*backLen = inBufferSize - inBufferOffset;
+			if (*backLen > 0)
+				memcpy(backData, &inBuffer[inBufferOffset], *backLen);
+
+			return result;
+		}
+		else
+		{
+			*backLen = 0;
+		}
+	}
+	
+	// TODO: Other checks such as R-Block
+
+	return result;
+}
+
+/**
+ * Send an S-Block to deselect the card.
+ */
+MFRC522::StatusCode MFRC522::TCL_Deselect(CardInfo *tag)
+{
+	MFRC522::StatusCode result;
+	byte outBuffer[4];
+	byte outBufferSize = 1;
+	byte inBuffer[FIFO_SIZE];
+	byte inBufferSize = FIFO_SIZE;
+
+	outBuffer[0] = 0xC2;
+	if (tag->ats.tc1.supportsCID)
+	{
+		outBuffer[0] |= 0x08;
+		outBuffer[1] = 0x00;  // CID is hardcoded
+		outBufferSize = 2;
+	}
+
+	result = PCD_TransceiveData(outBuffer, outBufferSize, inBuffer, &inBufferSize);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// TODO:Maybe do some checks? In my test it returns: CA 00 (Same data as I sent to my card)
+
+	return result;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with MIFARE PICCs
 /////////////////////////////////////////////////////////////////////////////////////
@@ -2305,6 +2405,8 @@ bool MFRC522::PICC_IsNewCardPresent() {
 		card.ats.tc1.supportsNAD = false;
 
 		memset(card.ats.data, 0, FIFO_SIZE - 2);
+
+		card.blockNumber = false;
 		return true;
 	}
 	return false;

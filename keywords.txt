@@ -14,7 +14,6 @@ MIFARE_Misc	KEYWORD1
 PICC_Type	KEYWORD1
 StatusCode	KEYWORD1
 Uid		KEYWORD1
-Ats		KEYWORD1
 CardInfo	KEYWORD1
 MIFARE_Key	KEYWORD1
  
@@ -51,6 +50,10 @@ PICC_Select	KEYWORD2
 PICC_HaltA	KEYWORD2
 PICC_RATS	KEYWORD2
 PICC_PPS	KEYWORD2
+
+# Functions for communicating with ISO/IEC 14433-4 cards
+TCL_Transceive	KEYWORD2
+TCL_Deselect	KEYWORD2
 
 # Functions for communicating with MIFARE PICCs
 PCD_Authenticate	KEYWORD2
