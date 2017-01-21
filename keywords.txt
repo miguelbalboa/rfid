@@ -17,6 +17,7 @@ TagBitRates 	KEYWORD1
 Uid		KEYWORD1
 CardInfo	KEYWORD1
 MIFARE_Key	KEYWORD1
+PcbBlock	KEYWORD1
  
 #######################################
 # KEYWORD2 Methods and functions

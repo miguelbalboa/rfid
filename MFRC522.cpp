@@ -1100,34 +1100,160 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 // Functions for communicating with ISO/IEC 14433-4 cards
 /////////////////////////////////////////////////////////////////////////////////////
 
+MFRC522::StatusCode MFRC522::TCL_Transceive(PcbBlock *send, PcbBlock *back)
+{
+	MFRC522::StatusCode result;
+	byte inBuffer[FIFO_SIZE];
+	byte inBufferSize = FIFO_SIZE;
+	byte outBuffer[send->inf.size + 5]; // PCB + CID + NAD + INF + EPILOGUE (CRC)
+	byte outBufferOffset = 1;
+	byte inBufferOffset = 1;
+
+	// Set the PCB byte
+	outBuffer[0] = send->prologue.pcb;
+
+	// Set the CID byte if available
+	if (send->prologue.pcb & 0x08) {
+		outBuffer[outBufferOffset] = send->prologue.cid;
+		outBufferOffset++;
+	}
+
+	// Set the NAD byte if available
+	if (send->prologue.pcb & 0x04) {
+		outBuffer[outBufferOffset] = send->prologue.nad;
+		outBufferOffset++;
+	}
+
+	// Copy the INF field if available
+	if (send->inf.size > 0) {
+		memcpy(&outBuffer[outBufferOffset], send->inf.data, send->inf.size);
+		outBufferOffset += send->inf.size;
+	}
+
+	// Is the CRC enabled for transmission?
+	byte txModeReg = PCD_ReadRegister(TxModeReg);
+	if ((txModeReg & 0x80) != 0x80) {
+		// Calculate CRC_A
+		result = PCD_CalculateCRC(outBuffer, outBufferOffset, &outBuffer[outBufferOffset]);
+		if (result != STATUS_OK) {
+			return result;
+		}
+
+		outBufferOffset += 2;
+	}
+
+	// Transceive the block
+	result = PCD_TransceiveData(outBuffer, outBufferOffset, inBuffer, &inBufferSize);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// We want to turn the received array back to a PcbBlock
+	back->prologue.pcb = inBuffer[0];
+
+	// CID byte is present?
+	if (send->prologue.pcb & 0x08) {
+		back->prologue.cid = inBuffer[inBufferOffset];
+		inBufferOffset++;
+	}
+
+	// NAD byte is present?
+	if (send->prologue.pcb & 0x04) {
+		back->prologue.nad = inBuffer[inBufferOffset];
+		inBufferOffset++;
+	}
+
+	// Check if CRC is taken care of by MFRC522
+	byte rxModeReg = PCD_ReadRegister(TxModeReg);
+	if ((rxModeReg & 0x80) != 0x80) {
+		Serial.print("CRC is not taken care of by MFRC522: ");
+		Serial.println(rxModeReg, HEX);
+
+		// Check the CRC
+		// We need at least the CRC_A value.
+		if ((int)(inBufferSize - inBufferOffset) < 2) {
+			return STATUS_CRC_WRONG;
+		}
+
+		// Verify CRC_A - do our own calculation and store the control in controlBuffer.
+		byte controlBuffer[2];
+		MFRC522::StatusCode status = PCD_CalculateCRC(inBuffer, inBufferSize - 2, controlBuffer);
+		if (status != STATUS_OK) {
+			return status;
+		}
+
+		if ((inBuffer[inBufferSize - 2] != controlBuffer[0]) || (inBuffer[inBufferSize - 1] != controlBuffer[1])) {
+			return STATUS_CRC_WRONG;
+		}
+
+		// Take away the CRC bytes
+		inBufferSize -= 2;
+	}
+
+	// Got more data?
+	if (inBufferSize > inBufferOffset) {
+		if ((inBufferSize - inBufferOffset) > back->inf.size) {
+			return STATUS_NO_ROOM;
+		}
+
+		memcpy(back->inf.data, &inBuffer[inBufferOffset], inBufferSize - inBufferOffset);
+		back->inf.size = inBufferSize - inBufferOffset;
+	} else {
+		back->inf.size = 0;
+	}
+
+	// If the response is a R-Block check NACK
+	if (((inBuffer[0] & 0xC0) == 0x80) && (inBuffer[0] & 0x20)) {
+		return STATUS_MIFARE_NACK;
+	}
+	
+	return result;
+}
 /**
  * Send an I-Block (Application)
  */
 MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen)
 {
 	MFRC522::StatusCode result;
-	byte outBuffer[sendLen + 3];
-	byte outBufferSize = sendLen;
-	byte outBufferOffset = 1;
-	byte inBuffer[FIFO_SIZE];
-	byte inBufferSize = FIFO_SIZE;
 
-	outBuffer[0] = 0x02;
+	PcbBlock out;
+	PcbBlock in;
 
-	if (tag->blockNumber)
-		outBuffer[0] |= 0x01;
+	// This command sends an I-Block
+	out.prologue.pcb = 0x02;
 
-	if (tag->ats.tc1.supportsCID) { 
-		outBuffer[0] |= 0x08;
-		outBuffer[1] = 0x00;	// CID is currently hardcoded
-		outBufferOffset++;
+	if (tag->ats.tc1.supportsCID) {
+		out.prologue.pcb |= 0x08;
+		out.prologue.cid = 0x00;	// CID is curentlly hardcoded as 0x00
 	}
 
-	memcpy(&outBuffer[outBufferOffset], sendData, sendLen);
-	result = PCD_TransceiveData(outBuffer, outBufferOffset + sendLen, inBuffer, &inBufferSize);
+	// This command doe not support NAD
+	out.prologue.pcb &= 0xFB;
+	out.prologue.nad = 0x00;
+
+	// Set the block number
+	if (tag->blockNumber) {
+		out.prologue.pcb |= 0x01;
+	}
+
+	// Do we have data to send?
+	if (sendData && (sendLen > 0)) {
+		out.inf.size = sendLen;
+		out.inf.data = sendData;
+	} else {
+		out.inf.size = 0;
+	}
+
+	// Initialize the receiving data
+	in.inf.data = backData;
+	in.inf.size = *backLen;
+
+	result = TCL_Transceive(&out, &in);
 	if (result != STATUS_OK) {
 		return result;
 	}
+
+	*backLen = in.inf.size;
 
 	// Swap block number on success
 	if (tag->blockNumber)
@@ -1135,7 +1261,7 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte
 	else
 		tag->blockNumber = true;
 
-	return TCL_ResponseParser(inBuffer, &inBufferSize, backData, backLen);
+	return result;
 } // End TCL_Transceive()
 
 /**
@@ -1166,48 +1292,6 @@ MFRC522::StatusCode MFRC522::TCL_Deselect(CardInfo *tag)
 
 	return result;
 } // End TCL_Deselect()
-
-/**
- * Parse the response for T=CL response.
- * This method should only be called after a STATUS_OK response of the transceived data.
- */
-MFRC522::StatusCode MFRC522::TCL_ResponseParser(byte *data, byte *dataLen, byte *backData, byte *backLen)
-{
-	// Returning INF field if requested
-	if (backData && backLen) {
-		byte infOffset = 1;
-
-		// Has CID
-		if (data[0] & 0x08)
-			infOffset++;
-
-		// Has NAD
-		if (data[0] & 0x04)
-			infOffset++;
-
-		if (*dataLen > infOffset)
-		{
-			*backLen = *dataLen - infOffset;
-			memcpy(backData, &data[infOffset], *backLen);
-		}
-		else
-		{
-			*backLen = 0;
-		}
-	}
-
-	// If it is an R-Block...
-	if ((data[0] & 0xC0) == 0x80)
-	{
-		// Check if NACK bit is set
-		if (data[0] & 0x20)
-			return STATUS_MIFARE_NACK;
-		else
-			return STATUS_OK;
-	}
-
-	return STATUS_OK;
-} // End TCL_ResponseParser()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with MIFARE PICCs

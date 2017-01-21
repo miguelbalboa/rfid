@@ -360,6 +360,19 @@ public:
 	typedef struct {
 		byte		keyByte[MF_KEY_SIZE];
 	} MIFARE_Key;
+
+	// A struct used for passing PCB Block
+	typedef struct {
+		struct {
+			byte pcb;
+			byte cid;
+			byte nad;
+		} prologue;
+		struct {
+			byte size;
+			byte *data;
+		} inf;
+	} PcbBlock;
 	
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
@@ -414,6 +427,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with ISO/IEC 14433-4 cards
 	/////////////////////////////////////////////////////////////////////////////////////
+	StatusCode TCL_Transceive(PcbBlock *send, PcbBlock *back);
 	StatusCode TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen);
 	StatusCode TCL_Deselect(CardInfo *tag);
 
@@ -473,7 +487,6 @@ private:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
-	StatusCode TCL_ResponseParser(byte *data, byte *dataLen, byte *backData, byte *backLen);
 };
 
 #endif
