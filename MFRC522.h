@@ -351,6 +351,9 @@ public:
 		uint16_t	atqa;
 		Uid			uid;
 		Ats		    ats; 
+
+		// For Block PCB
+		bool blockNumber;
 	} CardInfo;
 
 	// A struct used for passing a MIFARE Crypto1 key
@@ -408,6 +411,12 @@ public:
 	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
 	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
 	
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Functions for communicating with ISO/IEC 14433-4 cards
+	/////////////////////////////////////////////////////////////////////////////////////
+	StatusCode TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen);
+	StatusCode TCL_Deselect(CardInfo *tag);
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
