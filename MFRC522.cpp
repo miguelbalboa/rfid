@@ -13,14 +13,14 @@
 /**
  * Constructor.
  */
-MFRC522::MFRC522() : MFRC522(-1) {
+MFRC522::MFRC522(): MFRC522(SS, UINT8_MAX) { // SS is defined in pins_arduino.h, UINT8_MAX means there is no connection from Arduino to MFRC522's reset and power down input
 } // End constructor
 
 /**
  * Constructor.
  * Prepares the output pins.
  */
-MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
 				): MFRC522(SS, resetPowerDownPin) { // SS is defined in pins_arduino.h
 } // End constructor
 
@@ -29,7 +29,7 @@ MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's
  * Prepares the output pins.
  */
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
-					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
 				) {
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin;
@@ -203,7 +203,8 @@ void MFRC522::PCD_Init() {
 	pinMode(_chipSelectPin, OUTPUT);
 	digitalWrite(_chipSelectPin, HIGH);
 	
-	if (_resetPowerDownPin != -1) {
+	// If a valid pin number has been set, pull device out of power down / reset state.
+	if (_resetPowerDownPin != UINT8_MAX) {
 		// Set the resetPowerDownPin as digital output, do not reset or power down.
 		pinMode(_resetPowerDownPin, OUTPUT);
 	
@@ -215,7 +216,7 @@ void MFRC522::PCD_Init() {
 		}
 	}
 
-	if (!hardReset) { // Perform a soft reset
+	if (!hardReset) { // Perform a soft reset if we haven't triggered a hard reset above.
 		PCD_Reset();
 	}
 	
