@@ -305,6 +305,7 @@ public:
 		STATUS_MIFARE_NACK		= 0xff	// A MIFARE PICC responded with NAK.
 	};
 
+	// ISO/IEC 14443-4 bit rates
 	enum TagBitRates : byte {
 		BITRATE_106KBITS = 0x00,
 		BITRATE_212KBITS = 0x01,
@@ -319,6 +320,7 @@ public:
 		byte		sak;			// The SAK (Select acknowledge) byte returned from the PICC after successful selection.
 	} Uid;
 
+	// Structure to store ISO/IEC 14443-4 ATS
 	typedef struct {
 		byte size;
 		byte fsc;                 // Frame size for proximity card
@@ -354,7 +356,7 @@ public:
 
 		// For Block PCB
 		bool blockNumber;
-	} CardInfo;
+	} TagInfo;
 
 	// A struct used for passing a MIFARE Crypto1 key
 	typedef struct {
@@ -376,7 +378,7 @@ public:
 	
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
-	CardInfo card;
+	TagInfo tag;
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
@@ -420,7 +422,7 @@ public:
 	StatusCode PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
 	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
-	StatusCode PICC_RATS(Ats *ats);
+	StatusCode PICC_RequestATS(Ats *ats);
 	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
 	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
 	
@@ -428,8 +430,8 @@ public:
 	// Functions for communicating with ISO/IEC 14433-4 cards
 	/////////////////////////////////////////////////////////////////////////////////////
 	StatusCode TCL_Transceive(PcbBlock *send, PcbBlock *back);
-	StatusCode TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen);
-	StatusCode TCL_Deselect(CardInfo *tag);
+	StatusCode TCL_Transceive(TagInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen);
+	StatusCode TCL_Deselect(TagInfo *tag);
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
@@ -455,21 +457,21 @@ public:
 	//const char *GetStatusCodeName(byte code);
 	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
 	static PICC_Type PICC_GetType(byte sak);
-	static PICC_Type PICC_GetType(CardInfo *card);
+	static PICC_Type PICC_GetType(TagInfo *tag);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
 	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	
 	// Support functions for debuging
 	void PCD_DumpVersionToSerial();
-	void PICC_DumpToSerial(CardInfo *card);
+	void PICC_DumpToSerial(TagInfo *tag);
 	void PICC_DumpToSerial(Uid *uid);
-	void PICC_DumpDetailsToSerial(CardInfo *card);
+	void PICC_DumpDetailsToSerial(TagInfo *tag);
 	void PICC_DumpDetailsToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
-	void PICC_DumpISO14443_4(CardInfo *card);
+	void PICC_DumpISO14443_4(TagInfo *tag);
 	
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);

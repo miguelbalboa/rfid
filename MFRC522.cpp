@@ -829,7 +829,7 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
  *
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-MFRC522::StatusCode MFRC522::PICC_RATS(Ats *ats) 
+MFRC522::StatusCode MFRC522::PICC_RequestATS(Ats *ats) 
 {
 	byte count;
 	MFRC522::StatusCode result;
@@ -1006,7 +1006,7 @@ MFRC522::StatusCode MFRC522::PICC_RATS(Ats *ats)
 	memcpy(ats->data, bufferATS, bufferSize - 2);
 
 	return result;
-} // End PICC_RATS()
+} // End PICC_RequestATS()
 
 /**
  * Transmits Protocol and Parameter Selection Request (PPS) without parameter 1 
@@ -1212,7 +1212,7 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(PcbBlock *send, PcbBlock *back)
 /**
  * Send an I-Block (Application)
  */
-MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen)
+MFRC522::StatusCode MFRC522::TCL_Transceive(TagInfo *tag, byte *sendData, byte sendLen, byte *backData, byte *backLen)
 {
 	MFRC522::StatusCode result;
 
@@ -1267,7 +1267,7 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(CardInfo * tag, byte *sendData, byte
 /**
  * Send an S-Block to deselect the card.
  */
-MFRC522::StatusCode MFRC522::TCL_Deselect(CardInfo *tag)
+MFRC522::StatusCode MFRC522::TCL_Deselect(TagInfo *tag)
 {
 	MFRC522::StatusCode result;
 	byte outBuffer[4];
@@ -1726,13 +1726,13 @@ const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	/
  *
  * @return PICC_Type
  */
-MFRC522::PICC_Type MFRC522::PICC_GetType(CardInfo *card		///< The CardInfo returned from PICC_Select().
+MFRC522::PICC_Type MFRC522::PICC_GetType(TagInfo *tag		///< The TagInfo returned from PICC_Select().
 ) {
 	// http://www.nxp.com/documents/application_note/AN10833.pdf 
 	// 3.2 Coding of Select Acknowledge (SAK)
 	// ignore 8-bit (iso14443 starts with LSBit = bit 1)
 	// fixes wrong type for manufacturer Infineon (http://nfc-tools.org/index.php?title=ISO14443A)
-	byte sak = card->uid.sak & 0x7F;
+	byte sak = tag->uid.sak & 0x7F;
 	switch (sak) {
 	case 0x04:	return PICC_TYPE_NOT_COMPLETE;	// UID not complete
 	case 0x09:	return PICC_TYPE_MIFARE_MINI;
@@ -1743,7 +1743,7 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(CardInfo *card		///< The CardInfo retur
 	case 0x11:	return PICC_TYPE_MIFARE_PLUS;
 	case 0x01:	return PICC_TYPE_TNP3XXX;
 	case 0x20:
-		if (card->atqa == 0x0344)
+		if (tag->atqa == 0x0344)
 			return PICC_TYPE_MIFARE_DESFIRE;
 		return PICC_TYPE_ISO_14443_4;
 	case 0x40:	return PICC_TYPE_ISO_18092;
@@ -1828,15 +1828,15 @@ void MFRC522::PCD_DumpVersionToSerial() {
  * On success the PICC is halted after dumping the data.
  * For MIFARE Classic the factory default key of 0xFFFFFFFFFFFF is tried.
  */
-void MFRC522::PICC_DumpToSerial(CardInfo *card)
+void MFRC522::PICC_DumpToSerial(TagInfo *tag)
 {
 	MIFARE_Key key;
 
 	// Dump UID, SAK and Type
-	PICC_DumpDetailsToSerial(card);
+	PICC_DumpDetailsToSerial(tag);
 
 	// Dump contents
-	PICC_Type piccType = PICC_GetType(card->uid.sak);
+	PICC_Type piccType = PICC_GetType(tag->uid.sak);
 	switch (piccType) {
 	case PICC_TYPE_MIFARE_MINI:
 	case PICC_TYPE_MIFARE_1K:
@@ -1845,7 +1845,7 @@ void MFRC522::PICC_DumpToSerial(CardInfo *card)
 		for (byte i = 0; i < 6; i++) {
 			key.keyByte[i] = 0xFF;
 		}
-		PICC_DumpMifareClassicToSerial(&card->uid, piccType, &key);
+		PICC_DumpMifareClassicToSerial(&tag->uid, piccType, &key);
 		break;
 
 	case PICC_TYPE_MIFARE_UL:
@@ -1854,7 +1854,7 @@ void MFRC522::PICC_DumpToSerial(CardInfo *card)
 
 	case PICC_TYPE_ISO_14443_4:
 	case PICC_TYPE_MIFARE_DESFIRE:
-		PICC_DumpISO14443_4(card);
+		PICC_DumpISO14443_4(tag);
 		Serial.println(F("Dumping memory contents not implemented for that PICC type."));
 		break;
 	case PICC_TYPE_ISO_18092:
@@ -1925,38 +1925,38 @@ void MFRC522::PICC_DumpToSerial(Uid *uid	///< Pointer to Uid struct returned fro
 /**
  * Dumps card info (UID,SAK,Type) about the selected PICC to Serial.
  */
-void MFRC522::PICC_DumpDetailsToSerial(CardInfo *card	///< Pointer to CardInfo struct returned from a successful PICC_Select().
+void MFRC522::PICC_DumpDetailsToSerial(TagInfo *tag	///< Pointer to TagInfo struct returned from a successful PICC_Select().
 ) {
 	// ATQA
 	Serial.print(F("Card ATQA:"));
-	if (((card->atqa & 0xFF00u) >> 8) < 0x10)
+	if (((tag->atqa & 0xFF00u) >> 8) < 0x10)
 		Serial.print(F(" 0"));
-	Serial.print((card->atqa & 0xFF00u) >> 8, HEX);
-	if ((card->atqa & 0x00FFu) < 0x10)
+	Serial.print((tag->atqa & 0xFF00u) >> 8, HEX);
+	if ((tag->atqa & 0x00FFu) < 0x10)
 		Serial.print(F("0"));
 	else
 		Serial.print(F(" "));
-	Serial.println(card->atqa & 0x00FFu, HEX);
+	Serial.println(tag->atqa & 0x00FFu, HEX);
 
 	// UID
 	Serial.print(F("Card UID:"));
-	for (byte i = 0; i < card->uid.size; i++) {
-		if (card->uid.uidByte[i] < 0x10)
+	for (byte i = 0; i < tag->uid.size; i++) {
+		if (tag->uid.uidByte[i] < 0x10)
 			Serial.print(F(" 0"));
 		else
 			Serial.print(F(" "));
-		Serial.print(card->uid.uidByte[i], HEX);
+		Serial.print(tag->uid.uidByte[i], HEX);
 	}
 	Serial.println();
 
 	// SAK
 	Serial.print(F("Card SAK: "));
-	if (card->uid.sak < 0x10)
+	if (tag->uid.sak < 0x10)
 		Serial.print(F("0"));
-	Serial.println(card->uid.sak, HEX);
+	Serial.println(tag->uid.sak, HEX);
 
 	// (suggested) PICC type
-	PICC_Type piccType = PICC_GetType(card);
+	PICC_Type piccType = PICC_GetType(tag);
 	Serial.print(F("PICC type: "));
 	Serial.println(PICC_GetTypeName(piccType));
 } // End PICC_DumpDetailsToSerial()
@@ -2225,17 +2225,17 @@ void MFRC522::PICC_DumpMifareUltralightToSerial() {
 /**
  * Dumps memory contents of a ISO-14443-4 PICC.
  */
-void MFRC522::PICC_DumpISO14443_4(CardInfo *card)
+void MFRC522::PICC_DumpISO14443_4(TagInfo *tag)
 {
 	// ATS
-	if (card->ats.size > 0x00) {	// The first byte is the ATS length including the length byte
+	if (tag->ats.size > 0x00) {	// The first byte is the ATS length including the length byte
 		Serial.print(F("Card ATS:"));
-		for (byte offset = 0; offset < card->ats.size; offset++) {
-			if (card->ats.data[offset] < 0x10)
+		for (byte offset = 0; offset < tag->ats.size; offset++) {
+			if (tag->ats.data[offset] < 0x10)
 				Serial.print(F(" 0"));
 			else
 				Serial.print(F(" "));
-			Serial.print(card->ats.data[offset], HEX);
+			Serial.print(tag->ats.data[offset], HEX);
 		}
 		Serial.println();
 	}
@@ -2482,29 +2482,29 @@ bool MFRC522::PICC_IsNewCardPresent() {
 	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
 
 	if (result == STATUS_OK || result == STATUS_COLLISION) {
-		card.atqa = ((uint16_t)bufferATQA[1] << 8) | bufferATQA[0];
-		card.ats.size = 0;
-		card.ats.fsc = 32;	// default FSC value
+		tag.atqa = ((uint16_t)bufferATQA[1] << 8) | bufferATQA[0];
+		tag.ats.size = 0;
+		tag.ats.fsc = 32;	// default FSC value
 
 		// Defaults for TA1
-		card.ats.ta1.transmitted = false;
-		card.ats.ta1.sameD = false;
-		card.ats.ta1.ds = BITRATE_106KBITS;
-		card.ats.ta1.dr = BITRATE_106KBITS;
+		tag.ats.ta1.transmitted = false;
+		tag.ats.ta1.sameD = false;
+		tag.ats.ta1.ds = BITRATE_106KBITS;
+		tag.ats.ta1.dr = BITRATE_106KBITS;
 
 		// Defaults for TB1
-		card.ats.tb1.transmitted = false;
-		card.ats.tb1.fwi = 0;	// TODO: Don't know the default for this!
-		card.ats.tb1.sfgi = 0;	// The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
+		tag.ats.tb1.transmitted = false;
+		tag.ats.tb1.fwi = 0;	// TODO: Don't know the default for this!
+		tag.ats.tb1.sfgi = 0;	// The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
 
 		// Defaults for TC1
-		card.ats.tc1.transmitted = false;
-		card.ats.tc1.supportsCID = true;
-		card.ats.tc1.supportsNAD = false;
+		tag.ats.tc1.transmitted = false;
+		tag.ats.tc1.supportsCID = true;
+		tag.ats.tc1.supportsNAD = false;
 
-		memset(card.ats.data, 0, FIFO_SIZE - 2);
+		memset(tag.ats.data, 0, FIFO_SIZE - 2);
 
-		card.blockNumber = false;
+		tag.blockNumber = false;
 		return true;
 	}
 	return false;
@@ -2519,25 +2519,25 @@ bool MFRC522::PICC_IsNewCardPresent() {
  * @return bool
  */
 bool MFRC522::PICC_ReadCardSerial() {
-	MFRC522::StatusCode result = PICC_Select(&card.uid);
+	MFRC522::StatusCode result = PICC_Select(&tag.uid);
 
 	// Backward compatibility
-	uid.size = card.uid.size;
-	uid.sak = card.uid.sak;
-	memcpy(uid.uidByte, card.uid.uidByte, sizeof(card.uid.uidByte));
+	uid.size = tag.uid.size;
+	uid.sak = tag.uid.sak;
+	memcpy(uid.uidByte, tag.uid.uidByte, sizeof(tag.uid.uidByte));
 	
 	if (result != STATUS_OK)
 		return false;
 
 	// RATS for SAK with sixth bit on.
-	if ((card.uid.sak & 0x20) == 0x20) {
-		result = PICC_RATS(&(card.ats));
+	if ((tag.uid.sak & 0x20) == 0x20) {
+		result = PICC_RequestATS(&(tag.ats));
 		if (result == STATUS_OK) {
 			// Check the ATS
-			if (card.ats.size > 0)
+			if (tag.ats.size > 0)
 			{
 				// TA1 has been transmitted?
-				if (card.ats.ta1.transmitted) 
+				if (tag.ats.ta1.transmitted) 
 				{
 					// I don't want to change the default bitrate
 					// but if you want to and it is supported by TA1
