@@ -788,6 +788,45 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 	// Set correct uid->size
 	uid->size = 3 * cascadeLevel + 1;
 	
+	// IF SAK bit 6 = 1 then it is ISO/IEC 14443-4 (T=CL)
+	// A Request ATS command should be sent
+	// We also check SAK bit 3 is cero, as it stands for UID complete (1 would tell us it is incomplete)
+	if ((uid->sak & 0x24) == 0x20) {
+		Ats ats;
+		result = PICC_RequestATS(&ats);
+		if (result == STATUS_OK) {
+			// Check the ATS
+			if (ats.size > 0)
+			{
+				// TA1 has been transmitted?
+				// PPS must be supported...
+				if (ats.ta1.transmitted)
+				{
+					// TA1
+					//  8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | Description
+					// ---+---+---+---+---+---+---+---+------------------------------------------
+					//  0 | - | - | - | 0 | - | - | - | Different D for each direction supported
+					//  1 | - | - | - | 0 | - | - | - | Only same D for both direction supported
+					//  - | x | x | x | 0 | - | - | - | DS (Send D)
+					//  - | - | - | - | 0 | x | x | x | DR (Receive D)
+					//
+					// D to bitrate table
+					//  3 | 2 | 1 | Value
+					// ---+---+---+-----------------------------
+					//  1 | - | - | 848 kBaud is supported
+					//  - | 1 | - | 424 kBaud is supported
+					//  - | - | 1 | 212 kBaud is supported
+					//  0 | 0 | 0 | Only 106 kBaud is supported
+					//
+					// Note: 106 kBaud is always supported
+					//
+					// I have almost constant timeouts when changing speeds :(
+					PICC_PPS(BITRATE_106KBITS, BITRATE_106KBITS);
+				}
+			}
+		}
+	}
+
 	return STATUS_OK;
 } // End PICC_Select()
 
@@ -1069,7 +1108,8 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 
 	// Bit 8 - Set to '0' as MFRC522 allows different bit rates for send and receive
 	// Bit 4 - Set to '0' as it is Reserved for future use.
-	ppsBuffer[2] = (((sendBitRate & 0x03) << 4) | (receiveBitRate & 0x03)) & 0xE7;
+	//ppsBuffer[2] = (((sendBitRate & 0x03) << 4) | (receiveBitRate & 0x03)) & 0xE7;
+	ppsBuffer[2] = (((sendBitRate & 0x03) << 2) | (receiveBitRate & 0x03)) & 0xE7;
 
 	// Calculate CRC_A
 	result = PCD_CalculateCRC(ppsBuffer, 3, &ppsBuffer[3]);
@@ -1085,8 +1125,8 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 		byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
 
 		// Set bit rate and enable CRC for T=CL
-		txReg = (txReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
-		rxReg = (rxReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
+		txReg = (txReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
+		rxReg = (rxReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
 
 		PCD_WriteRegister(TxModeReg, txReg);
 		PCD_WriteRegister(RxModeReg, rxReg);
@@ -2528,34 +2568,6 @@ bool MFRC522::PICC_ReadCardSerial() {
 	
 	if (result != STATUS_OK)
 		return false;
-
-	// RATS for SAK with sixth bit on.
-	if ((tag.uid.sak & 0x20) == 0x20) {
-		result = PICC_RequestATS(&(tag.ats));
-		if (result == STATUS_OK) {
-			// Check the ATS
-			if (tag.ats.size > 0)
-			{
-				// TA1 has been transmitted?
-				if (tag.ats.ta1.transmitted) 
-				{
-					// I don't want to change the default bitrate
-					// but if you want to and it is supported by TA1
-					// here is the place :)
-					result = PICC_PPS(BITRATE_106KBITS, BITRATE_106KBITS);
-					if (result != STATUS_OK)
-						return false;
-				}
-				else
-				{
-					// NO TA1 we could try to send an empty PPS
-					result = PICC_PPS();
-					if (result != STATUS_OK)
-						return false;
-				}
-			}
-		}
-	}
 
 	return true;
 } // End 
