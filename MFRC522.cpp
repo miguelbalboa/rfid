@@ -1121,15 +1121,23 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 	result = PCD_TransceiveData(ppsBuffer, 5, ppsBuffer, &ppsBufferSize, NULL, 0, true);
 	if (result == STATUS_OK)
 	{
-		byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
-		byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
+		// Make sure it is an answer to our PPS
+		// We should receive our PPS byte and 2 CRC bytes
+		if ((ppsBufferSize == 3) && (ppsBuffer[0] == 0xD0)) {
+			byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
+			byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
 
-		// Set bit rate and enable CRC for T=CL
-		txReg = (txReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
-		rxReg = (rxReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
+			// Set bit rate and enable CRC for T=CL
+			txReg = (txReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
+			rxReg = (rxReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
 
-		PCD_WriteRegister(TxModeReg, txReg);
-		PCD_WriteRegister(RxModeReg, rxReg);
+			PCD_WriteRegister(TxModeReg, txReg);
+			PCD_WriteRegister(RxModeReg, rxReg);
+		}
+		else 
+		{
+			return STATUS_ERROR;
+		}
 	}
 
 	return result;
