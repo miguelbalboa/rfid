@@ -430,7 +430,8 @@ public:
 	// Functions for communicating with ISO/IEC 14433-4 cards
 	/////////////////////////////////////////////////////////////////////////////////////
 	StatusCode TCL_Transceive(PcbBlock *send, PcbBlock *back);
-	StatusCode TCL_Transceive(TagInfo * tag, byte *sendData, byte sendLen, byte *backData, byte *backLen);
+	StatusCode TCL_Transceive(TagInfo * tag, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL);
+	StatusCode TCL_TransceiveRBlock(TagInfo *tag, bool ack, byte *backData = NULL, byte *backLen = NULL);
 	StatusCode TCL_Deselect(TagInfo *tag);
 
 	/////////////////////////////////////////////////////////////////////////////////////

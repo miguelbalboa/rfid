@@ -1266,6 +1266,9 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(TagInfo *tag, byte *sendData, byte s
 
 	PcbBlock out;
 	PcbBlock in;
+	byte outBuffer[FIFO_SIZE];
+	byte outBufferSize = FIFO_SIZE;
+	byte totalBackLen = *backLen;
 
 	// This command sends an I-Block
 	out.prologue.pcb = 0x02;
@@ -1290,18 +1293,17 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(TagInfo *tag, byte *sendData, byte s
 		out.inf.data = sendData;
 	} else {
 		out.inf.size = 0;
+		out.inf.data = NULL;
 	}
 
 	// Initialize the receiving data
-	in.inf.data = backData;
-	in.inf.size = *backLen;
+	in.inf.data = outBuffer;
+	in.inf.size = outBufferSize;
 
 	result = TCL_Transceive(&out, &in);
 	if (result != STATUS_OK) {
 		return result;
 	}
-
-	*backLen = in.inf.size;
 
 	// Swap block number on success
 	if (tag->blockNumber)
@@ -1309,8 +1311,103 @@ MFRC522::StatusCode MFRC522::TCL_Transceive(TagInfo *tag, byte *sendData, byte s
 	else
 		tag->blockNumber = true;
 
+	if (backData && (backLen > 0)) {
+		if (*backLen < in.inf.size)
+			return STATUS_NO_ROOM;
+
+		*backLen = in.inf.size;
+		memcpy(backData, in.inf.data, in.inf.size);
+	}
+
+	// Check chaining
+	if (in.prologue.pcb & 0x10 == 0x00)
+		return result;
+
+	// Result is chained
+	// Send an ACK to receive more data
+	// TODO: Should be checked I've never needed to send an ACK
+	while (in.prologue.pcb & 0x10) {
+		byte ackData[FIFO_SIZE];
+		byte ackDataSize = FIFO_SIZE;
+
+		result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize);
+		if (result != STATUS_OK)
+			return result;
+
+		if (backData && (backLen > 0)) {
+			if ((*backLen + ackDataSize) > totalBackLen)
+				return STATUS_NO_ROOM;
+
+			memcpy(&(backData[*backLen]), ackData, ackDataSize);
+			*backLen += ackDataSize;
+		}
+	}
+	
 	return result;
 } // End TCL_Transceive()
+
+/**
+ * Send R-Block to the PICC.
+ */
+MFRC522::StatusCode MFRC522::TCL_TransceiveRBlock(TagInfo *tag, bool ack, byte *backData, byte *backLen)
+{
+	MFRC522::StatusCode result;
+
+	PcbBlock out;
+	PcbBlock in;
+	byte outBuffer[FIFO_SIZE];
+	byte outBufferSize = FIFO_SIZE;
+
+	// This command sends an R-Block
+	if (ack)
+		out.prologue.pcb = 0xA2;	// ACK
+	else 
+		out.prologue.pcb = 0xB2;	// NAK
+	
+
+	if (tag->ats.tc1.supportsCID) {
+		out.prologue.pcb |= 0x08;
+		out.prologue.cid = 0x00;	// CID is curentlly hardcoded as 0x00
+	}
+
+	// This command doe not support NAD
+	out.prologue.pcb &= 0xFB;
+	out.prologue.nad = 0x00;
+
+	// Set the block number
+	if (tag->blockNumber) {
+		out.prologue.pcb |= 0x01;
+	}
+
+	// No INF data for R-Block
+	out.inf.size = 0;
+	out.inf.data = NULL;
+
+	// Initialize the receiving data
+	in.inf.data = outBuffer;
+	in.inf.size = outBufferSize;
+
+	result = TCL_Transceive(&out, &in);
+	if (result != STATUS_OK) {
+		return result;
+	}
+
+	// Swap block number on success
+	if (tag->blockNumber)
+		tag->blockNumber = false;
+	else
+		tag->blockNumber = true;
+
+	if (backData && backLen) {
+		if (*backLen < in.inf.size)
+			return STATUS_NO_ROOM;
+
+		*backLen = in.inf.size;
+		memcpy(backData, in.inf.data, in.inf.size);
+	}
+	
+	return result;
+} // End TCL_TransceiveRBlock()
 
 /**
  * Send an S-Block to deselect the card.
