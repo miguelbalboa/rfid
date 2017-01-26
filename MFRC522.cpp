@@ -216,6 +216,8 @@ void MFRC522::PCD_Init() {
 	// Reset baud rates
 	PCD_WriteRegister(TxModeReg, 0x00);
 	PCD_WriteRegister(RxModeReg, 0x00);
+	// Reset ModWidthReg
+	PCD_WriteRegister(ModWidthReg, 0x26);
 
 	// When communicating with a PICC we need a timeout if something goes wrong.
 	// f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
@@ -821,7 +823,64 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 					// Note: 106 kBaud is always supported
 					//
 					// I have almost constant timeouts when changing speeds :(
-					PICC_PPS(BITRATE_106KBITS, BITRATE_106KBITS);
+					TagBitRates ds = BITRATE_106KBITS; 
+					TagBitRates dr = BITRATE_106KBITS;
+
+					//// Not working at 848 or 424
+					//if (ats.ta1.ds & 0x04) 
+					//{
+					//	ds = BITRATE_848KBITS;
+					//} 
+					//else if (ats.ta1.ds & 0x02)
+					//{
+					//	ds = BITRATE_424KBITS;
+					//}
+					//else if (ats.ta1.ds & 0x01)
+					//{
+					//	ds = BITRATE_212KBITS;
+					//}
+					//else 
+					//{
+					//	ds = BITRATE_106KBITS;
+					//}
+
+					if (ats.ta1.ds & 0x01)
+					{
+						ds = BITRATE_212KBITS;
+					}
+					else 
+					{
+						ds = BITRATE_106KBITS;
+					}
+
+					//// Not working at 848 or 424
+					//if (ats.ta1.dr & 0x04) 
+					//{
+					//	dr = BITRATE_848KBITS;
+					//} 
+					//else if (ats.ta1.dr & 0x02)
+					//{
+					//	dr = BITRATE_424KBITS;
+					//}
+					//else if (ats.ta1.dr & 0x01)
+					//{
+					//	dr = BITRATE_212KBITS;
+					//}
+					//else 
+					//{
+					//	dr = BITRATE_106KBITS;
+					//}
+
+					if (ats.ta1.dr & 0x01)
+					{
+						dr = BITRATE_212KBITS;
+					}
+					else
+					{
+						dr = BITRATE_106KBITS;
+					}
+
+					PICC_PPS(ds, dr);
 				}
 			}
 		}
@@ -1130,9 +1189,43 @@ MFRC522::StatusCode MFRC522::PICC_PPS(TagBitRates sendBitRate,	          ///< DS
 			// Set bit rate and enable CRC for T=CL
 			txReg = (txReg & 0x8F) | ((receiveBitRate & 0x03) << 4) | 0x80;
 			rxReg = (rxReg & 0x8F) | ((sendBitRate & 0x03) << 4) | 0x80;
+			rxReg &= 0xF0; //Enforce although this should be set already
+
+			// From ConfigIsoType
+			//rxReg |= 0x06;
 
 			PCD_WriteRegister(TxModeReg, txReg);
 			PCD_WriteRegister(RxModeReg, rxReg);
+
+			// At 212kBps
+			switch (sendBitRate) {
+				case BITRATE_212KBITS:
+					{
+						//PCD_WriteRegister(ModWidthReg, 0x13);
+						PCD_WriteRegister(ModWidthReg, 0x15);
+					}
+					break;
+				case BITRATE_424KBITS:
+					{
+						PCD_WriteRegister(ModWidthReg, 0x0A);
+					}
+					break;
+				case BITRATE_848KBITS:
+					{
+						PCD_WriteRegister(ModWidthReg, 0x05);
+					}
+					break;
+				default:
+					{
+						PCD_WriteRegister(ModWidthReg, 0x26); // Default value
+					}
+					break;
+			}
+
+			//PCD_WriteRegister(RxThresholdReg, 0x84); // ISO-14443.4 Type A (default)
+			//PCD_WriteRegister(ControlReg, 0x10);
+			
+			delayMicroseconds(10);
 		}
 		else 
 		{
@@ -2623,6 +2716,8 @@ bool MFRC522::PICC_IsNewCardPresent() {
 	// Reset baud rates
 	PCD_WriteRegister(TxModeReg, 0x00);
 	PCD_WriteRegister(RxModeReg, 0x00);
+	// Reset ModWidthReg
+	PCD_WriteRegister(ModWidthReg, 0x26);
 
 	MFRC522::StatusCode result = PICC_RequestA(bufferATQA, &bufferSize);
 
