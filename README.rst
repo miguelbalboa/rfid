@@ -45,7 +45,8 @@ What works and not?
   #. With Arduino Yun like `#111 <https://github.com/miguelbalboa/rfid/issues/111>`_, not supported by software.
   #. Power reduction modes `#269 <https://github.com/miguelbalboa/rfid/issues/269>`_, not supported by software.
   #. I2C instead of SPI `#240 <https://github.com/miguelbalboa/rfid/issues/240>`_, not supported by software.
-
+  #. UART instead of SPI `#281 <https://github.com/miguelbalboa/rfid/issues/281>`_, not supported by software.
+  
 * **Need more?**
 
   #. If software: code it and make a pull request.
