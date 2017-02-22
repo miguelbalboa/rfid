@@ -13,14 +13,14 @@
 /**
  * Constructor.
  */
-MFRC522::MFRC522() {
+MFRC522::MFRC522(): MFRC522(SS, UINT8_MAX) { // SS is defined in pins_arduino.h, UINT8_MAX means there is no connection from Arduino to MFRC522's reset and power down input
 } // End constructor
 
 /**
  * Constructor.
  * Prepares the output pins.
  */
-MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
 				): MFRC522(SS, resetPowerDownPin) { // SS is defined in pins_arduino.h
 } // End constructor
 
@@ -29,7 +29,7 @@ MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's
  * Prepares the output pins.
  */
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
-					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
 				) {
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin;
@@ -191,19 +191,26 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
+	bool hardReset = false;
+
 	// Set the chipSelectPin as digital output, do not select the slave yet
 	pinMode(_chipSelectPin, OUTPUT);
 	digitalWrite(_chipSelectPin, HIGH);
 	
-	// Set the resetPowerDownPin as digital output, do not reset or power down.
-	pinMode(_resetPowerDownPin, OUTPUT);
+	// If a valid pin number has been set, pull device out of power down / reset state.
+	if (_resetPowerDownPin != UINT8_MAX) {
+		// Set the resetPowerDownPin as digital output, do not reset or power down.
+		pinMode(_resetPowerDownPin, OUTPUT);
 	
-	if (digitalRead(_resetPowerDownPin) == LOW) {	//The MFRC522 chip is in power down mode.
-		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-		delay(50);
+		if (digitalRead(_resetPowerDownPin) == LOW) {	// The MFRC522 chip is in power down mode.
+			digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
+			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
+			delay(50);
+			hardReset = true;
+		}
 	}
-	else { // Perform a soft reset
+
+	if (!hardReset) { // Perform a soft reset if we haven't triggered a hard reset above.
 		PCD_Reset();
 	}
 	
@@ -455,11 +462,11 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	byte errorRegValue = PCD_ReadRegister(ErrorReg); // ErrorReg[7..0] bits are: WrErr TempErr reserved BufferOvfl CollErr CRCErr ParityErr ProtocolErr
 	if (errorRegValue & 0x13) {	 // BufferOvfl ParityErr ProtocolErr
 		return STATUS_ERROR;
-	}	
-
-	byte _validBits;
+	}
+  
+	byte _validBits = 0;
 	
-	// If the caller wants data back, get it from the MFRC522.
+  // If the caller wants data back, get it from the MFRC522.
 	if (backData && backLen) {
 		byte n = PCD_ReadRegister(FIFOLevelReg);	// Number of bytes in the FIFO
 		if (n > *backLen) {
@@ -1139,6 +1146,9 @@ MFRC522::StatusCode MFRC522::MIFARE_SetValue(byte blockAddr, int32_t value) {
  */
 MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte* passWord, byte pACK[]) //Authenticate with 32bit password
 {
+	// TODO: Fix cmdBuffer length and rxlength. They really should match.
+	//       (Better still, rxlength should not even be necessary.)
+
 	MFRC522::StatusCode result;
 	byte				cmdBuffer[18]; // We need room for 16 bytes data and 2 bytes CRC_A.
 	
@@ -1155,7 +1165,7 @@ MFRC522::StatusCode MFRC522::PCD_NTAG216_AUTH(byte* passWord, byte pACK[]) //Aut
 	
 	// Transceive the data, store the reply in cmdBuffer[]
 	byte waitIRq		= 0x30;	// RxIRq and IdleIRq
-	byte cmdBufferSize	= sizeof(cmdBuffer);
+//	byte cmdBufferSize	= sizeof(cmdBuffer);
 	byte validBits		= 0;
 	byte rxlength		= 5;
 	result = PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, cmdBuffer, 7, cmdBuffer, &rxlength, &validBits);
@@ -1475,6 +1485,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 	byte buffer[18];
 	byte blockAddr;
 	isSectorTrailer = true;
+	invertedError = false;	// Avoid "unused variable" warning.
 	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
 		// Sector number - only on first line
