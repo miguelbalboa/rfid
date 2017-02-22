@@ -1,17 +1,16 @@
 /**
- * ----------------------------------------------------------------------------
- * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
- * for further details and other examples.
+ * --------------------------------------------------------------------------------------------------------------------
+ * Example sketch/program showing how to read data from more than one PICC to serial.
+ * --------------------------------------------------------------------------------------------------------------------
+ * This is a MFRC522 library example; for further details and other examples see: https://github.com/miguelbalboa/rfid
  *
- * NOTE: The library file MFRC522.h has a lot of useful info. Please read it.
+ * Example sketch/program showing how to read data from more than one PICC (that is: a RFID Tag or Card) using a
+ * MFRC522 based RFID Reader on the Arduino SPI interface.
  *
- * Released into the public domain.
- * ----------------------------------------------------------------------------
- * This sample shows how to read and write data blocks on a MIFARE Classic PICC
- * (= card/tag).
+ * Warning: This may not work! Multiple devices at one SPI are difficult and cause many trouble!! Engineering skill
+ *          and knowledge are required!
  *
- * BEWARE: Data will be written to the PICC, in sector #1 (blocks #4 to #7).
- *
+ * @license Released into the public domain.
  *
  * Typical pin layout used:
  * -----------------------------------------------------------------------------------------

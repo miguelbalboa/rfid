@@ -32,6 +32,7 @@ What works and not?
 
   #. Communication with MIFARE Ultralight.
   #. Other PICCs (Ntag216).
+  #. More than 2 modules, require a multiplexer `#191 <https://github.com/miguelbalboa/rfid/issues/191#issuecomment-242631153>`_.
 
 * **Works not**
   
@@ -41,7 +42,11 @@ What works and not?
   #. Communication with smart phone, not `supported by hardware`_.
   #. Card emulation, not `supported by hardware`_.
   #. Use of IRQ pin. But there is a proof-of-concept example.
-
+  #. With Arduino Yun like `#111 <https://github.com/miguelbalboa/rfid/issues/111>`_, not supported by software.
+  #. Power reduction modes `#269 <https://github.com/miguelbalboa/rfid/issues/269>`_, not supported by software.
+  #. I2C instead of SPI `#240 <https://github.com/miguelbalboa/rfid/issues/240>`_, not supported by software.
+  #. UART instead of SPI `#281 <https://github.com/miguelbalboa/rfid/issues/281>`_, not supported by software.
+  
 * **Need more?**
 
   #. If software: code it and make a pull request.
@@ -192,6 +197,8 @@ Troubleshooting
   #. Check your connection, see `Pin Layout`_ .
   #. Check voltage. Most breakouts work with 3.3V.
   #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
+  #. SPI do not like long connections. Try shorter connections.
+  #. SPI do not like prototyping boards. Maybe try a soldered connections.
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
