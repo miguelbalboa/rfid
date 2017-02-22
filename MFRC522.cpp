@@ -43,12 +43,12 @@ MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's S
  * Writes a byte to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One of the PCD_Register enums.
-									byte value		///< The value to write.
+void MFRC522::PCD_WriteRegister(	PCD_Register reg,	///< The register to write to. One of the PCD_Register enums.
+									byte value			///< The value to write.
 								) {
-	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
+	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
-	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
+	SPI.transfer(reg);						// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	SPI.transfer(value);
 	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
 	SPI.endTransaction(); // Stop using the SPI bus
@@ -58,13 +58,13 @@ void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One o
  * Writes a number of bytes to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One of the PCD_Register enums.
-									byte count,		///< The number of bytes to write to the register
-									byte *values	///< The values to write. Byte array.
+void MFRC522::PCD_WriteRegister(	PCD_Register reg,	///< The register to write to. One of the PCD_Register enums.
+									byte count,			///< The number of bytes to write to the register
+									byte *values		///< The values to write. Byte array.
 								) {
-	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
+	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
-	SPI.transfer(reg & 0x7E);				// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
+	SPI.transfer(reg);						// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	for (byte index = 0; index < count; index++) {
 		SPI.transfer(values[index]);
 	}
@@ -76,12 +76,12 @@ void MFRC522::PCD_WriteRegister(	byte reg,		///< The register to write to. One o
  * Reads a byte from the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-byte MFRC522::PCD_ReadRegister(	byte reg	///< The register to read from. One of the PCD_Register enums.
+byte MFRC522::PCD_ReadRegister(	PCD_Register reg	///< The register to read from. One of the PCD_Register enums.
 								) {
 	byte value;
-	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
+	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);			// Select slave
-	SPI.transfer(0x80 | (reg & 0x7E));			// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
+	SPI.transfer(0x80 | reg);					// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	value = SPI.transfer(0);					// Read the value back. Send 0 to stop reading.
 	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
 	SPI.endTransaction(); // Stop using the SPI bus
@@ -92,36 +92,32 @@ byte MFRC522::PCD_ReadRegister(	byte reg	///< The register to read from. One of 
  * Reads a number of bytes from the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
  */
-void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One of the PCD_Register enums.
-								byte count,		///< The number of bytes to read
-								byte *values,	///< Byte array to store the values in.
-								byte rxAlign	///< Only bit positions rxAlign..7 in values[0] are updated.
+void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from. One of the PCD_Register enums.
+								byte count,			///< The number of bytes to read
+								byte *values,		///< Byte array to store the values in.
+								byte rxAlign		///< Only bit positions rxAlign..7 in values[0] are updated.
 								) {
 	if (count == 0) {
 		return;
 	}
 	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
-	byte address = 0x80 | (reg & 0x7E);		// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
+	byte address = 0x80 | reg;				// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
-	SPI.beginTransaction(SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
+	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	count--;								// One read is performed outside of the loop
 	SPI.transfer(address);					// Tell MFRC522 which address we want to read
+	if (rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
+		// Create bit mask for bit positions rxAlign..7
+		byte mask = (0xFF << rxAlign) & 0xFF;
+		// Read value and tell that we want to read the same address again.
+		byte value = SPI.transfer(address);
+		// Apply mask to both current value of values[0] and the new data in value.
+		values[0] = (values[0] & ~mask) | (value & mask);
+		index++;
+	}
 	while (index < count) {
-		if (index == 0 && rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
-			// Create bit mask for bit positions rxAlign..7
-			byte mask = 0;
-			for (byte i = rxAlign; i <= 7; i++) {
-				mask |= (1 << i);
-			}
-			// Read value and tell that we want to read the same address again.
-			byte value = SPI.transfer(address);
-			// Apply mask to both current value of values[0] and the new data in value.
-			values[0] = (values[index] & ~mask) | (value & mask);
-		}
-		else { // Normal case
-			values[index] = SPI.transfer(address);	// Read value and tell that we want to read the same address again.
-		}
+		values[index] = SPI.transfer(address);	// Read value and tell that we want to read the same address again.
 		index++;
 	}
 	values[index] = SPI.transfer(0);			// Read the final byte. Send 0 to stop reading.
@@ -132,8 +128,8 @@ void MFRC522::PCD_ReadRegister(	byte reg,		///< The register to read from. One o
 /**
  * Sets the bits given in mask in register reg.
  */
-void MFRC522::PCD_SetRegisterBitMask(	byte reg,	///< The register to update. One of the PCD_Register enums.
-										byte mask	///< The bits to set.
+void MFRC522::PCD_SetRegisterBitMask(	PCD_Register reg,	///< The register to update. One of the PCD_Register enums.
+										byte mask			///< The bits to set.
 									) { 
 	byte tmp;
 	tmp = PCD_ReadRegister(reg);
@@ -143,8 +139,8 @@ void MFRC522::PCD_SetRegisterBitMask(	byte reg,	///< The register to update. One
 /**
  * Clears the bits given in mask from register reg.
  */
-void MFRC522::PCD_ClearRegisterBitMask(	byte reg,	///< The register to update. One of the PCD_Register enums.
-										byte mask	///< The bits to clear.
+void MFRC522::PCD_ClearRegisterBitMask(	PCD_Register reg,	///< The register to update. One of the PCD_Register enums.
+										byte mask			///< The bits to clear.
 									  ) {
 	byte tmp;
 	tmp = PCD_ReadRegister(reg);
@@ -163,29 +159,27 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 					 ) {
 	PCD_WriteRegister(CommandReg, PCD_Idle);		// Stop any active command.
 	PCD_WriteRegister(DivIrqReg, 0x04);				// Clear the CRCIRq interrupt request bit
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);		// FlushBuffer = 1, FIFO initialization
+	PCD_WriteRegister(FIFOLevelReg, 0x80);			// FlushBuffer = 1, FIFO initialization
 	PCD_WriteRegister(FIFODataReg, length, data);	// Write data to the FIFO
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);		// Start the calculation
 	
 	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73μs.
 	// TODO check/modify for other architectures than Arduino Uno 16bit
-	uint16_t i = 5000;
-	byte n;
-	while (1) {
-		n = PCD_ReadRegister(DivIrqReg);	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
-		if (n & 0x04) {						// CRCIRq bit set - calculation done
-			break;
-		}
-		if (--i == 0) {						// The emergency break. We will eventually terminate on this one after 89ms. Communication with the MFRC522 might be down.
-			return STATUS_TIMEOUT;
+
+	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73us.
+	for (uint16_t i = 5000; i > 0; i--) {
+		// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
+		byte n = PCD_ReadRegister(DivIrqReg);
+		if (n & 0x04) {									// CRCIRq bit set - calculation done
+			PCD_WriteRegister(CommandReg, PCD_Idle);	// Stop calculating CRC for new content in the FIFO.
+			// Transfer the result from the registers to the result buffer
+			result[0] = PCD_ReadRegister(CRCResultRegL);
+			result[1] = PCD_ReadRegister(CRCResultRegH);
+			return STATUS_OK;
 		}
 	}
-	PCD_WriteRegister(CommandReg, PCD_Idle);		// Stop calculating CRC for new content in the FIFO.
-	
-	// Transfer the result from the registers to the result buffer
-	result[0] = PCD_ReadRegister(CRCResultRegL);
-	result[1] = PCD_ReadRegister(CRCResultRegH);
-	return STATUS_OK;
+	// 89ms passed and nothing happend. Communication with the MFRC522 might be down.
+	return STATUS_TIMEOUT;
 } // End PCD_CalculateCRC()
 
 
@@ -321,7 +315,7 @@ bool MFRC522::PCD_PerformSelfTest() {
 	
 	// 2. Clear the internal buffer by writing 25 bytes of 00h
 	byte ZEROES[25] = {0x00};
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);	// flush the FIFO buffer
+	PCD_WriteRegister(FIFOLevelReg, 0x80);		// flush the FIFO buffer
 	PCD_WriteRegister(FIFODataReg, 25, ZEROES);	// write 25 bytes of 00h to FIFO
 	PCD_WriteRegister(CommandReg, PCD_Mem);		// transfer to internal buffer
 	
@@ -430,16 +424,13 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 														byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
 														bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 									 ) {
-	byte n, _validBits;
-	uint16_t i;
-	
 	// Prepare values for BitFramingReg
 	byte txLastBits = validBits ? *validBits : 0;
 	byte bitFraming = (rxAlign << 4) + txLastBits;		// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 	
 	PCD_WriteRegister(CommandReg, PCD_Idle);			// Stop any active command.
 	PCD_WriteRegister(ComIrqReg, 0x7F);					// Clear all seven interrupt request bits
-	PCD_SetRegisterBitMask(FIFOLevelReg, 0x80);			// FlushBuffer = 1, FIFO initialization
+	PCD_WriteRegister(FIFOLevelReg, 0x80);				// FlushBuffer = 1, FIFO initialization
 	PCD_WriteRegister(FIFODataReg, sendLen, sendData);	// Write sendData to the FIFO
 	PCD_WriteRegister(BitFramingReg, bitFraming);		// Bit adjustments
 	PCD_WriteRegister(CommandReg, command);				// Execute the command
@@ -451,18 +442,19 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
 	// Each iteration of the do-while-loop takes 17.86μs.
 	// TODO check/modify for other architectures than Arduino Uno 16bit
-	i = 2000;
-	while (1) {
-		n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
+	uint16_t i;
+	for (i = 2000; i > 0; i--) {
+		byte n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
 			break;
 		}
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
 			return STATUS_TIMEOUT;
 		}
-		if (--i == 0) {						// The emergency break. If all other conditions fail we will eventually terminate on this one after 35.7ms. Communication with the MFRC522 might be down.
-			return STATUS_TIMEOUT;
-		}
+	}
+	// 35.7ms and nothing happend. Communication with the MFRC522 might be down.
+	if (i == 0) {
+		return STATUS_TIMEOUT;
 	}
 	
 	// Stop now if any errors except collisions were detected.
@@ -471,9 +463,11 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		return STATUS_ERROR;
 	}	
 
+	byte _validBits;
+	
 	// If the caller wants data back, get it from the MFRC522.
 	if (backData && backLen) {
-		n = PCD_ReadRegister(FIFOLevelReg);			// Number of bytes in the FIFO
+		byte n = PCD_ReadRegister(FIFOLevelReg);	// Number of bytes in the FIFO
 		if (n > *backLen) {
 			return STATUS_NO_ROOM;
 		}
