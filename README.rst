@@ -3,6 +3,12 @@ MFRC522
 
 .. image:: https://travis-ci.org/miguelbalboa/rfid.svg?branch=master
     :target: https://travis-ci.org/miguelbalboa/rfid
+.. image:: https://img.shields.io/badge/C%2B%2B-11-brightgreen.svg
+    :target: `compatible ide`_
+.. image:: https://img.shields.io/github/release/miguelbalboa/rfid.svg?colorB=green
+    :target: https://github.com/miguelbalboa/rfid/releases
+.. image:: https://img.shields.io/badge/ArduinoIDE-%3E%3D1.6.10-lightgrey.svg
+    :target: `compatible ide`_
 
 Arduino library for MFRC522 and other RFID RC522 based modules.
 
