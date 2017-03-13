@@ -135,7 +135,7 @@ class MFRC522 {
 public:
 	// MFRC522 registers. Described in chapter 9 of the datasheet.
 	// When using SPI all addresses are shifted one bit left in the "SPI address byte" (section 8.1.2.3)
-	enum PCD_Register {
+	enum PCD_Register : byte {
 		// Page 0: Command and status
 		//						  0x00			// reserved for future use
 		CommandReg				= 0x01 << 1,	// starts and stops command execution
@@ -210,7 +210,7 @@ public:
 	};
 	
 	// MFRC522 commands. Described in chapter 10 of the datasheet.
-	enum PCD_Command {
+	enum PCD_Command : byte {
 		PCD_Idle				= 0x00,		// no action, cancels current command execution
 		PCD_Mem					= 0x01,		// stores 25 bytes into the internal buffer
 		PCD_GenerateRandomID	= 0x02,		// generates a 10-byte random ID number
@@ -225,7 +225,7 @@ public:
 	
 	// MFRC522 RxGain[2:0] masks, defines the receiver's signal voltage gain factor (on the PCD).
 	// Described in 9.3.3.6 / table 98 of the datasheet at http://www.nxp.com/documents/data_sheet/MFRC522.pdf
-	enum PCD_RxGain {
+	enum PCD_RxGain : byte {
 		RxGain_18dB				= 0x00 << 4,	// 000b - 18 dB, minimum
 		RxGain_23dB				= 0x01 << 4,	// 001b - 23 dB
 		RxGain_18dB_2			= 0x02 << 4,	// 010b - 18 dB, it seems 010b is a duplicate for 000b
@@ -240,7 +240,7 @@ public:
 	};
 	
 	// Commands sent to the PICC.
-	enum PICC_Command {
+	enum PICC_Command : byte {
 		// The commands used by the PCD to manage communication with several PICCs (ISO 14443-3, Type A, section 6.4)
 		PICC_CMD_REQA			= 0x26,		// REQuest command, Type A. Invites PICCs in state IDLE to go to READY and prepare for anticollision or selection. 7 bit frame.
 		PICC_CMD_WUPA			= 0x52,		// Wake-UP command, Type A. Invites PICCs in state IDLE and HALT to go to READY(*) and prepare for anticollision or selection. 7 bit frame.
