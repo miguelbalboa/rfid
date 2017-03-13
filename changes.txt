@@ -3,7 +3,11 @@
 unreleased
 - tba
 
-tba, v1.3.0
+13 Mar 2017, v1.3.0
+- Warning: Source has moved to folder src!
+- Added addtional class to support ISO/IEC 14443-4 PICCs @JPG-Consulting
+- Added RATS (Request for Answer To Select) @JPG-Consulting
+- More information see https://github.com/miguelbalboa/rfid/pull/271 @JPG-Consulting
 
 13 Mar 2017, v1.2.1
 - Removed need for reset pin #275 @tkoester
