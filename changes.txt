@@ -3,6 +3,13 @@
 unreleased
 - tba
 
+tba, v1.3.0
+
+13 Mar 2017, v1.2.1
+- Removed need for reset pin #275 @tkoester
+- Added SPI speed option + Various minor changes #276 @tuyethoa08041997
+- Updated documentation, travis build script and small code change @Rotzbua
+
 3 Jan 2017, v1.2.0
 - Warning: This version introduce usage of stdint.h, usage of not well defined int types are abandoned.
            Interface has changed: e.g. long -> int32_t
