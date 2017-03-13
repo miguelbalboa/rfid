@@ -397,6 +397,7 @@ public:
 	void PICC_DumpDetailsToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
+	void PICC_DumpMifareClassicBlockToSerial(Uid *uid,MIFARE_Key *key, byte sector, byte block);
 	void PICC_DumpMifareUltralightToSerial();
 	
 	// Advanced functions for MIFARE
