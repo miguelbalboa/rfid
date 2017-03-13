@@ -77,6 +77,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <stdint.h>
 
 #define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
 
@@ -306,14 +307,6 @@ public:
 		STATUS_CRC_WRONG		,	// The CRC_A does not match
 		STATUS_MIFARE_NACK		= 0xff	// A MIFARE PICC responded with NAK.
 	};
-
-	// ISO/IEC 14443-4 bit rates
-	enum TagBitRates : byte {
-		BITRATE_106KBITS = 0x00,
-		BITRATE_212KBITS = 0x01,
-		BITRATE_424KBITS = 0x02,
-		BITRATE_848KBITS = 0x03
-	};
 	
 	// A struct used for passing the UID of a PICC.
 	typedef struct {
@@ -322,65 +315,13 @@ public:
 		byte		sak;			// The SAK (Select acknowledge) byte returned from the PICC after successful selection.
 	} Uid;
 
-	// Structure to store ISO/IEC 14443-4 ATS
-	typedef struct {
-		byte size;
-		byte fsc;                 // Frame size for proximity card
-
-		struct {
-			bool transmitted;
-			bool        sameD;	// Only the same D for both directions supported
-			TagBitRates ds;		// Send D
-			TagBitRates dr;		// Receive D
-		} ta1;
-
-		struct {
-			bool transmitted;
-			byte fwi;			// Frame waiting time integer
-			byte sfgi;			// Start-up frame guard time integer
-		} tb1;
-
-		struct {
-			bool transmitted;
-			bool supportsCID;
-			bool supportsNAD;
-		} tc1;
-
-		// Raw data from ATS
-		byte data[FIFO_SIZE - 2]; // ATS cannot be bigger than FSD - 2 bytes (CRC), according to ISO 14443-4 5.2.2
-	} Ats;
-
-	// A struct used for passing the PICC information
-	typedef struct {
-		uint16_t	atqa;
-		Uid			uid;
-		Ats		    ats; 
-
-		// For Block PCB
-		bool blockNumber;
-	} TagInfo;
-
 	// A struct used for passing a MIFARE Crypto1 key
 	typedef struct {
 		byte		keyByte[MF_KEY_SIZE];
 	} MIFARE_Key;
-
-	// A struct used for passing PCB Block
-	typedef struct {
-		struct {
-			byte pcb;
-			byte cid;
-			byte nad;
-		} prologue;
-		struct {
-			byte size;
-			byte *data;
-		} inf;
-	} PcbBlock;
 	
 	// Member variables
 	Uid uid;								// Used by PICC_ReadCardSerial().
-	TagInfo tag;
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
@@ -422,19 +363,8 @@ public:
 	StatusCode PICC_RequestA(byte *bufferATQA, byte *bufferSize);
 	StatusCode PICC_WakeupA(byte *bufferATQA, byte *bufferSize);
 	StatusCode PICC_REQA_or_WUPA(byte command, byte *bufferATQA, byte *bufferSize);
-	StatusCode PICC_Select(Uid *uid, byte validBits = 0);
+	virtual StatusCode PICC_Select(Uid *uid, byte validBits = 0);
 	StatusCode PICC_HaltA();
-	StatusCode PICC_RequestATS(Ats *ats);
-	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
-	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
-	
-	/////////////////////////////////////////////////////////////////////////////////////
-	// Functions for communicating with ISO/IEC 14433-4 cards
-	/////////////////////////////////////////////////////////////////////////////////////
-	StatusCode TCL_Transceive(PcbBlock *send, PcbBlock *back);
-	StatusCode TCL_Transceive(TagInfo * tag, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL);
-	StatusCode TCL_TransceiveRBlock(TagInfo *tag, bool ack, byte *backData = NULL, byte *backLen = NULL);
-	StatusCode TCL_Deselect(TagInfo *tag);
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with MIFARE PICCs
@@ -460,21 +390,17 @@ public:
 	//const char *GetStatusCodeName(byte code);
 	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
 	static PICC_Type PICC_GetType(byte sak);
-	static PICC_Type PICC_GetType(TagInfo *tag);
 	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
 	//const char *PICC_GetTypeName(byte type);
 	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	
 	// Support functions for debuging
 	void PCD_DumpVersionToSerial();
-	void PICC_DumpToSerial(TagInfo *tag);
 	void PICC_DumpToSerial(Uid *uid);
-	void PICC_DumpDetailsToSerial(TagInfo *tag);
 	void PICC_DumpDetailsToSerial(Uid *uid);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
-	void PICC_DumpISO14443_4(TagInfo *tag);
 	
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
@@ -485,10 +411,10 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
 	/////////////////////////////////////////////////////////////////////////////////////
-	bool PICC_IsNewCardPresent();
-	bool PICC_ReadCardSerial();
+	virtual bool PICC_IsNewCardPresent();
+	virtual bool PICC_ReadCardSerial();
 	
-private:
+protected:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
