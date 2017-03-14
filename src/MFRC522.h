@@ -337,7 +337,6 @@ public:
 	void PCD_WriteRegister(PCD_Register reg, byte count, byte *values);
 	byte PCD_ReadRegister(PCD_Register reg);
 	void PCD_ReadRegister(PCD_Register reg, byte count, byte *values, byte rxAlign = 0);
-	void setBitMask(unsigned char reg, unsigned char mask);
 	void PCD_SetRegisterBitMask(PCD_Register reg, byte mask);
 	void PCD_ClearRegisterBitMask(PCD_Register reg, byte mask);
 	StatusCode PCD_CalculateCRC(byte *data, byte length, byte *result);
