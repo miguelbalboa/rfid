@@ -29,7 +29,7 @@
  * 
  * @return STATUS_OK on success, STATUS_??? otherwise.
  */
-MFRC522Extended::StatusCode MFRC522Extended::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
+MFRC522::StatusCode MFRC522Extended::PICC_Select(	Uid *uid,			///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
 											byte validBits		///< The number of known UID bits supplied in *uid. Normally 0. If set you must also supply uid->size.
 										 ) {
 	bool uidComplete;
@@ -269,10 +269,13 @@ MFRC522Extended::StatusCode MFRC522Extended::PICC_Select(	Uid *uid,			///< Point
 					// Note: 106 kBaud is always supported
 					//
 					// I have almost constant timeouts when changing speeds :(
-					TagBitRates ds = BITRATE_106KBITS; 
-					TagBitRates dr = BITRATE_106KBITS;
-
-					//// Not working at 848 or 424
+					// default never used, so only delarate
+					//TagBitRates ds = BITRATE_106KBITS; 
+					//TagBitRates dr = BITRATE_106KBITS;
+					TagBitRates ds;
+					TagBitRates dr;
+					
+					//// TODO Not working at 848 or 424
 					//if (ats.ta1.ds & 0x04) 
 					//{
 					//	ds = BITRATE_848KBITS;
@@ -342,7 +345,8 @@ MFRC522Extended::StatusCode MFRC522Extended::PICC_Select(	Uid *uid,			///< Point
  */
 MFRC522::StatusCode MFRC522Extended::PICC_RequestATS(Ats *ats) 
 {
-	byte count;
+	// TODO unused variable
+	//byte count;
 	MFRC522::StatusCode result;
 
 	byte bufferATS[FIFO_SIZE];
@@ -434,6 +438,8 @@ MFRC522::StatusCode MFRC522Extended::PICC_RequestATS(Ats *ats)
 				//ats->fsc = 256;
 				break;
 				// TODO: What to do with RFU (Reserved for future use)?
+			default:
+				break;
 		}
 
 		// TA1
@@ -567,8 +573,9 @@ MFRC522::StatusCode MFRC522Extended::PICC_PPS(TagBitRates sendBitRate,	         
 ) {
 	StatusCode result;
 
-	byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
-	byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
+	// TODO not used
+	//byte txReg = PCD_ReadRegister(TxModeReg) & 0x8F;
+	//byte rxReg = PCD_ReadRegister(RxModeReg) & 0x8F;
 
 	byte ppsBuffer[5];
 	byte ppsBufferSize = 5;
@@ -803,6 +810,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	}
 
 	// Initialize the receiving data
+	// TODO Warning: Value escapes the local scope
 	in.inf.data = outBuffer;
 	in.inf.size = outBufferSize;
 
@@ -812,10 +820,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	}
 
 	// Swap block number on success
-	if (tag->blockNumber)
-		tag->blockNumber = false;
-	else
-		tag->blockNumber = true;
+	tag->blockNumber = !tag->blockNumber;
 
 	if (backData && (backLen > 0)) {
 		if (*backLen < in.inf.size)
@@ -826,7 +831,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	}
 
 	// Check chaining
-	if (in.prologue.pcb & 0x10 == 0x00)
+	if ((in.prologue.pcb & 0x10) == 0x00)
 		return result;
 
 	// Result is chained
@@ -890,6 +895,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack
 	out.inf.data = NULL;
 
 	// Initialize the receiving data
+	// TODO Warning: Value escapes the local scope
 	in.inf.data = outBuffer;
 	in.inf.size = outBufferSize;
 
@@ -899,10 +905,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack
 	}
 
 	// Swap block number on success
-	if (tag->blockNumber)
-		tag->blockNumber = false;
-	else
-		tag->blockNumber = true;
+	tag->blockNumber = !tag->blockNumber;
 
 	if (backData && backLen) {
 		if (*backLen < in.inf.size)
@@ -1153,9 +1156,6 @@ bool MFRC522Extended::PICC_ReadCardSerial() {
 	uid.size = tag.uid.size;
 	uid.sak = tag.uid.sak;
 	memcpy(uid.uidByte, tag.uid.uidByte, sizeof(tag.uid.uidByte));
-	
-	if (result != STATUS_OK)
-		return false;
 
-	return true;
+	return (result == STATUS_OK);
 } // End 
