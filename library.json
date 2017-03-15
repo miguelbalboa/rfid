@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/miguelbalboa/rfid.git"
   },
-  "version": "1.3.1",
+  "version": "1.3.2",
   "exclude": "doc",
   "frameworks": "arduino",
   "platforms": ["atmelavr", "ststm32", "teensy", "espressif8266"]

@@ -3,6 +3,9 @@
 unreleased
 - tba
 
+15 Mar 2017, v1.3.2
+- Added ESP8266 to library.properties
+
 15 Mar 2017, v1.3.1
 - Fixed compiler warning in MFRC522Extended @Rotzbua
 - Removed unused function @Rotzbua
