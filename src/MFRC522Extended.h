@@ -75,9 +75,16 @@ public:
 	TagInfo tag;
 	
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Contructors
+	/////////////////////////////////////////////////////////////////////////////////////
+	MFRC522Extended() : MFRC522() {};
+	MFRC522Extended(uint8_t rst) : MFRC522(rst) {};
+	MFRC522Extended(uint8_t ss, uint8_t rst) : MFRC522(ss, rst) {};
+	
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
-  StatusCode PICC_Select(Uid *uid, byte validBits = 0); // overwrite
+	StatusCode PICC_Select(Uid *uid, byte validBits = 0); // overwrite
 	StatusCode PICC_RequestATS(Ats *ats);
 	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
 	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values

@@ -1,11 +1,10 @@
 /*
-* MFRC522.cpp - Library to use ARDUINO RFID MODULE KIT 13.56 MHZ WITH TAGS SPI W AND R BY COOQROBOT.
-* NOTE: Please also check the comments in MFRC522.h - they provide useful hints and background information.
-* Released into the public domain.
+ * Library extends MFRC522.h to support RATS for ISO-14443-4 PICC.
+ * RATS - Request for Answer To Select.
+ * NOTE: Please also check the comments in MFRC522Extended.h
+ * @author JPG-Consulting
 */
 
-#include <Arduino.h>
-#include "MFRC522.h"
 #include "MFRC522Extended.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
