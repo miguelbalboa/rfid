@@ -1,7 +1,11 @@
 -- Add changes to unreleased tag until we make a release.
 
 unreleased
-- tba
+- 
+
+26 Mar 2017, v1.3.3
+- Fixed bugs in MFRC522Extended, now should work with Desfire.h from JPG-Consulting @Rotzbua
+- Fixed UINT8_MAX error @Rotzbua
 
 15 Mar 2017, v1.3.2
 - Added ESP8266 to library.properties
