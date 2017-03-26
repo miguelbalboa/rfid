@@ -84,7 +84,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for communicating with PICCs
 	/////////////////////////////////////////////////////////////////////////////////////
-	StatusCode PICC_Select(Uid *uid, byte validBits = 0); // overwrite
+	StatusCode PICC_Select(Uid *uid, byte validBits = 0) override; // overrride
 	StatusCode PICC_RequestATS(Ats *ats);
 	StatusCode PICC_PPS();	                                                  // PPS command without bitrate parameter
 	StatusCode PICC_PPS(TagBitRates sendBitRate, TagBitRates receiveBitRate); // Different D values
@@ -101,17 +101,20 @@ public:
 	// Support functions
 	/////////////////////////////////////////////////////////////////////////////////////
 	static PICC_Type PICC_GetType(TagInfo *tag);
+	using MFRC522::PICC_GetType;// // make old PICC_GetType(byte sak) available, otherwise would be hidden by PICC_GetType(TagInfo *tag)
 
 	// Support functions for debuging
 	void PICC_DumpToSerial(TagInfo *tag);
+	using MFRC522::PICC_DumpToSerial; // make old PICC_DumpToSerial(Uid *uid) available, otherwise would be hidden by PICC_DumpToSerial(TagInfo *tag)
 	void PICC_DumpDetailsToSerial(TagInfo *tag);
+	using MFRC522::PICC_DumpDetailsToSerial; // make old PICC_DumpDetailsToSerial(Uid *uid) available, otherwise would be hidden by PICC_DumpDetailsToSerial(TagInfo *tag)
 	void PICC_DumpISO14443_4(TagInfo *tag);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
 	/////////////////////////////////////////////////////////////////////////////////////
-	bool PICC_IsNewCardPresent(); // overwrite
-	bool PICC_ReadCardSerial(); // overwrite
+	bool PICC_IsNewCardPresent() override; // overrride
+	bool PICC_ReadCardSerial() override; // overrride
 };
 
 #endif
