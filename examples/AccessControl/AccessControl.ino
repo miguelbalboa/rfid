@@ -140,8 +140,9 @@ void setup() {
     Serial.println(F("Wipe Button Pressed"));
     Serial.println(F("You have 15 seconds to Cancel"));
     Serial.println(F("This will be remove all records and cannot be undone"));
-    delay(15000);                        // Give user enough time to cancel operation
-    if (digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
+//    delay(15000);                        // Give user enough time to cancel operation
+    bool buttonState = monitorWipeButton(15000);
+    if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
       Serial.println(F("Starting Wiping EEPROM"));
       for (uint8_t x = 0; x < EEPROM.length(); x = x + 1) {    //Loop end of EEPROM address
         if (EEPROM.read(x) == 0) {              //If EEPROM address 0
@@ -533,4 +534,16 @@ boolean isMaster( byte test[] ) {
     return true;
   else
     return false;
+}
+
+bool monitorWipeButton(long interval){
+  long now = millis();
+  while(millis() - now < interval)  {
+   // check on every half a second
+    if((millis() % 500) == 0) {
+      if (digitalRead(wipeB) != LOW)
+        return false; 
+     }
+  }  
+  return true;
 }
