@@ -24,6 +24,7 @@ env:
     - PLATFORMIO_CI_SRC=examples/ReadNUID/ReadNUID.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
     - PLATFORMIO_CI_SRC=examples/AccessControl/AccessControl.ino TESTBOARD=arduino_avr,teensy
     - PLATFORMIO_CI_SRC=examples/RFID-Cloner/RFID-Cloner.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
+    - PLATFORMIO_CI_SRC=examples/rfid_read_personal_data/rfid_read_personal_data.ino TESTBOARD=arduino_avr,arduino_arm,teensy,esp
 
 install:
     - pip install -U platformio
