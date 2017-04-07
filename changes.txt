@@ -3,6 +3,10 @@
 unreleased
 - 
 
+7 Apr 2017, v1.3.4
+- Added new example "rfid_read_personal_data.ino" @ryand1011
+- Updated example "rfid_write_personal_data.ino" code style to Arduino IDE @Rotzbua
+
 26 Mar 2017, v1.3.3
 - Fixed bugs in MFRC522Extended, now should work with Desfire.h from JPG-Consulting @Rotzbua
 - Fixed UINT8_MAX error @Rotzbua
