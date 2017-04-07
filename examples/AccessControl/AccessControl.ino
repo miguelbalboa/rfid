@@ -537,7 +537,7 @@ boolean isMaster( byte test[] ) {
 }
 
 bool monitorWipeButton(long interval){
-  long now = millis();
+  uint32_t now = (uint32_t)millis();
   while(millis() - now < interval)  {
    // check on every half a second
     if((millis() % 500) == 0) {
