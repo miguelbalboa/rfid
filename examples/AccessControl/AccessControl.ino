@@ -538,9 +538,9 @@ boolean isMaster( byte test[] ) {
 
 bool monitorWipeButton(long interval){
   uint32_t now = (uint32_t)millis();
-  while(millis() - now < interval)  {
+  while((uint32_t)millis() - now < interval)  {
    // check on every half a second
-    if((millis() % 500) == 0) {
+    if(((uint32_t)millis() % 500) == 0) {
       if (digitalRead(wipeB) != LOW)
         return false; 
      }
