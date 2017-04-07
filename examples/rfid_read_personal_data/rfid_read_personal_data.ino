@@ -1,32 +1,31 @@
 /*
-   Initial Author: ryand1011 (https://github.com/ryand1011)
-  
-   Reads data written by a program such as "rfid_write_personal_data.ino"
-
-   See: https://github.com/miguelbalboa/rfid/tree/master/examples/rfid_write_personal_data
-
-   Uses MIFARE RFID card using RFID-RC522 reader
-   Uses MFRC522 - Library
-   -----------------------------------------------------------------------------------------
-               MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
-               Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
-   Signal      Pin          Pin           Pin       Pin        Pin              Pin
-   -----------------------------------------------------------------------------------------
-   RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
-   SPI SS      SDA(SS)      10            53        D10        10               10
-   SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
-   SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
-   SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
-
+ * Initial Author: ryand1011 (https://github.com/ryand1011)
+ *
+ * Reads data written by a program such as "rfid_write_personal_data.ino"
+ *
+ * See: https://github.com/miguelbalboa/rfid/tree/master/examples/rfid_write_personal_data
+ *
+ * Uses MIFARE RFID card using RFID-RC522 reader
+ * Uses MFRC522 - Library
+ * -----------------------------------------------------------------------------------------
+ *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
+ *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
+ * Signal      Pin          Pin           Pin       Pin        Pin              Pin
+ * -----------------------------------------------------------------------------------------
+ * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
+ * SPI SS      SDA(SS)      10            53        D10        10               10
+ * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
+ * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
+ * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
 */
 
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define RST_PIN 9 // Configurable, see typical pin layout above
-#define SS_PIN 10 // Configurable, see typical pin layout above
+#define RST_PIN         9           // Configurable, see typical pin layout above
+#define SS_PIN          10          // Configurable, see typical pin layout above
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 object 'card'
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 
 //*****************************************************************************************//
 void setup() {
@@ -50,12 +49,12 @@ void loop() {
 
   //-------------------------------------------
 
-  //look for card
+  // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent()) {
     return;
   }
 
-  //select a card
+  // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial()) {
     return;
   }
@@ -70,7 +69,7 @@ void loop() {
 
   //-------------------------------------------
 
-  Serial.print("Name: ");
+  Serial.print(F("Name: "));
 
   byte buffer1[18];
 
@@ -122,8 +121,7 @@ void loop() {
   }
 
   //PRINT LAST NAME
-  for (uint8_t i = 0; i < 16; i++)
-  {
+  for (uint8_t i = 0; i < 16; i++) {
     Serial.write(buffer2[i] );
   }
 
