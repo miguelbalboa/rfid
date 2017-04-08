@@ -1,64 +1,64 @@
 /*
- * --------------------------------------------------------------------------------------------------------------------
- * Example sketch/program showing An Arduino Door Access Control featuring RFID, EEPROM, Relay
- * --------------------------------------------------------------------------------------------------------------------
- * This is a MFRC522 library example; for further details and other examples see: https://github.com/miguelbalboa/rfid
- * 
- * This example showing a complete Door Access Control System
- 
- Simple Work Flow (not limited to) :
+   --------------------------------------------------------------------------------------------------------------------
+   Example sketch/program showing An Arduino Door Access Control featuring RFID, EEPROM, Relay
+   --------------------------------------------------------------------------------------------------------------------
+   This is a MFRC522 library example; for further details and other examples see: https://github.com/miguelbalboa/rfid
+
+   This example showing a complete Door Access Control System
+
+  Simple Work Flow (not limited to) :
                                      +---------+
-+----------------------------------->READ TAGS+^------------------------------------------+
-|                              +--------------------+                                     |
-|                              |                    |                                     |
-|                              |                    |                                     |
-|                         +----v-----+        +-----v----+                                |
-|                         |MASTER TAG|        |OTHER TAGS|                                |
-|                         +--+-------+        ++-------------+                            |
-|                            |                 |             |                            |
-|                            |                 |             |                            |
-|                      +-----v---+        +----v----+   +----v------+                     |
-|         +------------+READ TAGS+---+    |KNOWN TAG|   |UNKNOWN TAG|                     |
-|         |            +-+-------+   |    +-----------+ +------------------+              |
-|         |              |           |                |                    |              |
-|    +----v-----+   +----v----+   +--v--------+     +-v----------+  +------v----+         |
-|    |MASTER TAG|   |KNOWN TAG|   |UNKNOWN TAG|     |GRANT ACCESS|  |DENY ACCESS|         |
-|    +----------+   +---+-----+   +-----+-----+     +-----+------+  +-----+-----+         |
-|                       |               |                 |               |               |
-|       +----+     +----v------+     +--v---+             |               +--------------->
-+-------+EXIT|     |DELETE FROM|     |ADD TO|             |                               |
+  +----------------------------------->READ TAGS+^------------------------------------------+
+  |                              +--------------------+                                     |
+  |                              |                    |                                     |
+  |                              |                    |                                     |
+  |                         +----v-----+        +-----v----+                                |
+  |                         |MASTER TAG|        |OTHER TAGS|                                |
+  |                         +--+-------+        ++-------------+                            |
+  |                            |                 |             |                            |
+  |                            |                 |             |                            |
+  |                      +-----v---+        +----v----+   +----v------+                     |
+  |         +------------+READ TAGS+---+    |KNOWN TAG|   |UNKNOWN TAG|                     |
+  |         |            +-+-------+   |    +-----------+ +------------------+              |
+  |         |              |           |                |                    |              |
+  |    +----v-----+   +----v----+   +--v--------+     +-v----------+  +------v----+         |
+  |    |MASTER TAG|   |KNOWN TAG|   |UNKNOWN TAG|     |GRANT ACCESS|  |DENY ACCESS|         |
+  |    +----------+   +---+-----+   +-----+-----+     +-----+------+  +-----+-----+         |
+  |                       |               |                 |               |               |
+  |       +----+     +----v------+     +--v---+             |               +--------------->
+  +-------+EXIT|     |DELETE FROM|     |ADD TO|             |                               |
         +----+     |  EEPROM   |     |EEPROM|             |                               |
                    +-----------+     +------+             +-------------------------------+
 
- * 
- * Use a Master Card which is act as Programmer then you can able to choose card holders who will granted access or not
- *
+
+   Use a Master Card which is act as Programmer then you can able to choose card holders who will granted access or not
+
  * **Easy User Interface**
- *
- * Just one RFID tag needed whether Delete or Add Tags. You can choose to use Leds for output or Serial LCD module to inform users. 
- *
+
+   Just one RFID tag needed whether Delete or Add Tags. You can choose to use Leds for output or Serial LCD module to inform users.
+
  * **Stores Information on EEPROM**
- *
- * Information stored on non volatile Arduino's EEPROM memory to preserve Users' tag and Master Card. No Information lost 
- * if power lost. EEPROM has unlimited Read cycle but roughly 100,000 limited Write cycle. 
- *
+
+   Information stored on non volatile Arduino's EEPROM memory to preserve Users' tag and Master Card. No Information lost
+   if power lost. EEPROM has unlimited Read cycle but roughly 100,000 limited Write cycle.
+
  * **Security**
- * To keep it simple we are going to use Tag's Unique IDs. It's simple and not hacker proof.
- * 
- * @license Released into the public domain.
- * 
- * Typical pin layout used:
- * -----------------------------------------------------------------------------------------
- *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
- * Signal      Pin          Pin           Pin       Pin        Pin              Pin
- * -----------------------------------------------------------------------------------------
- * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
- * SPI SS      SDA(SS)      10            53        D10        10               10
- * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
- * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
- * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
- */
+   To keep it simple we are going to use Tag's Unique IDs. It's simple and not hacker proof.
+
+   @license Released into the public domain.
+
+   Typical pin layout used:
+   -----------------------------------------------------------------------------------------
+               MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
+               Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
+   Signal      Pin          Pin           Pin       Pin        Pin              Pin
+   -----------------------------------------------------------------------------------------
+   RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
+   SPI SS      SDA(SS)      10            53        D10        10               10
+   SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
+   SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
+   SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
+*/
 
 #include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
 #include <SPI.h>        // RC522 Module uses SPI protocol
@@ -69,11 +69,11 @@
   Relay will be used by default
 */
 
-// #include <Servo.h> 
+// #include <Servo.h>
 
 /*
   For visualizing whats going on hardware we need some leds and to control door lock a relay and a wipe button
-  (or some other hardware) Used common anode led,digitalWriting HIGH turns OFF led Mind that if you are going 
+  (or some other hardware) Used common anode led,digitalWriting HIGH turns OFF led Mind that if you are going
   to use common cathode led or just seperate leds, simply comment out #define COMMON_ANODE,
 */
 
@@ -107,7 +107,7 @@ byte masterCard[4];   // Stores master card's ID read from EEPROM
 // Create MFRC522 instance.
 #define SS_PIN 10
 #define RST_PIN 9
-MFRC522 mfrc522(SS_PIN, RST_PIN); 
+MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 ///////////////////////////////////////// Setup ///////////////////////////////////
 void setup() {
@@ -138,12 +138,12 @@ void setup() {
   if (digitalRead(wipeB) == LOW) {  // when button pressed pin should get low, button connected to ground
     digitalWrite(redLed, LED_ON); // Red Led stays on to inform user we are going to wipe
     Serial.println(F("Wipe Button Pressed"));
-    Serial.println(F("You have 15 seconds to Cancel"));
+    Serial.println(F("You have 10 seconds to Cancel"));
     Serial.println(F("This will be remove all records and cannot be undone"));
-    delay(15000);                        // Give user enough time to cancel operation
-    if (digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
+    bool buttonState = monitorWipeButton(10000); // Give user enough time to cancel operation
+    if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
       Serial.println(F("Starting Wiping EEPROM"));
-      for (uint8_t x = 0; x < EEPROM.length(); x = x + 1) {    //Loop end of EEPROM address
+      for (uint16_t x = 0; x < EEPROM.length(); x = x + 1) {    //Loop end of EEPROM address
         if (EEPROM.read(x) == 0) {              //If EEPROM address 0
           // do nothing, already clear, go to the next address in order to save time and reduce writes to EEPROM
         }
@@ -196,7 +196,7 @@ void setup() {
   }
   Serial.println("");
   Serial.println(F("-------------------"));
-  Serial.println(F("Everything Ready"));
+  Serial.println(F("Everything is ready"));
   Serial.println(F("Waiting PICCs to be scanned"));
   cycleLeds();    // Everything ready lets give user some feedback by cycling leds
 }
@@ -206,21 +206,23 @@ void setup() {
 void loop () {
   do {
     successRead = getID();  // sets successRead to 1 when we get read from reader otherwise 0
-    // When device is in use if wipe button pressed for 10 seconds initialize Master Card wiping  
+    // When device is in use if wipe button pressed for 10 seconds initialize Master Card wiping
     if (digitalRead(wipeB) == LOW) { // Check if button is pressed
       // Visualize normal operation is iterrupted by pressing wipe button Red is like more Warning to user
       digitalWrite(redLed, LED_ON);  // Make sure led is off
       digitalWrite(greenLed, LED_OFF);  // Make sure led is off
       digitalWrite(blueLed, LED_OFF); // Make sure led is off
-      // Give some feedback 
+      // Give some feedback
       Serial.println(F("Wipe Button Pressed"));
       Serial.println(F("Master Card will be Erased! in 10 seconds"));
-      delay(10000);  // Wait 10 seconds to see user still wants to wipe
-      if (digitalRead(wipeB) == LOW) {
+      bool buttonState = monitorWipeButton(10000); // Give user enough time to cancel operation
+      if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
         EEPROM.write(1, 0);                  // Reset Magic Number.
-        Serial.println(F("Restart device to re-program Master Card"));
+        Serial.println(F("Master Card Erased from device"));
+        Serial.println(F("Please reset to re-program Master Card"));
         while (1);
       }
+      Serial.println(F("Master Card Erase Cancelled"));
     }
     if (programMode) {
       cycleLeds();              // Program Mode cycles through Red Green Blue waiting to read a new card
@@ -533,4 +535,16 @@ boolean isMaster( byte test[] ) {
     return true;
   else
     return false;
+}
+
+bool monitorWipeButton(uint32_t interval) {
+  uint32_t now = (uint32_t)millis();
+  while ((uint32_t)millis() - now < interval)  {
+    // check on every half a second
+    if (((uint32_t)millis() % 500) == 0) {
+      if (digitalRead(wipeB) != LOW)
+        return false;
+    }
+  }
+  return true;
 }
