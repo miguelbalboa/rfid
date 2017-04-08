@@ -64,6 +64,16 @@
 #include <SPI.h>        // RC522 Module uses SPI protocol
 #include <MFRC522.h>  // Library for Mifare RC522 Devices
 
+#ifdef ESP8266
+extern "C" {
+#include "c_types.h"
+#include "ets_sys.h"
+#include "os_type.h"
+#include "osapi.h"
+#include "spi_flash.h"
+}
+extern "C" uint32_t _SPIFFS_end;
+#endif
 /*
   Instead of a Relay you may want to use a servo. Servos can lock and unlock door locks too
   Relay will be used by default
@@ -126,7 +136,17 @@ void setup() {
   //Protocol Configuration
   Serial.begin(9600);  // Initialize serial communications with PC
   SPI.begin();           // MFRC522 Hardware uses SPI protocol
+
+  #ifdef ESP8266
+  Serial.println("Configuring EEPROM library for ESP8266");
+  EEPROM.begin(SPI_FLASH_SEC_SIZE);
+  #else
+  Serial.println("Using AVR based EEPROM library");
+  #endif
+  
   mfrc522.PCD_Init();    // Initialize MFRC522 Hardware
+
+
 
   //If you set Antenna Gain to Max it will increase reading distance
   //mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
@@ -143,7 +163,7 @@ void setup() {
     bool buttonState = monitorWipeButton(10000); // Give user enough time to cancel operation
     if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
       Serial.println(F("Starting Wiping EEPROM"));
-      for (uint16_t x = 0; x < EEPROM.length(); x = x + 1) {    //Loop end of EEPROM address
+      for (uint16_t x = 0; x < EEPROMLength(); x = x + 1) {    //Loop end of EEPROM address
         if (EEPROM.read(x) == 0) {              //If EEPROM address 0
           // do nothing, already clear, go to the next address in order to save time and reduce writes to EEPROM
         }
@@ -548,3 +568,16 @@ bool monitorWipeButton(uint32_t interval) {
   }
   return true;
 }
+
+size_t EEPROMLength()
+{
+  size_t eepromLength;
+#ifdef ESP8266
+  eepromLength =  SPI_FLASH_SEC_SIZE ; 
+#else
+  eepromLength = EEPROM.length();
+#endif  
+
+  return eepromLength;
+}
+
