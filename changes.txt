@@ -3,9 +3,14 @@
 unreleased
 - 
 
+8 Apr 2017, v1.3.5
+- Updated "AccessControl.ino", bugs fixed and alterate Wipe button polling method without using other library @beyondszine reviewed by @omersiar 
+- Updated README notice about port for esp8266 @mmmmar
+
 7 Apr 2017, v1.3.4
 - Added new example "rfid_read_personal_data.ino" @ryand1011
 - Updated example "rfid_write_personal_data.ino" code style to Arduino IDE @Rotzbua
+- Removed (temp.) Teensy from travis build script because fails @Rotzbua
 
 26 Mar 2017, v1.3.3
 - Fixed bugs in MFRC522Extended, now should work with Desfire.h from JPG-Consulting @Rotzbua
