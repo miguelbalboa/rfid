@@ -186,8 +186,6 @@ void setup() {
   
   mfrc522.PCD_Init();    // Initialize MFRC522 Hardware
 
-
-
   //If you set Antenna Gain to Max it will increase reading distance
   //mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
 
@@ -236,6 +234,7 @@ void setup() {
     Serial.println(F("Scan A PICC to Define as Master Card"));
     do {
       successRead = getID();            // sets successRead to 1 when we get read from reader otherwise 0
+      delay(10);
     }
     while (!successRead);                  // Program will not go further while you not get a successful read
     for ( uint8_t j = 0; j < 4; j++ ) {        // Loop 4 times
@@ -259,11 +258,15 @@ void setup() {
 
 
 ///////////////////////////////////////// Main Loop ///////////////////////////////////
-void loop () {
-  do {
+void loop () 
+{
+  do 
+  {
+    delay(5);               // without this software reset occurs
     successRead = getID();  // sets successRead to 1 when we get read from reader otherwise 0
     // When device is in use if wipe button pressed for 10 seconds initialize Master Card wiping
-    if (digitalRead(wipeB) == LOW) { // Check if button is pressed
+    if (digitalRead(wipeB) == LOW) 
+    { // Check if button is pressed
       // Visualize normal operation is iterrupted by pressing wipe button Red is like more Warning to user
       digitalWrite(redLed, LED_ON);  // Make sure led is off
       digitalWrite(greenLed, LED_OFF);  // Make sure led is off
@@ -271,7 +274,8 @@ void loop () {
       Serial.println(F("Wipe Button Pressed"));
       Serial.println(F("Master Card will be Erased! in 10 seconds"));
       bool buttonState = monitorWipeButton(10000); // Give user enough time to cancel operation
-      if (buttonState == true && digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
+      if (buttonState == true && digitalRead(wipeB) == LOW) 
+      {    // If button still be pressed, wipe EEPROM
         EEPROM.write(1, 0);                  // Reset Magic Number.
         Serial.println(F("Master Card Erased from device"));
         Serial.println(F("Please reset to re-program Master Card"));
@@ -279,30 +283,37 @@ void loop () {
       }
       Serial.println(F("Master Card Erase Cancelled"));
     }
-    if (programMode) {
+    if(programMode) 
+    {
       cycleLeds();              // Program Mode cycles through Red Green waiting to read a new card
     }
-    else {
+    else 
+    {
       normalModeOn();     // Normal mode, RED Power LED is on, all others are off
     }
   }
   while (!successRead);   //the program will not go further while you are not getting a successful read
-  if (programMode) {
-    if ( isMaster(readCard) ) { //When in program mode check First If master card scanned again to exit program mode
+  if (programMode) 
+  {
+    if ( isMaster(readCard) ) 
+    { //When in program mode check First If master card scanned again to exit program mode
       Serial.println(F("Master Card Scanned"));
       Serial.println(F("Exiting Program Mode"));
       Serial.println(F("-----------------------------"));
       programMode = false;
       return;
     }
-    else {
-      if ( findID(readCard) ) { // If scanned card is known delete it
+    else 
+    {
+      if ( findID(readCard) ) 
+      { // If scanned card is known delete it
         Serial.println(F("I know this PICC, removing..."));
         deleteID(readCard);
         Serial.println("-----------------------------");
         Serial.println(F("Scan a PICC to ADD or REMOVE to EEPROM"));
       }
-      else {                    // If scanned card is not known add it
+      else 
+      {                    // If scanned card is not known add it
         Serial.println(F("I do not know this PICC, adding..."));
         writeID(readCard);
         Serial.println(F("-----------------------------"));
@@ -310,8 +321,10 @@ void loop () {
       }
     }
   }
-  else {
-    if ( isMaster(readCard)) {    // If scanned card's ID matches Master Card's ID - enter program mode
+  else 
+  {
+    if ( isMaster(readCard)) 
+    {    // If scanned card's ID matches Master Card's ID - enter program mode
       programMode = true;
       Serial.println(F("Hello Master - Entered Program Mode"));
       uint8_t count = EEPROM.read(0);   // Read the first Byte of EEPROM that
@@ -323,12 +336,15 @@ void loop () {
       Serial.println(F("Scan Master Card again to Exit Program Mode"));
       Serial.println(F("-----------------------------"));
     }
-    else {
-      if ( findID(readCard) ) { // If not, see if the card is in the EEPROM
+    else 
+    {
+      if ( findID(readCard) ) 
+      { // If not, see if the card is in the EEPROM
         Serial.println(F("Welcome, You shall pass"));
         granted(300);         // Open the door lock for 300 ms
       }
-      else {      // If not, show that the ID was not valid
+      else 
+      {      // If not, show that the ID was not valid
         Serial.println(F("You shall not pass"));
         denied();
       }
