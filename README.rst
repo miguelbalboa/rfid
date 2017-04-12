@@ -10,7 +10,7 @@ MFRC522
 .. image:: https://img.shields.io/badge/ArduinoIDE-%3E%3D1.6.10-lightgrey.svg
     :target: `compatible ide`_
 
-Arduino library for MFRC522 and other RFID RC522 based modules.
+ESP8266 library for MFRC522 and other RFID RC522 based modules.
 
 Read and write different types of Radio-Frequency IDentification (RFID) cards
 on your Arduino using a RC522 based reader connected via the Serial Peripheral
