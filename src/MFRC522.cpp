@@ -384,9 +384,9 @@ bool MFRC522::PCD_PerformSelfTest() {
  */
 MFRC522::StatusCode MFRC522::PCD_TransceiveData(	byte *sendData,		///< Pointer to the data to transfer to the FIFO.
 													byte sendLen,		///< Number of bytes to transfer to the FIFO.
-													byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
+													byte *backData,		///< nullptr or pointer to buffer if data should be read back after executing the command.
 													byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
-													byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default NULL.
+													byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default nullptr.
 													byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
 													bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 								 ) {
@@ -404,7 +404,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 														byte waitIRq,		///< The bits in the ComIrqReg register that signals successful completion of the command.
 														byte *sendData,		///< Pointer to the data to transfer to the FIFO.
 														byte sendLen,		///< Number of bytes to transfer to the FIFO.
-														byte *backData,		///< NULL or pointer to buffer if data should be read back after executing the command.
+														byte *backData,		///< nullptr or pointer to buffer if data should be read back after executing the command.
 														byte *backLen,		///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
 														byte *validBits,	///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits.
 														byte rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
@@ -531,7 +531,7 @@ MFRC522::StatusCode MFRC522::PICC_REQA_or_WUPA(	byte command, 		///< The command
 	byte validBits;
 	MFRC522::StatusCode status;
 	
-	if (bufferATQA == NULL || *bufferSize < 2) {	// The ATQA response is 2 bytes long.
+	if (bufferATQA == nullptr || *bufferSize < 2) {	// The ATQA response is 2 bytes long.
 		return STATUS_NO_ROOM;
 	}
 	PCD_ClearRegisterBitMask(CollReg, 0x80);		// ValuesAfterColl=1 => Bits received after collision are cleared.
@@ -796,7 +796,7 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
 	//		If the PICC responds with any modulation during a period of 1 ms after the end of the frame containing the
 	//		HLTA command, this response shall be interpreted as 'not acknowledge'.
 	// We interpret that this way: Only STATUS_TIMEOUT is a success.
-	result = PCD_TransceiveData(buffer, sizeof(buffer), NULL, 0);
+	result = PCD_TransceiveData(buffer, sizeof(buffer), nullptr, 0);
 	if (result == STATUS_TIMEOUT) {
 		return STATUS_OK;
 	}
@@ -880,7 +880,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: 
 	MFRC522::StatusCode result;
 	
 	// Sanity check
-	if (buffer == NULL || *bufferSize < 18) {
+	if (buffer == nullptr || *bufferSize < 18) {
 		return STATUS_NO_ROOM;
 	}
 	
@@ -894,7 +894,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Read(	byte blockAddr, 	///< MIFARE Classic: 
 	}
 	
 	// Transmit the buffer and receive the response, validate CRC_A.
-	return PCD_TransceiveData(buffer, 4, buffer, bufferSize, NULL, 0, true);
+	return PCD_TransceiveData(buffer, 4, buffer, bufferSize, nullptr, 0, true);
 } // End MIFARE_Read()
 
 /**
@@ -915,7 +915,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Write(	byte blockAddr, ///< MIFARE Classic: 
 	MFRC522::StatusCode result;
 	
 	// Sanity check
-	if (buffer == NULL || bufferSize < 16) {
+	if (buffer == nullptr || bufferSize < 16) {
 		return STATUS_INVALID;
 	}
 	
@@ -950,7 +950,7 @@ MFRC522::StatusCode MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page
 	MFRC522::StatusCode result;
 	
 	// Sanity check
-	if (buffer == NULL || bufferSize < 4) {
+	if (buffer == nullptr || bufferSize < 4) {
 		return STATUS_INVALID;
 	}
 	
@@ -1183,7 +1183,7 @@ MFRC522::StatusCode MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointe
 	byte cmdBuffer[18]; // We need room for 16 bytes data and 2 bytes CRC_A.
 	
 	// Sanity check
-	if (sendData == NULL || sendLen > 16) {
+	if (sendData == nullptr || sendLen > 16) {
 		return STATUS_INVALID;
 	}
 	
