@@ -83,8 +83,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
-
 // Firmware data for self-test
 // Reference values based on firmware version
 // Hint: if needed, you can remove unused self-test data to save flash memory
@@ -327,13 +325,15 @@ public:
 	} MIFARE_Key;
 	
 	// Member variables
-	Uid uid;								// Used by PICC_ReadCardSerial().
+	Uid uid;	// Used by PICC_ReadCardSerial().
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
-	MFRC522() : MFRC522(UNUSED_PIN, UNUSED_PIN) {};
-	MFRC522(byte chipSelectPin, byte resetPowerDownPin);
+	MFRC522(SPIClass *spiClass = &SPI, const SPISettings spiSettings = SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0))
+			: _spiClass(spiClass), _spiSettings(spiSettings), _chipSelectPin(UNUSED_PIN), _resetPowerDownPin(UNUSED_PIN) {};
+	MFRC522(byte chipSelectPin, byte resetPowerDownPin)
+			: _chipSelectPin(chipSelectPin), _resetPowerDownPin(resetPowerDownPin) { MFRC522(); };
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Basic interface functions for communicating with the MFRC522
@@ -421,8 +421,15 @@ public:
 	virtual bool PICC_ReadCardSerial();
 	
 protected:
+	// Pins
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+	
+	// SPI communication
+	SPIClass *_spiClass;		// SPI class which abstracts hardware.
+	const SPISettings _spiSettings;	// SPI settings.
+	
+	// Functions for communicating with MIFARE PICCs
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
 };
 
