@@ -1,7 +1,10 @@
 -- Add changes to unreleased tag until we make a release.
 
 unreleased
-- 
+-
+
+22 Mar 2017, v1.3.6
+- Added deprecate and compiler warnings @Rotzbua
 
 8 Apr 2017, v1.3.5
 - Updated "AccessControl.ino", bugs fixed and alterate Wipe button polling method without using other library @beyondszine reviewed by @omersiar 
