@@ -389,12 +389,10 @@ public:
 	// Support functions
 	/////////////////////////////////////////////////////////////////////////////////////
 	StatusCode PCD_MIFARE_Transceive(byte *sendData, byte sendLen, bool acceptTimeout = false);
-	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
-	//const char *GetStatusCodeName(byte code);
-	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
 	static PICC_Type PICC_GetType(byte sak);
-	// old function used too much memory, now name moved to flash; if you need char, copy from flash to memory
-	//const char *PICC_GetTypeName(byte type);
+	
+	// Support functions for debuging - proxy for MFRC522Debug to keep backwarts compatibility
+	static const __FlashStringHelper *GetStatusCodeName(StatusCode code);
 	static const __FlashStringHelper *PICC_GetTypeName(PICC_Type type);
 	
 	// Support functions for debuging
@@ -407,12 +405,6 @@ public:
 	
 	// Advanced functions for MIFARE
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
-	DEPRECATED_MSG("will move to extra class in next version")
-	bool MIFARE_OpenUidBackdoor(bool logErrors);
-	DEPRECATED_MSG("will move to extra class in next version")
-	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
-	DEPRECATED_MSG("will move to extra class in next version")
-	bool MIFARE_UnbrickUidSector(bool logErrors);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Convenience functions - does not add extra functionality
