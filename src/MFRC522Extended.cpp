@@ -692,6 +692,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(PcbBlock *send, PcbBlock *ba
 
 	// Is the CRC enabled for transmission?
 	byte txModeReg = PCD_ReadRegister(TxModeReg);
+
 	if ((txModeReg & 0x80) != 0x80) {
 		// Calculate CRC_A
 		result = PCD_CalculateCRC(outBuffer, outBufferOffset, &outBuffer[outBufferOffset]);
@@ -701,13 +702,11 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(PcbBlock *send, PcbBlock *ba
 
 		outBufferOffset += 2;
 	}
-
 	// Transceive the block
 	result = PCD_TransceiveData(outBuffer, outBufferOffset, inBuffer, &inBufferSize);
 	if (result != STATUS_OK) {
 		return result;
 	}
-
 	// We want to turn the received array back to a PcbBlock
 	back->prologue.pcb = inBuffer[0];
 
@@ -807,17 +806,14 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 		out.inf.size = 0;
 		out.inf.data = NULL;
 	}
-
 	// Initialize the receiving data
 	// TODO Warning: Value escapes the local scope
 	in.inf.data = outBuffer;
 	in.inf.size = outBufferSize;
-
 	result = TCL_Transceive(&out, &in);
 	if (result != STATUS_OK) {
 		return result;
 	}
-
 	// Swap block number on success
 	tag->blockNumber = !tag->blockNumber;
 
@@ -828,19 +824,19 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 		*backLen = in.inf.size;
 		memcpy(backData, in.inf.data, in.inf.size);
 	}
-
+	
 	// Check chaining
 	if ((in.prologue.pcb & 0x10) == 0x00)
 		return result;
-
 	// Result is chained
 	// Send an ACK to receive more data
 	// TODO: Should be checked I've never needed to send an ACK
+
 	while (in.prologue.pcb & 0x10) {
 		byte ackData[FIFO_SIZE];
 		byte ackDataSize = FIFO_SIZE;
-
-		result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize);
+		byte linked = 0;
+		result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize, linked);
 		if (result != STATUS_OK)
 			return result;
 
@@ -851,6 +847,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 			memcpy(&(backData[*backLen]), ackData, ackDataSize);
 			*backLen += ackDataSize;
 		}
+		if(!linked) break;
 	}
 	
 	return result;
@@ -859,7 +856,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 /**
  * Send R-Block to the PICC.
  */
-MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack, byte *backData, byte *backLen)
+MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack, byte *backData, byte *backLen, byte* linked)
 {
 	MFRC522::StatusCode result;
 
@@ -913,7 +910,8 @@ MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack
 		*backLen = in.inf.size;
 		memcpy(backData, in.inf.data, in.inf.size);
 	}
-	
+	if(linked)
+		*linked = in.prologue.pcb & 0x10;
 	return result;
 } // End TCL_TransceiveRBlock()
 
