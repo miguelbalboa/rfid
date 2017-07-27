@@ -836,7 +836,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 		byte ackData[FIFO_SIZE];
 		byte ackDataSize = FIFO_SIZE;
 		byte linked = 0;
-		result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize, linked);
+		result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize, &linked);
 		if (result != STATUS_OK)
 			return result;
 
@@ -892,6 +892,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_TransceiveRBlock(TagInfo *tag, bool ack
 
 	// Initialize the receiving data
 	// TODO Warning: Value escapes the local scope
+	
 	in.inf.data = outBuffer;
 	in.inf.size = outBufferSize;
 
