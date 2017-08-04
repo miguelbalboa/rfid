@@ -129,6 +129,24 @@ The following table shows the typical pin layout used:
 | SPI SCK   | SCK      | 13 / ICSP-3 | 52      | D13     | ICSP-3          | 15        | 1      | 21     | 13     |
 +-----------+----------+-------------+---------+---------+-----------------+-----------+--------+--------+--------+
 
++-----------+---------------+
+|           | ESP8266       |
+|           +---------------+
+|           | Wemos D1 mini |
++-----------+---------------+
+| Signal    | Pin           |
++===========+===============+
+| RST/Reset | D3            |
++-----------+---------------+
+| SPI SS    | D8            |
++-----------+---------------+
+| SPI MOSI  | D7            |
++-----------+---------------+
+| SPI MISO  | D6            |
++-----------+---------------+
+| SPI SCK   | D5            |
++-----------+---------------+
+
 .. [1] Configurable, typically defined as RST_PIN in sketch/program.
 .. [2] Configurable, typically defined as SS_PIN in sketch/program.
 .. [3] The SDA pin might be labeled SS on some/older MFRC522 boards. 
