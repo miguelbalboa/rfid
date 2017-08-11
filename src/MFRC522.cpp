@@ -364,6 +364,38 @@ bool MFRC522::PCD_PerformSelfTest() {
 } // End PCD_PerformSelfTest()
 
 /////////////////////////////////////////////////////////////////////////////////////
+// Power control
+/////////////////////////////////////////////////////////////////////////////////////
+
+//IMPORTANT NOTE!!!!
+//Calling any other function that uses CommandReg will disable soft power down mode !!!
+
+void MFRC522::power_down()//Note : Only soft power down mode is available throught software
+{
+	byte val=PCD_ReadRegister(CommandReg); // Read state of the command register 
+	val |= (1<<4);// set PowerDown bit ( bit 4 ) to 1 
+	PCD_WriteRegister(CommandReg, val);//write new value to the command register
+}
+
+void MFRC522::power_up()
+{
+	byte val=PCD_ReadRegister(CommandReg); // Read state of the command register 
+	val &= ~(1<<4);// set PowerDown bit ( bit 4 ) to 0 
+	PCD_WriteRegister(CommandReg, val);//write new value to the command register
+	// wait until PowerDown bit is cleared (this indicates end of wake up procedure) 
+	unsigned long timer=millis();// create timer for timeout (just in case) 
+	while(millis()-500<=timer)// set timeout to 500 ms 
+	{
+		val=PCD_ReadRegister(CommandReg); // Read state of the command register
+		if(!(val & (1<<4)))// if powerdown bit is 0 
+		{
+			break;// wake up procedure is finished 
+		}
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Functions for communicating with PICCs
 /////////////////////////////////////////////////////////////////////////////////////
 
