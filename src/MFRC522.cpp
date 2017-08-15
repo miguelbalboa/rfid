@@ -382,9 +382,9 @@ void MFRC522::PCD_SoftPowerUp(){
 	val &= ~(1<<4);// set PowerDown bit ( bit 4 ) to 0 
 	PCD_WriteRegister(CommandReg, val);//write new value to the command register
 	// wait until PowerDown bit is cleared (this indicates end of wake up procedure) 
-	unsigned long timer = millis();// create timer for timeout (just in case) 
+	const uint32_t timeout = (uint32_t)millis() + 500;// create timer for timeout (just in case) 
 	
-	while(millis()-500<=timer){ // set timeout to 500 ms 
+	while(millis()<=timeout){ // set timeout to 500 ms 
 		val = PCD_ReadRegister(CommandReg);// Read state of the command register
 		if(!(val & (1<<4))){ // if powerdown bit is 0 
 			break;// wake up procedure is finished 
