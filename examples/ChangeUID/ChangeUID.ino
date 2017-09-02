@@ -45,7 +45,7 @@ void setup() {
   mfrc522.PCD_Init();  // Init MFRC522 card
   Serial.println(F("Warning: this example overwrites the UID of your UID changeable card, use with care!"));
   
-  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
+  // Prepare key - all keys are set to FFFFFFFFFFFF at chip delivery from the factory.
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
