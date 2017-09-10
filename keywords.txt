@@ -43,6 +43,10 @@ PCD_GetAntennaGain	KEYWORD2
 PCD_SetAntennaGain	KEYWORD2
 PCD_PerformSelfTest	KEYWORD2
 
+# Power control functions MFRC522
+PCD_SoftPowerDown	KEYWORD2
+PCD_SoftPowerUp	KEYWORD2
+
 # Functions for communicating with PICCs
 PCD_TransceiveData	KEYWORD2
 PCD_CommunicateWithPICC	KEYWORD2
