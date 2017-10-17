@@ -12,6 +12,7 @@ unreleased, v1.4.0
 - Added pin layout for wemos d1 mini @mmone
 - Added alternative fritzing layout for mfrc522 reader @jose1711
 - Added soft power control functions @Bill2462
+- Fixed typo in example ReadAndWrite.ino @Drachenfrucht1
 - 
 
 22 Mar 2017, v1.3.6
