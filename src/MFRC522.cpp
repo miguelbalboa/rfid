@@ -179,7 +179,7 @@ void MFRC522::PCD_Init() {
 	if (_resetPowerDownPin != UNUSED_PIN) {
 		// Set the resetPowerDownPin as digital output, do not reset or power down.
 		pinMode(_resetPowerDownPin, OUTPUT);
-	
+		delay(1);
 		if (digitalRead(_resetPowerDownPin) == LOW) {	// The MFRC522 chip is in power down mode.
 			digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
 			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
