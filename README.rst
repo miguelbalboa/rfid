@@ -34,13 +34,13 @@ What works and not?
   #. Firmware self check of MFRC522.
   #. Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
 
-* **Partial**
+* **Works partially**
 
   #. Communication with MIFARE Ultralight.
   #. Other PICCs (Ntag216).
   #. More than 2 modules, require a multiplexer `#191 <https://github.com/miguelbalboa/rfid/issues/191#issuecomment-242631153>`_.
 
-* **Works not**
+* **Doesn't work**
   
   #. MIFARE DESFire, MIFARE DESFire EV1/EV2, not supported by software.
   #. Communication with 3DES or AES, not supported by software.
@@ -63,7 +63,7 @@ What works and not?
 .. _compatible ide:
 Compatible IDE
 ----------
-This library works with Arduino IDE 1.6, older versions are **not supported** and will cause compile errors. The built-in library manager is supported.
+This library works with Arduino IDE 1.6, older versions are **not supported** and will cause compiler errors. The built-in library manager is supported.
 
 If you use your own compiler, you have to enable ``c++11``-support.
 
@@ -72,9 +72,9 @@ If you use your own compiler, you have to enable ``c++11``-support.
 Compatible boards
 ----------
 
-**!!!Only for advanced user!!!**
+**!!!Only for advanced users!!!**
 
-This library is compatible to Teensy and ESP8266, if you use board plugin of the Arduino IDE. Not all examples are available for every board. You also have to change pins, see `pin layout`_.
+This library is compatible with the Teensy and ESP8266 if you use the board plugin of the Arduino IDE. Not all examples are available for every board. You also have to change pins. See `pin layout`_.
 
 Some user made some patches/suggestions/ports for other boards:
 
@@ -92,7 +92,7 @@ Support/issue
 1. First checkout `what works and not`_ and `troubleshooting`_ .
 
 2. It seems to be a hardware issue or you need support to program your project?
-    Please ask in the official `Arduino forum`_, there you would get a much faster answer then on github.
+    Please ask in the official `Arduino forum`_, where you would get a much faster answer than on github.
 
 3. It seems to be a software issue?
     Open an issue on github.
@@ -102,7 +102,7 @@ Support/issue
 Code style
 ----------
 
-Please use ``fixed integers``, see `stdint.h`_. Why? This library is compatible to different boards which use different architectures (16bit vs 32bit). So unfixed ``int`` has different sizes on different environments and may cause unpredictable behaviour.
+Please use ``fixed integers``, see `stdint.h`_. Why? This library is compatible with different boards which use different architectures (16bit and 32bit.) Unfixed ``int`` variables have different sizes in different environments and may cause unpredictable behaviour.
 
 
 .. _pin layout:
@@ -168,13 +168,13 @@ There are three hardware components involved:
 
 2. **Proximity Coupling Device (PCD)**:
 
-* The PCD is the actual RFID **Reader** based on `NXP MFRC522`_ Contactless
-  Reader Integrated Circuit).
+* The PCD is the actual RFID **Reader** based on the `NXP MFRC522`_ Contactless
+  Reader Integrated Circuit.
 
 * Readers can be found on `eBay`_ for around USD 5: search for *"rc522"*.
 
-* You can also find them at several web stores, they are often included in
-  *"starter kits"*; so check your favourite electronics provider as well.
+* You can also find them on several web stores. They are often included in
+  *"starter kits"*, so check your favourite electronics provider as well.
 
 3. **Proximity Integrated Circuit Card (PICC)**:
 
@@ -223,16 +223,16 @@ Troubleshooting
   #. Check your connection, see `Pin Layout`_ .
   #. Check voltage. Most breakouts work with 3.3V.
   #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
-  #. SPI do not like long connections. Try shorter connections.
-  #. SPI do not like prototyping boards. Maybe try a soldered connections.
+  #. SPI does not like long connections. Try shorter connections.
+  #. SPI does not like prototyping boards. Try soldered connections.
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
 * **Sometimes I get timeouts** or **sometimes tag/card does not work.**
 
-  #. Try other side of the antenna.
-  #. Try to decrease distance between MFRC522.
-  #. Increase antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
+  #. Try the other side of the antenna.
+  #. Try to decrease the distance between the MFRC522 and your tag.
+  #. Increase the antenna gain per firmware: ``mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);``
   #. Use better power supply.
   #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
 
@@ -257,7 +257,7 @@ Troubleshooting
 * **I need more features.**
 
   #. If software: code it and make a pull request.
-  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15)
+  #. If hardware: buy a more expensive chip like the PN532 (supports NFC and many more, but costs about $15)
 
 
 .. _license:
