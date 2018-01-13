@@ -739,7 +739,7 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 				count			= (collisionPos - 1) % 8; // The bit to modify
 				index			= 1 + ((collisionPos - 1) / 8) + (count ? 1 : 0); // First byte is index 0.
 				buffer[index]	|= (1 << count);
-				currentLevelKnownBits = collisionPos;
+				//currentLevelKnownBits = collisionPos; // FIXME not used further, maybe bug
 			}
 			else if (result != STATUS_OK) {
 				return result;
