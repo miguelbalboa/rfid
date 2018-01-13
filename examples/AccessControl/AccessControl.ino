@@ -429,19 +429,13 @@ void deleteID( byte a[] ) {
 }
 
 ///////////////////////////////////////// Check Bytes   ///////////////////////////////////
-boolean checkTwo ( byte a[], byte b[] ) {
-  if ( a[0] != 0 )      // Make sure there is something in the array first
-    match = true;       // Assume they match at first
+boolean checkTwo ( byte a[], byte b[] ) {   
   for ( uint8_t k = 0; k < 4; k++ ) {   // Loop 4 times
-    if ( a[k] != b[k] )     // IF a != b then set match = false, one fails, all fail
-      match = false;
+    if ( a[k] != b[k] ) {     // IF a != b then set match = false, one fails, all fail
+       return false;
+    }
   }
-  if ( match ) {      // Check to see if if match is still true
-    return true;      // Return true
-  }
-  else  {
-    return false;       // Return false
-  }
+  return true;  
 }
 
 ///////////////////////////////////////// Find Slot   ///////////////////////////////////
