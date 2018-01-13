@@ -95,7 +95,6 @@ constexpr uint8_t relay = 4;     // Set Relay Pin
 constexpr uint8_t wipeB = 3;     // Button pin for WipeMode
 
 bool programMode = false;  // initialize programming mode to false
-bool replaceMaster = false;
 
 uint8_t successRead;    // Variable integer to keep if we have Successful Read from Reader
 
@@ -445,7 +444,6 @@ uint8_t findIDSLOT( byte find[] ) {
     if ( checkTwo( find, storedCard ) ) {   // Check to see if the storedCard read from EEPROM
       // is the same as the find[] ID card passed
       return i;         // The slot number of the card
-      break;          // Stop looking we found it
     }
   }
 }
@@ -457,7 +455,6 @@ bool findID( byte find[] ) {
     readID(i);          // Read an ID from EEPROM, it is stored in storedCard[4]
     if ( checkTwo( find, storedCard ) ) {   // Check to see if the storedCard read from EEPROM
       return true;
-      break;  // Stop looking we found it
     }
     else {    // If not, return false
     }
@@ -525,10 +522,7 @@ void successDelete() {
 ////////////////////// Check readCard IF is masterCard   ///////////////////////////////////
 // Check to see if the ID passed is the master programing card
 bool isMaster( byte test[] ) {
-  if ( checkTwo( test, masterCard ) )
-    return true;
-  else
-    return false;
+	return checkTwo(test, masterCard);
 }
 
 bool monitorWipeButton(uint32_t interval) {
