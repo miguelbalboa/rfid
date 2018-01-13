@@ -94,8 +94,8 @@ constexpr uint8_t blueLed = 5;
 constexpr uint8_t relay = 4;     // Set Relay Pin
 constexpr uint8_t wipeB = 3;     // Button pin for WipeMode
 
-boolean programMode = false;  // initialize programming mode to false
-boolean replaceMaster = false;
+bool programMode = false;  // initialize programming mode to false
+bool replaceMaster = false;
 
 uint8_t successRead;    // Variable integer to keep if we have Successful Read from Reader
 
@@ -428,7 +428,7 @@ void deleteID( byte a[] ) {
 }
 
 ///////////////////////////////////////// Check Bytes   ///////////////////////////////////
-boolean checkTwo ( byte a[], byte b[] ) {   
+bool checkTwo ( byte a[], byte b[] ) {   
   for ( uint8_t k = 0; k < 4; k++ ) {   // Loop 4 times
     if ( a[k] != b[k] ) {     // IF a != b then false, because: one fails, all fail
        return false;
@@ -451,7 +451,7 @@ uint8_t findIDSLOT( byte find[] ) {
 }
 
 ///////////////////////////////////////// Find ID From EEPROM   ///////////////////////////////////
-boolean findID( byte find[] ) {
+bool findID( byte find[] ) {
   uint8_t count = EEPROM.read(0);     // Read the first Byte of EEPROM that
   for ( uint8_t i = 1; i < count; i++ ) {    // Loop once for each EEPROM entry
     readID(i);          // Read an ID from EEPROM, it is stored in storedCard[4]
@@ -524,7 +524,7 @@ void successDelete() {
 
 ////////////////////// Check readCard IF is masterCard   ///////////////////////////////////
 // Check to see if the ID passed is the master programing card
-boolean isMaster( byte test[] ) {
+bool isMaster( byte test[] ) {
   if ( checkTwo( test, masterCard ) )
     return true;
   else
