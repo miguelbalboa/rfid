@@ -15,6 +15,7 @@ unreleased, v1.4.0
 - Fixed typo in example ReadAndWrite.ino @Drachenfrucht1
 - Fixed grammar @KiddieD
 - Fixed infinite loop in example AccessControl.ino @mads256c 
+- Fixed 0-index key ID equals to 0 fails in AccessControl.ino @thoaitrieu
 
 22 Mar 2017, v1.3.6
 - Added deprecate and compiler warnings @Rotzbua
