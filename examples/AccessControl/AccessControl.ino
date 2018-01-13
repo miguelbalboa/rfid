@@ -94,7 +94,6 @@ constexpr uint8_t blueLed = 5;
 constexpr uint8_t relay = 4;     // Set Relay Pin
 constexpr uint8_t wipeB = 3;     // Button pin for WipeMode
 
-boolean match = false;          // initialize card match to false
 boolean programMode = false;  // initialize programming mode to false
 boolean replaceMaster = false;
 
@@ -431,7 +430,7 @@ void deleteID( byte a[] ) {
 ///////////////////////////////////////// Check Bytes   ///////////////////////////////////
 boolean checkTwo ( byte a[], byte b[] ) {   
   for ( uint8_t k = 0; k < 4; k++ ) {   // Loop 4 times
-    if ( a[k] != b[k] ) {     // IF a != b then set match = false, one fails, all fail
+    if ( a[k] != b[k] ) {     // IF a != b then false, because: one fails, all fail
        return false;
     }
   }
