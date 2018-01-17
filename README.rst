@@ -254,6 +254,10 @@ Troubleshooting
   #. Communication with mobile phones is not supported.
   #. Peer to peer communication is not supported.
 
+* **I can only read the card UID.**
+
+  #. Maybe the `AccessBits` have been accidentally set and now an unknown password is set. This can not be reverted.
+  #. Probably the card is encrypted. Especially official cards like public transport, university or library cards. There is *no* way to get access with this library.
 
 * **I need more features.**
 
