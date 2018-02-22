@@ -33,6 +33,7 @@ What works and not?
   #. Communication (Crypto1) with MIFARE Classic compatible PICCs.
   #. Firmware self check of MFRC522.
   #. Set the UID, write to sector 0, and unbrick Chinese UID changeable MIFARE cards.
+  #. Manage the SPI chip select pin (aka SS, SDA)
 
 * **Works partially**
 
