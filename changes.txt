@@ -19,6 +19,7 @@ unreleased, v1.4.0
 - Changed type boolean to bool for a more common use @Rotzbua 
 - Fixed wrong var names in PICC_Select MFRC522.cpp @tuyethoa08041997
 - Fixed hang PCD_Init() on non-arduino boards @heziegl
+- Fixed possible infinite loop PCD_Reset() @psgreco
 
 22 Mar 2017, v1.3.6
 - Added deprecate and compiler warnings @Rotzbua
