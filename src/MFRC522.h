@@ -312,6 +312,15 @@ public:
 		STATUS_MIFARE_NACK		= 0xff	// A MIFARE PICC responded with NAK.
 	};
 	
+	// Custom chip select callback
+	typedef void (*cs_callback)(void);
+	
+	// A struct containing custom chip select callback
+	typedef struct {
+		cs_callback		cs_select;		// Chip select slave selection
+		cs_callback		cs_unselect;		// Chip select slave release
+	} CS_callback;
+	
 	// A struct used for passing the UID of a PICC.
 	typedef struct {
 		byte		size;			// Number of bytes in the UID. 4, 7 or 10.
@@ -332,7 +341,12 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	MFRC522(const byte chipSelectPin, const byte resetPowerDownPin,
 			SPIClass *spiClass = &SPI, const SPISettings spiSettings = SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0))
-			: _chipSelectPin(chipSelectPin), _resetPowerDownPin(resetPowerDownPin),
+			: _chipSelectPin(chipSelectPin),
+			_csCallback(NULL), _resetPowerDownPin(resetPowerDownPin),
+			  _spiClass(spiClass), _spiSettings(spiSettings) {};
+	MFRC522(const CS_callback *csCallback, const byte resetPowerDownPin,
+			SPIClass *spiClass = &SPI, const SPISettings spiSettings = SPISettings(SPI_CLOCK_DIV4, MSBFIRST, SPI_MODE0))
+			: _chipSelectPin(UNUSED_PIN), _csCallback(csCallback),  _resetPowerDownPin(resetPowerDownPin),
 			  _spiClass(spiClass), _spiSettings(spiSettings) {};
 	MFRC522() : MFRC522(UNUSED_PIN, UNUSED_PIN) {};
 	
@@ -352,6 +366,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	void PCD_Init();
 	void PCD_Init(byte chipSelectPin, byte resetPowerDownPin);
+  void PCD_Init(const CS_callback *csCallback, byte resetPowerDownPin);
 	void PCD_Reset();
 	void PCD_AntennaOn();
 	void PCD_AntennaOff();
@@ -422,6 +437,7 @@ public:
 protected:
 	// Pins
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
+	const CS_callback * _csCallback;
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	
 	// SPI communication
@@ -430,6 +446,8 @@ protected:
 	
 	// Functions for communicating with MIFARE PICCs
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
+	void PCD_csSelect();
+	void PCD_csUnselect();
 };
 
 #endif
