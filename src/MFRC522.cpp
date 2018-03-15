@@ -34,6 +34,24 @@ void MFRC522::PCD_csUnselect() {
 	}
 }
 
+void MFRC522::PCD_Poweroff() {
+	if(_rstCallback == NULL) {
+		digitalWrite(_resetPowerDownPin, LOW); // Enter power mode down
+	} else {
+		_rstCallback(true);
+	}
+}
+
+void MFRC522::PCD_Poweron() {
+	if(_rstCallback == NULL) {
+		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
+		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
+		delay(50);
+	} else {
+		_rstCallback(false);
+	}
+}
+
 /**
  * Writes a byte to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
@@ -194,18 +212,15 @@ void MFRC522::PCD_Init() {
 		PCD_csUnselect();
 	}
 	
+	if( _rstCallback == NULL && _resetPowerDownPin != UNUSED_PIN) {
+		pinMode(_resetPowerDownPin, OUTPUT);		// Set the resetPowerDownPin as digital output.
+	}
 	// If a valid pin number has been set, pull device out of power down / reset state.
-	if (_resetPowerDownPin != UNUSED_PIN) {
-		// First set the resetPowerDownPin as digital input, to check the MFRC522 power down mode.
-		pinMode(_resetPowerDownPin, INPUT);
-	
-		if (digitalRead(_resetPowerDownPin) == LOW) {	// The MFRC522 chip is in power down mode.
-			pinMode(_resetPowerDownPin, OUTPUT);		// Now set the resetPowerDownPin as digital output.
-			digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-			delay(50);
-			hardReset = true;
-		}
+	if (_resetPowerDownPin != UNUSED_PIN || _rstCallback != NULL) {
+		PCD_Poweroff();
+		delay(10);
+		PCD_Poweron();
+		hardReset = true;
 	}
 
 	if (!hardReset) { // Perform a soft reset if we haven't triggered a hard reset above.
@@ -238,6 +253,7 @@ void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC5
 						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
 	_csCallback = NULL;
+	_rstCallback = NULL;
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin; 
 	// Set the chipSelectPin as digital output, do not select the slave yet
@@ -245,11 +261,13 @@ void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC5
 } // End PCD_Init()
 
 void MFRC522::PCD_Init(	const CS_callback *csCallback,		 /// < custom callbacks set for chip select
-						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+						rst_callback rstCallback	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
 	_csCallback = csCallback;
 	_chipSelectPin = UNUSED_PIN;
-	_resetPowerDownPin = resetPowerDownPin; 
+
+	_rstCallback = rstCallback;
+	_resetPowerDownPin = UNUSED_PIN; 
 	PCD_Init();
 } // End PCD_Init()
 
