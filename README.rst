@@ -58,7 +58,7 @@ What works and not?
 * **Need more?**
 
   #. If software: code it and make a pull request.
-  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15).
+  #. If hardware: buy a more expensive like PN532 (supports NFC and many more, but costs about $15 and not usable with this library).
 
 
 .. _compatible ide:
