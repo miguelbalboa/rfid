@@ -168,7 +168,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 /**
  * Initializes the MFRC522 chip.
  */
-void MFRC522::PCD_Init() {
+bool MFRC522::PCD_Init() {
 	bool hardReset = false;
 
 	// Set the chipSelectPin as digital output, do not select the slave yet
@@ -210,18 +210,21 @@ void MFRC522::PCD_Init() {
 	PCD_WriteRegister(TxASKReg, 0x40);		// Default 0x00. Force a 100 % ASK modulation independent of the ModGsPReg register setting
 	PCD_WriteRegister(ModeReg, 0x3D);		// Default 0x3F. Set the preset value for the CRC coprocessor for the CalcCRC command to 0x6363 (ISO 14443-3 part 6.2.4)
 	PCD_AntennaOn();						// Enable the antenna driver pins TX1 and TX2 (they were disabled by the reset)
+
+	const byte v = PCD_ReadRegister(VersionReg);	// When 0x00 or 0xFF is returned, communication probably failed
+	return v != 0x00 && v != 0xFF;
 } // End PCD_Init()
 
 /**
  * Initializes the MFRC522 chip.
  */
-void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
+bool MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin; 
 	// Set the chipSelectPin as digital output, do not select the slave yet
-	PCD_Init();
+	return PCD_Init();
 } // End PCD_Init()
 
 /**

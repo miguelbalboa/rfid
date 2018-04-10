@@ -350,8 +350,8 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for manipulating the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
-	void PCD_Init();
-	void PCD_Init(byte chipSelectPin, byte resetPowerDownPin);
+	bool PCD_Init();
+	bool PCD_Init(byte chipSelectPin, byte resetPowerDownPin);
 	void PCD_Reset();
 	void PCD_AntennaOn();
 	void PCD_AntennaOff();
