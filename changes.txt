@@ -1,7 +1,10 @@
 -- Add changes to unreleased tag until we make a release.
 
-unreleased
--
+13 Apr 2018, v1.4.0
+- Replaced UINT8_MAX by UNUSED_PIN @Rotzbua
+- Fixed hang PCD_Init() on non-arduino boards @heziegl
+- deprecate MIFARE_SetAccessBits @Rotzbua
+- IMPORTANT: v1.4.X will be last version under license "unlicense"
 
 22 Mar 2017, v1.3.6
 - Added deprecate and compiler warnings @Rotzbua
