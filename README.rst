@@ -271,6 +271,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to https://unlicense.org/
 
 
+.. _dependency:
+Dependency
+----------
+
+* **Arduino.h**
+
+  * From: Arduino IDE / target specific
+  * License: (target: Arduino) GNU Lesser General Public License 2.1
+  
+* **SPI.h**
+
+  * From: Arduino IDE / target specific
+  * License: (target: Arduino) GNU Lesser General Public License 2.1
+  
+* **stdint.h**
+
+  * From: Arduino IDE / Compiler and target specific
+  * License: different
+
+
 History
 -------
 
