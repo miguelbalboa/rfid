@@ -339,10 +339,11 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Basic interface functions for communicating with the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
-	void PCD_WriteRegister(PCD_Register reg, byte value);
-	void PCD_WriteRegister(PCD_Register reg, byte count, byte *values);
-	byte PCD_ReadRegister(PCD_Register reg);
-	void PCD_ReadRegister(PCD_Register reg, byte count, byte *values, byte rxAlign = 0);
+	virtual void PCD_WriteRegister(PCD_Register reg, byte value);
+	virtual void PCD_WriteRegister(PCD_Register reg, byte count, byte *values);
+	virtual byte PCD_ReadRegister(PCD_Register reg);
+	virtual void PCD_ReadRegister(PCD_Register reg, byte count, byte *values, byte rxAlign = 0);
+// marked virtual so I2CRC522 can override them
 	void PCD_SetRegisterBitMask(PCD_Register reg, byte mask);
 	void PCD_ClearRegisterBitMask(PCD_Register reg, byte mask);
 	StatusCode PCD_CalculateCRC(byte *data, byte length, byte *result);
