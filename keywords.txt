@@ -5,7 +5,8 @@
 #######################################
 # KEYWORD1 Classes, datatypes, and C++ keywords
 #######################################
-MFRC522	KEYWORD1
+MFRC522		KEYWORD1
+I2CRC522	KEYWORD1
 MFRC522Extended	KEYWORD1
 PCD_Register	KEYWORD1
 PCD_Command	KEYWORD1
