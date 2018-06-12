@@ -223,7 +223,8 @@ Troubleshooting
 
 * **I don't get input from reader** or **WARNING: Communication failure, is the MFRC522 properly connected?**
 
-  #. Check your connection, see `Pin Layout`_ .
+  #. Check your physical connection, see `Pin Layout`_ .
+  #. Check your pin settings/variables in the code, see `Pin Layout`_ .
   #. Check your pin header soldering. Maybe you have cold solder joints.
   #. Check voltage. Most breakouts work with 3.3V.
   #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
