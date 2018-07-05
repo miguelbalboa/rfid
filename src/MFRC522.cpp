@@ -593,6 +593,7 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 	byte cascadeLevel = 1;
 	MFRC522::StatusCode result;
 	byte count;
+	byte checkBit;
 	byte index;
 	byte uidIndex;					// The first index in uid->uidByte[] that is used in the current Cascade Level.
 	int8_t currentLevelKnownBits;		// The number of known UID bits in the current Cascade Level.
@@ -737,10 +738,11 @@ MFRC522::StatusCode MFRC522::PICC_Select(	Uid *uid,			///< Pointer to Uid struct
 					return STATUS_INTERNAL_ERROR;
 				}
 				// Choose the PICC with the bit set.
-				count			= (collisionPos - 1) % 8; // The bit to modify
-				index			= 1 + ((collisionPos - 1) / 8) + (count ? 1 : 0); // First byte is index 0.
-				buffer[index]	|= (1 << count);
-				//currentLevelKnownBits = collisionPos; // FIXME not used further, maybe bug
+				currentLevelKnownBits	= collisionPos;
+				count			= currentLevelKnownBits % 8; // The bit to modify
+				checkBit		= (currentLevelKnownBits - 1) % 8;
+				index			= 1 + (currentLevelKnownBits / 8) + (count ? 1 : 0); // First byte is index 0.
+				buffer[index]	|= (1 << checkBit);
 			}
 			else if (result != STATUS_OK) {
 				return result;
