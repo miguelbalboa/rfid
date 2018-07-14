@@ -90,7 +90,7 @@ PICC_DumpMifareUltralightToSerial	KEYWORD2
 PICC_DumpISO14443_4	KEYWORD2
 
 # Advanced functions for MIFARE
-MIFARE_SetAccessBits	KEYWORD2
+MIFARE_CalculateAccessBits	KEYWORD2
 MIFARE_OpenUidBackdoor	KEYWORD2
 MIFARE_SetUid	KEYWORD2
 MIFARE_UnbrickUidSector	KEYWORD2

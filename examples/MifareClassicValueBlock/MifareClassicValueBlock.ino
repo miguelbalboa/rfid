@@ -137,7 +137,7 @@ void loop() {
     //      g[3]    Access bits for the Sector Trailer: block 3 (for sectors 0-31)
     //              or block 15 (for sectors 32-39)
     // Each group has access bits [C1 C2 C3], in this code C1 is MSB and C3 is LSB.
-    // Determine the bit pattern needed using MIFARE_SetAccessBits:
+    // Determine the bit pattern needed using MIFARE_CalculateAccessBits:
     //      g0=0    access bits for block 0 (of this sector) using [0 0 0] = 000b = 0
     //              which means key A|B have r/w for block 0 of this sector
     //              which (in this example) translates to block #4 within sector #1;
@@ -153,7 +153,7 @@ void loop() {
     //              using [0 1 1] = 011b = 3 which means only key B has r/w access
     //              to the Sector Trailer (block 3 of this sector) from now on
     //              which (in this example) translates to block #7 within sector #1;
-    mfrc522.MIFARE_SetAccessBits(&trailerBuffer[6], 0, 6, 6, 3);
+    mfrc522.MIFARE_CalculateAccessBits(&trailerBuffer[6], 0, 6, 6, 3);
 
     // Read the sector trailer as it is currently stored on the PICC
     Serial.println(F("Reading sector trailer..."));
