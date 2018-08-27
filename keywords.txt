@@ -14,8 +14,8 @@ PICC_Command	KEYWORD1
 MIFARE_Misc	KEYWORD1
 PICC_Type	KEYWORD1
 StatusCode	KEYWORD1
-TagBitRates 	KEYWORD1
-Uid		KEYWORD1
+TagBitRates	KEYWORD1
+Uid	KEYWORD1
 CardInfo	KEYWORD1
 MIFARE_Key	KEYWORD1
 PcbBlock	KEYWORD1
@@ -104,7 +104,7 @@ PICC_ReadCardSerial	KEYWORD2
 #######################################
 
 #######################################
-LITERAL1 Constants
+# LITERAL1 Constants
 #######################################
 CommandReg	LITERAL1
 ComIEnReg	LITERAL1
@@ -163,8 +163,8 @@ PCD_CalcCRC	LITERAL1
 PCD_Transmit	LITERAL1
 PCD_NoCmdChange	LITERAL1
 PCD_Receive	LITERAL1
-PCD_Transceive 	LITERAL1
-PCD_MFAuthent 	LITERAL1
+PCD_Transceive	LITERAL1
+PCD_MFAuthent	LITERAL1
 PCD_SoftReset	LITERAL1
 RxGain_18dB	LITERAL1
 RxGain_23dB	LITERAL1
