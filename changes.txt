@@ -1,7 +1,7 @@
 -- Add changes to unreleased tag until we make a release.
 
 unreleased
-- 
+- added I2C support
 
 unreleased, v1.4.0
 - Removed: void PCD_Init(byte resetPowerDownPin);
