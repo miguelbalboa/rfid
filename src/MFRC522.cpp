@@ -17,6 +17,41 @@
 // Basic interface functions for communicating with the MFRC522
 /////////////////////////////////////////////////////////////////////////////////////
 
+
+void MFRC522::PCD_csSelect() {
+	if ( _csCallback == NULL ) {
+		digitalWrite(_chipSelectPin, LOW);		// Select slave
+	} else {
+		_csCallback->cs_select();
+	}
+}
+
+void MFRC522::PCD_csUnselect() {
+	if ( _csCallback == NULL ) {
+		digitalWrite(_chipSelectPin, HIGH);		// Release slave again
+	} else {
+		_csCallback->cs_unselect();
+	}
+}
+
+void MFRC522::PCD_Poweroff() {
+	if(_rstCallback == NULL) {
+		digitalWrite(_resetPowerDownPin, LOW); // Enter power mode down
+	} else {
+		_rstCallback(true);
+	}
+}
+
+void MFRC522::PCD_Poweron() {
+	if(_rstCallback == NULL) {
+		digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
+		// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
+		delay(50);
+	} else {
+		_rstCallback(false);
+	}
+}
+
 /**
  * Writes a byte to the specified register in the MFRC522 chip.
  * The interface is described in the datasheet section 8.1.2.
@@ -25,10 +60,10 @@ void MFRC522::PCD_WriteRegister(	PCD_Register reg,	///< The register to write to
 									byte value			///< The value to write.
 								) {
 	_spiClass->beginTransaction(_spiSettings);	// Set the settings to work with SPI bus
-	digitalWrite(_chipSelectPin, LOW);		// Select slave
+	PCD_csSelect();
 	_spiClass->transfer(reg);						// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	_spiClass->transfer(value);
-	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
+	PCD_csUnselect();
 	_spiClass->endTransaction(); // Stop using the SPI bus
 } // End PCD_WriteRegister()
 
@@ -41,12 +76,12 @@ void MFRC522::PCD_WriteRegister(	PCD_Register reg,	///< The register to write to
 									byte *values		///< The values to write. Byte array.
 								) {
 	_spiClass->beginTransaction(_spiSettings);	// Set the settings to work with SPI bus
-	digitalWrite(_chipSelectPin, LOW);		// Select slave
+	PCD_csSelect();
 	_spiClass->transfer(reg);						// MSB == 0 is for writing. LSB is not used in address. Datasheet section 8.1.2.3.
 	for (byte index = 0; index < count; index++) {
 		_spiClass->transfer(values[index]);
 	}
-	digitalWrite(_chipSelectPin, HIGH);		// Release slave again
+	PCD_csUnselect();
 	_spiClass->endTransaction(); // Stop using the SPI bus
 } // End PCD_WriteRegister()
 
@@ -58,10 +93,10 @@ byte MFRC522::PCD_ReadRegister(	PCD_Register reg	///< The register to read from.
 								) {
 	byte value;
 	_spiClass->beginTransaction(_spiSettings);	// Set the settings to work with SPI bus
-	digitalWrite(_chipSelectPin, LOW);			// Select slave
+	PCD_csSelect();
 	_spiClass->transfer(0x80 | reg);					// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	value = _spiClass->transfer(0);					// Read the value back. Send 0 to stop reading.
-	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
+	PCD_csUnselect();
 	_spiClass->endTransaction(); // Stop using the SPI bus
 	return value;
 } // End PCD_ReadRegister()
@@ -82,7 +117,7 @@ void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from
 	byte address = 0x80 | reg;				// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	byte index = 0;							// Index in values array.
 	_spiClass->beginTransaction(_spiSettings);	// Set the settings to work with SPI bus
-	digitalWrite(_chipSelectPin, LOW);		// Select slave
+	PCD_csSelect();
 	count--;								// One read is performed outside of the loop
 	_spiClass->transfer(address);					// Tell MFRC522 which address we want to read
 	if (rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
@@ -99,7 +134,7 @@ void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from
 		index++;
 	}
 	values[index] = _spiClass->transfer(0);			// Read the final byte. Send 0 to stop reading.
-	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
+	PCD_csUnselect();
 	_spiClass->endTransaction(); // Stop using the SPI bus
 } // End PCD_ReadRegister()
 
@@ -171,22 +206,21 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 void MFRC522::PCD_Init() {
 	bool hardReset = false;
 
-	// Set the chipSelectPin as digital output, do not select the slave yet
-	pinMode(_chipSelectPin, OUTPUT);
-	digitalWrite(_chipSelectPin, HIGH);
+	if ( _csCallback == NULL ) {
+		// Set the chipSelectPin as digital output, do not select the slave yet
+		pinMode(_chipSelectPin, OUTPUT);
+		PCD_csUnselect();
+	}
 	
+	if( _rstCallback == NULL && _resetPowerDownPin != UNUSED_PIN) {
+		pinMode(_resetPowerDownPin, OUTPUT);		// Set the resetPowerDownPin as digital output.
+	}
 	// If a valid pin number has been set, pull device out of power down / reset state.
-	if (_resetPowerDownPin != UNUSED_PIN) {
-		// First set the resetPowerDownPin as digital input, to check the MFRC522 power down mode.
-		pinMode(_resetPowerDownPin, INPUT);
-	
-		if (digitalRead(_resetPowerDownPin) == LOW) {	// The MFRC522 chip is in power down mode.
-			pinMode(_resetPowerDownPin, OUTPUT);		// Now set the resetPowerDownPin as digital output.
-			digitalWrite(_resetPowerDownPin, HIGH);		// Exit power down mode. This triggers a hard reset.
-			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-			delay(50);
-			hardReset = true;
-		}
+	if (_resetPowerDownPin != UNUSED_PIN || _rstCallback != NULL) {
+		PCD_Poweroff();
+		delay(10);
+		PCD_Poweron();
+		hardReset = true;
 	}
 
 	if (!hardReset) { // Perform a soft reset if we haven't triggered a hard reset above.
@@ -218,9 +252,22 @@ void MFRC522::PCD_Init() {
 void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
+	_csCallback = NULL;
+	_rstCallback = NULL;
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin; 
 	// Set the chipSelectPin as digital output, do not select the slave yet
+	PCD_Init();
+} // End PCD_Init()
+
+void MFRC522::PCD_Init(	const CS_callback *csCallback,		 /// < custom callbacks set for chip select
+						rst_callback rstCallback	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+					) {
+	_csCallback = csCallback;
+	_chipSelectPin = UNUSED_PIN;
+
+	_rstCallback = rstCallback;
+	_resetPowerDownPin = UNUSED_PIN; 
 	PCD_Init();
 } // End PCD_Init()
 
