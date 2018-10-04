@@ -11,7 +11,7 @@
  * 
  * Of course with non-bricked devices, you're free to select them before calling this function.
  */
-bool MFRC522Hack::MIFARE_OpenUidBackdoor(const bool logErrors) const {
+bool MFRC522Hack::MIFARE_OpenUidBackdoor(bool logErrors) {
 	// Magic sequence:
 	// > 50 00 57 CD (HALT + CRC)
 	// > 40 (7 bits only)
@@ -83,7 +83,7 @@ bool MFRC522Hack::MIFARE_OpenUidBackdoor(const bool logErrors) const {
  * It assumes a default KEY A of 0xFFFFFFFFFFFF.
  * Make sure to have selected the card before this function is called.
  */
-bool MFRC522Hack::MIFARE_SetUid(const byte *newUid, const byte uidSize, const bool logErrors) const {
+bool MFRC522Hack::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 	
 	// UID + BCC byte can not be larger than 16 together
 	if (!newUid || !uidSize || uidSize > 15) {
@@ -184,7 +184,7 @@ bool MFRC522Hack::MIFARE_SetUid(const byte *newUid, const byte uidSize, const bo
 /**
  * Resets entire sector 0 to zeroes, so the card can be read again by readers.
  */
-bool MFRC522Hack::MIFARE_UnbrickUidSector(const bool logErrors) const {
+bool MFRC522Hack::MIFARE_UnbrickUidSector(bool logErrors) {
 	MIFARE_OpenUidBackdoor(logErrors);
 	
 	byte block0_buffer[] = {0x01, 0x02, 0x03, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
