@@ -20,7 +20,7 @@ Interface (SPI) interface.
 .. _development:
 Development
 ----------
-**The development by owner miguelbalboa has ended**. Further development will be done by community. This library is still maintained by miguelbalboa, so make pull request if you like some new features or fixes. Support/issues should be solved by community.
+**The development by owner miguelbalboa has ended**. Further development will be done by community. This library is sporadically maintained. You can make pull request if you have developed a fix. Support/issues should be solved by community.
 
 
 .. _what works and not:
@@ -329,6 +329,9 @@ It was translated into English and rewritten/refactored in the fall of 2013
 by Søren Thing Andersen (from http://access.thing.dk).
 
 It has been extended with functionality to alter sector 0 on Chinese UID changeable MIFARE card in Oct 2014 by Tom Clement (from http://tomclement.nl).
+
+Maintained by miguelbalboa until 2016.
+Maintained by Rotzbua from 2016 until 2018.
 
 
 .. _arduino: https://arduino.cc/
