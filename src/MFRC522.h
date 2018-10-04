@@ -416,6 +416,7 @@ public:
 	void PICC_DumpMifareUltralightToSerial();
 	
 	// Advanced functions for MIFARE
+	DEPRECATED_MSG("name will change in next version")
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
 	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_OpenUidBackdoor(bool logErrors);

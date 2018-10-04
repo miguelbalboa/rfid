@@ -1,10 +1,6 @@
 -- Add changes to unreleased tag until we make a release.
 
-
-unreleased, v1.4.0
-- Removed: void PCD_Init(byte resetPowerDownPin);
-- Removed: MFRC522(byte resetPowerDownPin);
-- Changed default initialisation of SS pin with constants of arduino.h are not done anymore
+unreleased, v1.4.1
 - Replaced UINT8_MAX by UNUSED_PIN
 - Replaced default value NULL for pointer with correct nullptr
 - Added pin layout for wemos d1 mini @mmone
@@ -18,6 +14,13 @@ unreleased, v1.4.0
 - Fixed wrong var names in PICC_Select MFRC522.cpp @tuyethoa08041997
 - Fixed hang PCD_Init() on non-arduino boards @heziegl
 - Fixed possible infinite loop PCD_Reset() @psgreco
+- And many thanks to all other contributors
+
+13 Apr 2018, v1.4.0
+- Replaced UINT8_MAX by UNUSED_PIN @Rotzbua
+- Fixed hang PCD_Init() on non-arduino boards @heziegl
+- deprecate MIFARE_SetAccessBits @Rotzbua
+- IMPORTANT: v1.4.X will be last version under license "unlicense"
 
 22 Mar 2017, v1.3.6
 - Added deprecate and compiler warnings @Rotzbua
