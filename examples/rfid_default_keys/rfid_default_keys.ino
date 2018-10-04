@@ -28,14 +28,14 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
-constexpr uint8_t RST_PIN = 9;     // Configurable, see typical pin layout above
-constexpr uint8_t SS_PIN = 10;     // Configurable, see typical pin layout above
+#define RST_PIN         9           // Configurable, see typical pin layout above
+#define SS_PIN          10          // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 // Number of known default keys (hard-coded)
 // NOTE: Synchronize the NR_KNOWN_KEYS define with the defaultKeys[] array
-constexpr uint8_t NR_KNOWN_KEYS = 8;
+#define NR_KNOWN_KEYS   8
 // Known keys, see: https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys
 byte knownKeys[NR_KNOWN_KEYS][MFRC522::MF_KEY_SIZE] =  {
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, // FF FF FF FF FF FF = factory default

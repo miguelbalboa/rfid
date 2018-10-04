@@ -87,12 +87,12 @@
 #define LED_OFF LOW
 #endif
 
-constexpr uint8_t redLed = 7;   // Set Led Pins
-constexpr uint8_t greenLed = 6;
-constexpr uint8_t blueLed = 5;
+#define redLed 7    // Set Led Pins
+#define greenLed 6
+#define blueLed 5
 
-constexpr uint8_t relay = 4;     // Set Relay Pin
-constexpr uint8_t wipeB = 3;     // Button pin for WipeMode
+#define relay 4     // Set Relay Pin
+#define wipeB 3     // Button pin for WipeMode
 
 bool programMode = false;  // initialize programming mode to false
 
@@ -103,9 +103,8 @@ byte readCard[4];   // Stores scanned ID read from RFID Module
 byte masterCard[4];   // Stores master card's ID read from EEPROM
 
 // Create MFRC522 instance.
-constexpr uint8_t RST_PIN = 9;     // Configurable, see typical pin layout above
-constexpr uint8_t SS_PIN = 10;     // Configurable, see typical pin layout above
-
+#define SS_PIN 10
+#define RST_PIN 9
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 ///////////////////////////////////////// Setup ///////////////////////////////////
