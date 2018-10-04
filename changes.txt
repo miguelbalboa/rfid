@@ -1,5 +1,9 @@
 -- Add changes to unreleased tag until we make a release.
 
+04 Oct 2018, v1.4.2
+- Fixed keywords
+- Changed development status of library
+
 04 Oct 2018, v1.4.1
 - Replaced UINT8_MAX by UNUSED_PIN
 - Replaced default value NULL for pointer with correct nullptr
