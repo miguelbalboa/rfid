@@ -144,7 +144,7 @@ public:
 	static constexpr byte FIFO_SIZE = 64;		// The FIFO is 64 bytes.
 	// Default value for unused pin
 	static constexpr uint8_t UNUSED_PIN = UINT8_MAX;
-	
+
 	// MFRC522 registers. Described in chapter 9 of the datasheet.
 	// When using SPI all addresses are shifted one bit left in the "SPI address byte" (section 8.1.2.3)
 	enum PCD_Register : byte {
@@ -332,7 +332,9 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
-	MFRC522() : MFRC522(UNUSED_PIN, UNUSED_PIN) {};
+	MFRC522();
+	DEPRECATED_MSG("use MFRC522(byte chipSelectPin, byte resetPowerDownPin)")
+	MFRC522(byte resetPowerDownPin);
 	MFRC522(byte chipSelectPin, byte resetPowerDownPin);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -350,6 +352,8 @@ public:
 	// Functions for manipulating the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
 	void PCD_Init();
+	DEPRECATED_MSG("use PCD_Init(byte chipSelectPin, byte resetPowerDownPin)")
+	void PCD_Init(byte resetPowerDownPin);
 	void PCD_Init(byte chipSelectPin, byte resetPowerDownPin);
 	void PCD_Reset();
 	void PCD_AntennaOn();
