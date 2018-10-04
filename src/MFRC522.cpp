@@ -6,7 +6,6 @@
 
 #include <Arduino.h>
 #include "MFRC522.h"
-#include "MFRC522Debug.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for setting up the Arduino
@@ -1246,7 +1245,18 @@ MFRC522::StatusCode MFRC522::PCD_MIFARE_Transceive(	byte *sendData,		///< Pointe
  */
 const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	///< One of the StatusCode enums.
 										) {
-	return MFRC522Debug::GetStatusCodeName(code);
+	switch (code) {
+		case STATUS_OK:				return F("Success.");
+		case STATUS_ERROR:			return F("Error in communication.");
+		case STATUS_COLLISION:		return F("Collission detected.");
+		case STATUS_TIMEOUT:		return F("Timeout in communication.");
+		case STATUS_NO_ROOM:		return F("A buffer is not big enough.");
+		case STATUS_INTERNAL_ERROR:	return F("Internal error in the code. Should not happen.");
+		case STATUS_INVALID:		return F("Invalid argument.");
+		case STATUS_CRC_WRONG:		return F("The CRC_A does not match.");
+		case STATUS_MIFARE_NACK:	return F("A MIFARE PICC responded with NAK.");
+		default:					return F("Unknown error");
+	}
 } // End GetStatusCodeName()
 
 /**
@@ -1283,7 +1293,20 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
  */
 const __FlashStringHelper *MFRC522::PICC_GetTypeName(PICC_Type piccType	///< One of the PICC_Type enums.
 													) {
-	return MFRC522Debug::PICC_GetTypeName(piccType);
+	switch (piccType) {
+		case PICC_TYPE_ISO_14443_4:		return F("PICC compliant with ISO/IEC 14443-4");
+		case PICC_TYPE_ISO_18092:		return F("PICC compliant with ISO/IEC 18092 (NFC)");
+		case PICC_TYPE_MIFARE_MINI:		return F("MIFARE Mini, 320 bytes");
+		case PICC_TYPE_MIFARE_1K:		return F("MIFARE 1KB");
+		case PICC_TYPE_MIFARE_4K:		return F("MIFARE 4KB");
+		case PICC_TYPE_MIFARE_UL:		return F("MIFARE Ultralight or Ultralight C");
+		case PICC_TYPE_MIFARE_PLUS:		return F("MIFARE Plus");
+		case PICC_TYPE_MIFARE_DESFIRE:	return F("MIFARE DESFire");
+		case PICC_TYPE_TNP3XXX:			return F("MIFARE TNP3XXX");
+		case PICC_TYPE_NOT_COMPLETE:	return F("SAK indicates UID is not complete.");
+		case PICC_TYPE_UNKNOWN:
+		default:						return F("Unknown type");
+	}
 } // End PICC_GetTypeName()
 
 /**
@@ -1636,6 +1659,207 @@ void MFRC522::MIFARE_SetAccessBits(	byte *accessBitBuffer,	///< Pointer to byte 
 	accessBitBuffer[1] =          c1 << 4 | (~c3 & 0xF);
 	accessBitBuffer[2] =          c3 << 4 | c2;
 } // End MIFARE_SetAccessBits()
+
+
+/**
+ * Performs the "magic sequence" needed to get Chinese UID changeable
+ * Mifare cards to allow writing to sector 0, where the card UID is stored.
+ *
+ * Note that you do not need to have selected the card through REQA or WUPA,
+ * this sequence works immediately when the card is in the reader vicinity.
+ * This means you can use this method even on "bricked" cards that your reader does
+ * not recognise anymore (see MFRC522::MIFARE_UnbrickUidSector).
+ * 
+ * Of course with non-bricked devices, you're free to select them before calling this function.
+ */
+bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
+	// Magic sequence:
+	// > 50 00 57 CD (HALT + CRC)
+	// > 40 (7 bits only)
+	// < A (4 bits only)
+	// > 43
+	// < A (4 bits only)
+	// Then you can write to sector 0 without authenticating
+	
+	PICC_HaltA(); // 50 00 57 CD
+	
+	byte cmd = 0x40;
+	byte validBits = 7; /* Our command is only 7 bits. After receiving card response,
+						  this will contain amount of valid response bits. */
+	byte response[32]; // Card's response is written here
+	byte received;
+	MFRC522::StatusCode status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
+	if(status != STATUS_OK) {
+		if(logErrors) {
+			Serial.println(F("Card did not respond to 0x40 after HALT command. Are you sure it is a UID changeable one?"));
+			Serial.print(F("Error name: "));
+			Serial.println(GetStatusCodeName(status));
+		}
+		return false;
+	}
+	if (received != 1 || response[0] != 0x0A) {
+		if (logErrors) {
+			Serial.print(F("Got bad response on backdoor 0x40 command: "));
+			Serial.print(response[0], HEX);
+			Serial.print(F(" ("));
+			Serial.print(validBits);
+			Serial.print(F(" valid bits)\r\n"));
+		}
+		return false;
+	}
+	
+	cmd = 0x43;
+	validBits = 8;
+	status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 43
+	if(status != STATUS_OK) {
+		if(logErrors) {
+			Serial.println(F("Error in communication at command 0x43, after successfully executing 0x40"));
+			Serial.print(F("Error name: "));
+			Serial.println(GetStatusCodeName(status));
+		}
+		return false;
+	}
+	if (received != 1 || response[0] != 0x0A) {
+		if (logErrors) {
+			Serial.print(F("Got bad response on backdoor 0x43 command: "));
+			Serial.print(response[0], HEX);
+			Serial.print(F(" ("));
+			Serial.print(validBits);
+			Serial.print(F(" valid bits)\r\n"));
+		}
+		return false;
+	}
+	
+	// You can now write to sector 0 without authenticating!
+	return true;
+} // End MIFARE_OpenUidBackdoor()
+
+/**
+ * Reads entire block 0, including all manufacturer data, and overwrites
+ * that block with the new UID, a freshly calculated BCC, and the original
+ * manufacturer data.
+ *
+ * It assumes a default KEY A of 0xFFFFFFFFFFFF.
+ * Make sure to have selected the card before this function is called.
+ */
+bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
+	
+	// UID + BCC byte can not be larger than 16 together
+	if (!newUid || !uidSize || uidSize > 15) {
+		if (logErrors) {
+			Serial.println(F("New UID buffer empty, size 0, or size > 15 given"));
+		}
+		return false;
+	}
+	
+	// Authenticate for reading
+	MIFARE_Key key = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	MFRC522::StatusCode status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
+	if (status != STATUS_OK) {
+		
+		if (status == STATUS_TIMEOUT) {
+			// We get a read timeout if no card is selected yet, so let's select one
+			
+			// Wake the card up again if sleeping
+//			  byte atqa_answer[2];
+//			  byte atqa_size = 2;
+//			  PICC_WakeupA(atqa_answer, &atqa_size);
+			
+			if (!PICC_IsNewCardPresent() || !PICC_ReadCardSerial()) {
+				Serial.println(F("No card was previously selected, and none are available. Failed to set UID."));
+				return false;
+			}
+			
+			status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
+			if (status != STATUS_OK) {
+				// We tried, time to give up
+				if (logErrors) {
+					Serial.println(F("Failed to authenticate to card for reading, could not set UID: "));
+					Serial.println(GetStatusCodeName(status));
+				}
+				return false;
+			}
+		}
+		else {
+			if (logErrors) {
+				Serial.print(F("PCD_Authenticate() failed: "));
+				Serial.println(GetStatusCodeName(status));
+			}
+			return false;
+		}
+	}
+	
+	// Read block 0
+	byte block0_buffer[18];
+	byte byteCount = sizeof(block0_buffer);
+	status = MIFARE_Read((byte)0, block0_buffer, &byteCount);
+	if (status != STATUS_OK) {
+		if (logErrors) {
+			Serial.print(F("MIFARE_Read() failed: "));
+			Serial.println(GetStatusCodeName(status));
+			Serial.println(F("Are you sure your KEY A for sector 0 is 0xFFFFFFFFFFFF?"));
+		}
+		return false;
+	}
+	
+	// Write new UID to the data we just read, and calculate BCC byte
+	byte bcc = 0;
+	for (uint8_t i = 0; i < uidSize; i++) {
+		block0_buffer[i] = newUid[i];
+		bcc ^= newUid[i];
+	}
+	
+	// Write BCC byte to buffer
+	block0_buffer[uidSize] = bcc;
+	
+	// Stop encrypted traffic so we can send raw bytes
+	PCD_StopCrypto1();
+	
+	// Activate UID backdoor
+	if (!MIFARE_OpenUidBackdoor(logErrors)) {
+		if (logErrors) {
+			Serial.println(F("Activating the UID backdoor failed."));
+		}
+		return false;
+	}
+	
+	// Write modified block 0 back to card
+	status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
+	if (status != STATUS_OK) {
+		if (logErrors) {
+			Serial.print(F("MIFARE_Write() failed: "));
+			Serial.println(GetStatusCodeName(status));
+		}
+		return false;
+	}
+	
+	// Wake the card up again
+	byte atqa_answer[2];
+	byte atqa_size = 2;
+	PICC_WakeupA(atqa_answer, &atqa_size);
+	
+	return true;
+}
+
+/**
+ * Resets entire sector 0 to zeroes, so the card can be read again by readers.
+ */
+bool MFRC522::MIFARE_UnbrickUidSector(bool logErrors) {
+	MIFARE_OpenUidBackdoor(logErrors);
+	
+	byte block0_buffer[] = {0x01, 0x02, 0x03, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	
+	// Write modified block 0 back to card
+	MFRC522::StatusCode status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
+	if (status != STATUS_OK) {
+		if (logErrors) {
+			Serial.print(F("MIFARE_Write() failed: "));
+			Serial.println(GetStatusCodeName(status));
+		}
+		return false;
+	}
+	return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Convenience functions - does not add extra functionality
