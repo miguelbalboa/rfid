@@ -82,7 +82,6 @@ Some user made some patches/suggestions/ports for other boards:
 * Linux: https://github.com/miguelbalboa/rfid/pull/216
 * chipKIT: https://github.com/miguelbalboa/rfid/pull/230
 * ESP8266 (native): https://github.com/miguelbalboa/rfid/pull/235
-* ESP8266 nonos sdk: https://github.com/mmmmar/esp-ujn/tree/master/mfrc522
 * LPCOPen (in C): https://github.com/miguelbalboa/rfid/pull/258
 
 Note that the main target/support of library is still Arduino.
