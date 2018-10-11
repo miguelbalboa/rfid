@@ -23,6 +23,16 @@ Development
 **The development by owner miguelbalboa has ended**. Further development will be done by community. This library is sporadically maintained. You can make pull request if you have developed a fix. Support/issues should be solved by community.
 
 
+.. _before buy:
+Before buy
+----------
+Please notice that there are many sellers (ebay, aliexpress, ..) who sell mfrc522 boards. **The quality of these boards are extremely different.** Some are soldered with wrong/low quality capacitors or fake/defect mfrc522.
+
+**Please consider buying several devices from different suppliers.** So the chance of getting a working device is higher.
+
+If you got a bad board and you can tell us how to detect those boards (silk, chip description, ..), please share your knowledge.
+
+
 .. _what works and not:
 What works and not?
 ----------
@@ -230,6 +240,13 @@ Troubleshooting
   #. SPI does not like long connections. Try shorter connections.
   #. SPI does not like prototyping boards. Try soldered connections.
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
+
+
+* **Firmware Version: 0x12 = (unknown)**
+
+  #. The reason of this behavour is unknown.
+  #. If this sometimes apear a bad connection or power source is the reason.
+  #. If the firmeware version is reported permanent, it is very likely that the hardware is a fake or has a defect. Contact your supplier.
 
 
 * **Sometimes I get timeouts** or **sometimes tag/card does not work.**
