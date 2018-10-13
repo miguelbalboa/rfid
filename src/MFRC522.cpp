@@ -1357,6 +1357,7 @@ void MFRC522::PCD_DumpVersionToSerial() {
 		case 0x90: Serial.println(F(" = v0.0"));     break;
 		case 0x91: Serial.println(F(" = v1.0"));     break;
 		case 0x92: Serial.println(F(" = v2.0"));     break;
+		case 0x12: Serial.println(F(" = counterfeit chip"));     break;
 		default:   Serial.println(F(" = (unknown)"));
 	}
 	// When 0x00 or 0xFF is returned, communication probably failed
