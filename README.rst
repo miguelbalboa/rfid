@@ -102,10 +102,10 @@ Support/issue
 1. First checkout `what works and not`_ and `troubleshooting`_ .
 
 2. It seems to be a hardware issue or you need support to program your project?
-    Please ask in the official `Arduino forum`_, where you would get a much faster answer than on github.
+    Please ask in the official `Arduino forum`_, where you would get a much faster answer than on Github.
 
 3. It seems to be a software issue?
-    Open an issue on github.
+    Open an issue on Github.
 
 
 .. _code style:
@@ -244,9 +244,9 @@ Troubleshooting
 
 * **Firmware Version: 0x12 = (unknown)**
 
-  #. The reason of this behavour is unknown.
-  #. If this sometimes apear a bad connection or power source is the reason.
-  #. If the firmeware version is reported permanent, it is very likely that the hardware is a fake or has a defect. Contact your supplier.
+  #. The reason of this behaviour is unknown.
+  #. If this sometimes appear a bad connection or power source is the reason.
+  #. If the firmware version is reported permanent, it is very likely that the hardware is a fake or has a defect. Contact your supplier.
 
 
 * **Sometimes I get timeouts** or **sometimes tag/card does not work.**
@@ -265,12 +265,12 @@ Troubleshooting
   #. NFC tokens are not supported. Some may work.
   #. Animal RFID tags are not supported. They use a different frequency (125 kHz).
   #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
-  #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentification, see `security`_ or different `protocol`_.
-  #. Some boards bought from chinese manufactures do not use the best components and this can affect the detection of different types of tag/card. In some of these boards, the L1 and L2 inductors do not have a high enough current so the signal generated is not enough to get Ultralight C and NTAG203 tags to work, replacing those with same inductance (2.2uH) but higher operating current inductors should make things work smoothly. Also, in some of those boards the  harmonic and matching circuit needs to be tuned, for this replace C4 and C5 with 33pf capacitors and you are all set. (Source: `Mikro Elektronika`_) 
+  #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentication, see `security`_ or different `protocol`_.
+  #. Some boards bought from Chinese manufactures do not use the best components and this can affect the detection of different types of tag/card. In some of these boards, the L1 and L2 inductors do not have a high enough current so the signal generated is not enough to get Ultralight C and NTAG203 tags to work, replacing those with same inductance (2.2uH) but higher operating current inductors should make things work smoothly. Also, in some of those boards the  harmonic and matching circuit needs to be tuned, for this replace C4 and C5 with 33pf capacitors and you are all set. (Source: `Mikro Elektronika`_) 
 
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
 
-  #. Card simmulation is not supported.
+  #. Card simulation is not supported.
   #. Communication with mobile phones is not supported.
   #. Peer to peer communication is not supported.
 
