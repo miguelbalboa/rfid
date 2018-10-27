@@ -1,5 +1,9 @@
 -- Add changes to unreleased tag until we make a release.
 
+27 Oct 2018, v1.4.3
+- Added counterfeit detection and hint about bad boards
+- Improved hardware based reset
+
 04 Oct 2018, v1.4.2
 - Fixed keywords
 - Changed development status of library
