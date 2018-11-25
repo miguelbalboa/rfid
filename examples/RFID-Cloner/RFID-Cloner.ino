@@ -1,6 +1,6 @@
 /*
  * Copy the RFID card data into variables and then 
- * scan the second empty card to copy all the date
+ * scan the second empty card to copy all the data
  * ----------------------------------------------------------------------------
  * Example sketch/program which will try the most used default keys listed in 
  * https://code.google.com/p/mfcuk/wiki/MifareClassicDefaultKeys to dump the
