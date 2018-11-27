@@ -83,7 +83,9 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#ifndef MFRC522_SPICLOCK
 #define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
+#endif
 
 // Firmware data for self-test
 // Reference values based on firmware version
