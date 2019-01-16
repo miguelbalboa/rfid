@@ -91,9 +91,12 @@ void loop() {
 //    return;
 //  }
   
+  //Set to true if card only supports standart commands and not backdoor commands.
+  bool ChineseGEN2_Card = true;
+  
   // Set new UID
   byte newUid[] = NEW_UID;
-  if ( mfrc522.MIFARE_SetUid(newUid, (byte)4, true) ) {
+  if ( mfrc522.MIFARE_SetUid(newUid, (byte)4, ChineseGEN2_Card, true) ) {
     Serial.println(F("Wrote new UID to card."));
   }
   
