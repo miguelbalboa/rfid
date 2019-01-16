@@ -1776,8 +1776,8 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
  * It assumes a default KEY A of 0xFFFFFFFFFFFF.
  * Make sure to have selected the card before this function is called.
  */
-bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
-	
+bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool standartCommands, bool logErrors) {
+
 	// UID + BCC byte can not be larger than 16 together
 	if (!newUid || !uidSize || uidSize > 15) {
 		if (logErrors) {
@@ -1785,25 +1785,25 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 		}
 		return false;
 	}
-	
+
 	// Authenticate for reading
-	MIFARE_Key key = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	MIFARE_Key key = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 	MFRC522::StatusCode status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
 	if (status != STATUS_OK) {
-		
+
 		if (status == STATUS_TIMEOUT) {
 			// We get a read timeout if no card is selected yet, so let's select one
-			
+
 			// Wake the card up again if sleeping
 //			  byte atqa_answer[2];
 //			  byte atqa_size = 2;
 //			  PICC_WakeupA(atqa_answer, &atqa_size);
-			
+
 			if (!PICC_IsNewCardPresent() || !PICC_ReadCardSerial()) {
 				Serial.println(F("No card was previously selected, and none are available. Failed to set UID."));
 				return false;
 			}
-			
+
 			status = PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (byte)1, &key, &uid);
 			if (status != STATUS_OK) {
 				// We tried, time to give up
@@ -1822,7 +1822,7 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 			return false;
 		}
 	}
-	
+
 	// Read block 0
 	byte block0_buffer[18];
 	byte byteCount = sizeof(block0_buffer);
@@ -1835,28 +1835,30 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 		}
 		return false;
 	}
-	
+
 	// Write new UID to the data we just read, and calculate BCC byte
 	byte bcc = 0;
 	for (uint8_t i = 0; i < uidSize; i++) {
 		block0_buffer[i] = newUid[i];
 		bcc ^= newUid[i];
 	}
-	
+
 	// Write BCC byte to buffer
 	block0_buffer[uidSize] = bcc;
-	
-	// Stop encrypted traffic so we can send raw bytes
-	PCD_StopCrypto1();
-	
-	// Activate UID backdoor
-	if (!MIFARE_OpenUidBackdoor(logErrors)) {
-		if (logErrors) {
-			Serial.println(F("Activating the UID backdoor failed."));
+
+	if (!standartCommands) {
+		// Stop encrypted traffic so we can send raw bytes
+		PCD_StopCrypto1();
+
+		// Activate UID backdoor
+		if (!MIFARE_OpenUidBackdoor(logErrors)) {
+			if (logErrors) {
+				Serial.println(F("Activating the UID backdoor failed."));
+			}
+			return false;
 		}
-		return false;
 	}
-	
+
 	// Write modified block 0 back to card
 	status = MIFARE_Write((byte)0, block0_buffer, (byte)16);
 	if (status != STATUS_OK) {
@@ -1866,12 +1868,14 @@ bool MFRC522::MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors) {
 		}
 		return false;
 	}
-	
-	// Wake the card up again
-	byte atqa_answer[2];
-	byte atqa_size = 2;
-	PICC_WakeupA(atqa_answer, &atqa_size);
-	
+
+	if (!standartCommands) {
+		// Wake the card up again
+		byte atqa_answer[2];
+		byte atqa_size = 2;
+		PICC_WakeupA(atqa_answer, &atqa_size);
+	}
+
 	return true;
 }
 

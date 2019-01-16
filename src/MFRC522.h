@@ -423,7 +423,7 @@ public:
 	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_OpenUidBackdoor(bool logErrors);
 	DEPRECATED_MSG("will move to extra class in next version")
-	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
+	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool standartCommands, bool logErrors);
 	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_UnbrickUidSector(bool logErrors);
 	
