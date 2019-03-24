@@ -61,7 +61,7 @@ void setup() {
 // But of course this is a more proper approach
 void loop() {
   
-  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
+  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle. And if present, select one.
   if ( ! mfrc522.PICC_IsNewCardPresent() || ! mfrc522.PICC_ReadCardSerial() ) {
     delay(50);
     return;
