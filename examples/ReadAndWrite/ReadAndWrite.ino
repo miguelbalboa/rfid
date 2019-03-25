@@ -64,7 +64,7 @@ void setup() {
  * Main loop.
  */
 void loop() {
-    // Look for new cards
+    // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
     if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
 
