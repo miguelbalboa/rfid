@@ -1,5 +1,11 @@
 -- Add changes to unreleased tag until we make a release.
 
+31 Mar 2018, v1.4.4
+- Fixed example
+- Fixed UnbrickUidSector
+- Updated comments
+- Removed teensy from CI and PlatformIO config
+
 27 Oct 2018, v1.4.3
 - Added counterfeit detection and hint about bad boards
 - Improved hardware based reset
