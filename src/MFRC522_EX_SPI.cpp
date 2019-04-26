@@ -1,5 +1,16 @@
 #include "MFRC522_EX_SPI.h"
 
+MFRC522_EX_SPI::MFRC522_EX_SPI()  :MFRC522_EX_SPI(SS, UINT8_MAX){
+}
+
+MFRC522_EX_SPI::MFRC522_EX_SPI(byte resetPowerDownPin)  :MFRC522_EX_SPI(SS, resetPowerDownPin){
+}
+
+MFRC522_EX_SPI::MFRC522_EX_SPI(byte chipSelectPin, byte resetPowerDownPin)
+  {
+  _chipSelectPin = chipSelectPin;
+  _resetPowerDownPin = resetPowerDownPin;
+}
 
 void MFRC522_EX_SPI::InstalSPI(SPIClass *_InstalSPI){
   ExSPI = _InstalSPI;
