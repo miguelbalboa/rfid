@@ -1,5 +1,9 @@
 -- Add changes to unreleased tag until we make a release.
 
+1 Mei 2019, v1.5.0
+- Add ESP32
+- New Library for ESP32
+
 31 Mar 2018, v1.4.4
 - Fixed example
 - Fixed UnbrickUidSector
