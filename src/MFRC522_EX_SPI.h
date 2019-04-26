@@ -9,6 +9,10 @@
 
 class MFRC522_EX_SPI :public MFRC522 {
   public: 
+    MFRC522_EX_SPI();
+    MFRC522_EX_SPI(byte resetPowerDownPin);
+    MFRC522_EX_SPI(byte chipSelectPin, byte resetPowerDownPin);
+    
     void InstalSPI(SPIClass * _InstalSPI);
     
     void PCD_WriteRegister(PCD_Register reg, byte value);
