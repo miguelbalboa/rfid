@@ -1,6 +1,6 @@
 <!-- BEGIN - This is a comment just for you visible
 
-Please use the following template to give us as mutch information as you can.
+Please use the following template to give us as much information as you can.
 Not used rows can be deleted.
 
 END - This is a comment just for you visible -->
