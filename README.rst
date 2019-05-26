@@ -242,12 +242,10 @@ Troubleshooting
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
-* **Firmware Version: 0x12 = (unknown)**
+* **Firmware Version: 0x12 = (unknown) and 0x80 = (unknown) and other random values**
 
-  #. The reason of this behaviour is unknown.
-  #. If this sometimes appear a bad connection or power source is the reason.
-  #. If the firmware version is reported permanent, it is very likely that the hardware is a fake or has a defect. Contact your supplier.
-
+  #. The reason of this behaviour is due to the a direct call of PCD_DumpVersionToSerial() without delay() after PCD_Init()
+  #. a simple delay(5) leads to correct firmware readings (see updated example DumpInfo)
 
 * **Sometimes I get timeouts** or **sometimes tag/card does not work.**
 
