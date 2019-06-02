@@ -1,6 +1,9 @@
 -- Add changes to unreleased tag until we make a release.
 
-31 Mar 2018, v1.4.4
+xx 2019, v1.4.5
+- Updated README
+
+31 Mar 2019, v1.4.4
 - Fixed example
 - Fixed UnbrickUidSector
 - Updated comments

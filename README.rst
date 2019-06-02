@@ -242,10 +242,11 @@ Troubleshooting
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
 
 
-* **Firmware Version: 0x12 = (unknown)**
+* **Firmware Version: 0x12 = (unknown) or other random values**
 
-  #. The reason of this behaviour is unknown.
-  #. If this sometimes appear a bad connection or power source is the reason.
+  #. The exact reason of this behaviour is unknown.
+  #. Some boards need more time after `PCD_Init()` to be ready. As workaround add a `delay(4)` directly after `PCD_Init()` to give the PCD more time.
+  #. If this sometimes appears, a bad connection or power source is the reason.
   #. If the firmware version is reported permanent, it is very likely that the hardware is a fake or has a defect. Contact your supplier.
 
 
