@@ -1,6 +1,8 @@
 MFRC522
 =======
 
+.. image:: https://img.shields.io/maintenance/no/2019.svg
+    :target: `development`_
 .. image:: https://travis-ci.org/miguelbalboa/rfid.svg?branch=master
     :target: https://travis-ci.org/miguelbalboa/rfid
 .. image:: https://img.shields.io/badge/C%2B%2B-11-brightgreen.svg
@@ -20,7 +22,17 @@ Interface (SPI) interface.
 .. _development:
 Development
 ----------
-**The development by owner miguelbalboa has ended**. Further development will be done by community. This library is sporadically maintained. You can make pull request if you have developed a fix. Support/issues should be solved by community.
+
+**The development by owner miguelbalboa has ended**.
+
+**Feature status: complete freeze**; no function or API change
+
+**Code status: paritial freeze**; just fixes/typos or documentation updates; *no* extentions for other boards; *no* new examples
+
+**Maintenance status: sporadically**
+
+**Why no further development?**
+This library has a long history and is used in many projects. This projects often do not document what version they use. Commiting changes maybe brake those old project and lead to bad experience (for beginners) and support request. For those reasons the library is in freeze mode. You can still commit typo, documentation or bug fixes.
 
 
 .. _before buy:
