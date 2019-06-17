@@ -28,6 +28,8 @@ env:
 
 install:
     - pip install -U platformio
+    - platformio settings set enable_telemetry no # disable spy
+    - platformio settings set enable_ssl yes # enable security
 
 script:
     # short the string comparison
