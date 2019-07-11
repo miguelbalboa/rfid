@@ -1303,9 +1303,36 @@ MFRC522::PICC_Type MFRC522::PICC_GetType(byte sak		///< The SAK byte returned fr
 	// 3.2 Coding of Select Acknowledge (SAK)
 	// ignore 8-bit (iso14443 starts with LSBit = bit 1)
 	// fixes wrong type for manufacturer Infineon (http://nfc-tools.org/index.php?title=ISO14443A)
+	//
+	// ISO/IEC 14443-3:2016 chapter 6.5.3.4 describes coding of SAK:
+	//
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 |              Meaning             |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | x | x | x | x | x | 1 | x | x | UID not complete                 |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | x | x | 1 | x | x | 0 | x | x | UID complete, PICC compliant     |
+	// |   |   |   |   |   |   |   |   | with ISO/IEC 14443-4             |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | x | x | 0 | x | x | 0 | x | x | UID complete, PICC not compliant |
+	// |   |   |   |   |   |   |   |   | with ISO/IEC 14443-4             |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	//
+	// ISO/IEC 18092:2013 chapter 11.2.1 adds the following:
+	//
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 |              Meaning             |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | x | 1 | x | x | x | 0 | x | x | UID complete, PICC compliant     |
+	// |   |   |   |   |   |   |   |   | with NFCIP-1 transport protocol  |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+	// | x | 0 | x | x | x | 0 | x | x | UID complete, PICC not compliant |
+	// |   |   |   |   |   |   |   |   | with NFCIP-1 transport protocol  |
+	// +---+---+---+---+---+---+---+---+----------------------------------+
+
 	sak &= 0x7F;
 	if (sak & 0x04)
-		return PICC_TYPE_NOT_COMPLETE;	// UID not complete
+		return PICC_TYPE_NOT_COMPLETE;
 	if (sak & 0x20)
 		return PICC_TYPE_ISO_14443_4;
 	if (sak & 0x40)
