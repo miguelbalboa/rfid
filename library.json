@@ -1,11 +1,11 @@
 {
-  "name": "MFRC522",
+  "name": "rc522-ultralight-c",
   "keywords": "rfid, spi",
-  "description": "Read a card using a MFRC522 reader on your SPI interface",
+  "description": "Read/Write a RFID Card or Tag using the ISO/IEC 14443A/MIFARE interface. Forked from miguelbalboa.",
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/miguelbalboa/rfid.git"
+    "url": "https://github.com/sschaeffner/rc522-ultralight-c"
   },
   "version": "1.4.4",
   "exclude": "doc",
