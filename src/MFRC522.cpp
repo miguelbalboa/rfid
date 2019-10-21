@@ -5,7 +5,28 @@
 */
 
 #include <Arduino.h>
+#include <M5Stack.h>
+#include <M5Display.h>
 #include "MFRC522.h"
+#include "des.h"
+
+void MFRC522::debug(String str) {
+    Serial.print("[RC522] ");
+    Serial.println(str);
+    M5.Lcd.print("[RC522] ");
+    M5.Lcd.println(str);
+}
+
+void MFRC522::dump_byte_array(byte *buffer, byte bufferSize) {
+    for (byte i = 0; i < bufferSize; i++) {
+        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+        Serial.print(buffer[i], HEX);
+        M5.Lcd.print(buffer[i] < 0x10 ? " 0" : " ");
+        M5.Lcd.print(buffer[i], HEX);
+    }
+    Serial.println();
+    M5.Lcd.println();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for setting up the Arduino
@@ -1022,6 +1043,291 @@ MFRC522::StatusCode MFRC522::MIFARE_Ultralight_Write(	byte page, 		///< The page
 	}
 	return STATUS_OK;
 } // End MIFARE_Ultralight_Write()
+
+void MFRC522::sample() {
+	byte key[16] = {0x49, 0x45, 0x4D, 0x4B, 0x41, 0x45, 0x52, 0x42, 0x21, 0x4E, 0x41, 0x43, 0x55, 0x4F, 0x59, 0x46};
+
+	debug("BLA");
+
+    byte rndB[8] = {0x51, 0xE7, 0x64, 0x60, 0x26, 0x78, 0xDF, 0x2B};
+    
+    byte ivPicc[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    byte ekRndB[8];
+
+    byte ivPcd[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    byte dekRndB[8];
+
+    mbedtls_des3_context des;
+
+    // encrypt
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_enc(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_ENCRYPT, 8, ivPicc, rndB, ekRndB);
+
+    debug("ekRndB: ");
+    dump_byte_array(ekRndB, 8);
+
+    // decrypt
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_dec(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_DECRYPT, 8, ivPcd, ekRndB, dekRndB);
+
+    debug("dekRndB: ");
+    dump_byte_array(dekRndB, 8);
+
+    // rotate and concatenate
+    byte rndARndBC[16] = {0xA8, 0xAF, 0x3B, 0x25, 0x6C, 0x75, 0xED, 0x40, 
+                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    memcpy(&rndARndBC[8], &dekRndB[1],7);  // bytes 1 to 7
+    rndARndBC[15] = dekRndB[0];           // byte 0
+
+    debug("rndARndBC: ");
+    dump_byte_array(rndARndBC, 16);
+
+    debug("ivPcd: ");
+    dump_byte_array(ivPcd, 8);
+
+    // encrypt
+    byte ekRndARndBC[16];
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_enc(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_ENCRYPT, 16, ivPcd, rndARndBC, ekRndARndBC);
+
+    debug("ekRndARndBC: ");
+    dump_byte_array(ekRndARndBC, 16);
+}
+
+/**
+ * Authenticates agains the active MIFARE Ultralight C PICC.
+ */
+MFRC522::StatusCode MFRC522::MIFARE_UL_C_Auth(	byte *key ///< The 3DES key. Exactly 16 byte long.
+									) {
+	MFRC522::StatusCode result;
+
+	debug("MIFARE_UL_C_Auth");
+
+	if (key == nullptr) {
+		return STATUS_INVALID;
+	}
+
+	byte cmdBuffer[64];
+	byte sendLen;
+	byte waitIRq;
+	byte cmdBufferSize;
+	byte validBits;
+
+	// build command buffer #1
+	memset(cmdBuffer, 0, 64);
+	cmdBuffer[0] = 0x1A;
+	cmdBuffer[1] = 0x00;
+	sendLen = 2;
+
+	// add CRC
+	result = PCD_CalculateCRC(cmdBuffer, sendLen, &cmdBuffer[sendLen]);
+	if (result != STATUS_OK) { 
+		return result;
+	}
+	sendLen += 2;
+
+	// send #1
+	debug("Sending (#1)...");
+	dump_byte_array(cmdBuffer, sendLen);
+	waitIRq = 0x30;		// RxIRq and IdleIRq
+	cmdBufferSize = 64;
+	validBits = 0;
+	result = PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, cmdBuffer, sendLen, cmdBuffer, &cmdBufferSize, &validBits);
+	if (result != STATUS_OK) {
+		debug("ERROR: Could not transceive (#1).");
+		return result;
+	}
+	debug("recieved (#2): ");
+	dump_byte_array(cmdBuffer, cmdBufferSize);
+
+	if (cmdBuffer[0] != 0xAF) {
+		debug("ERROR: received (#2) does not start with 0xAF.");
+		return STATUS_ERROR;
+	}
+	if (cmdBufferSize != 11) {
+		debug("ERROR: received (#2) is not of length 11.");
+		return STATUS_ERROR;
+	}
+
+	byte ekRndB[8];
+	memcpy(ekRndB, cmdBuffer + 1, 8);
+	debug("ek(RndB)");
+	dump_byte_array(ekRndB, 8);
+
+	// build command buffer #3
+
+	byte ivPcd[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    byte dekRndB[8];
+
+    mbedtls_des3_context des;
+
+	// decrypt
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_dec(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_DECRYPT, 8, ivPcd, ekRndB, dekRndB);
+
+    debug("dekRndB: ");
+    dump_byte_array(dekRndB, 8);
+
+	// generate rndA
+    byte rndA[8] = {0xA8, 0xAF, 0x3B, 0x25, 0x6C, 0x75, 0xED, 0x40};
+    debug("rndA: ");
+    dump_byte_array(rndA, 8);
+
+    // rotate and concatenate
+    byte rndARndBC[16];
+	memcpy(&rndARndBC, rndA, 8);           // bytes 8 through 15
+    memcpy(&rndARndBC[8], &dekRndB[1],7);  // bytes 1 through 7
+    rndARndBC[15] = dekRndB[0];            // byte 0
+
+    debug("rndARndBC: ");
+    dump_byte_array(rndARndBC, 16);
+
+    debug("ivPcd: ");
+    dump_byte_array(ivPcd, 8);
+
+    // encrypt
+    byte ekRndARndBC[16];
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_enc(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_ENCRYPT, 16, ivPcd, rndARndBC, ekRndARndBC);
+
+    debug("ekRndARndBC: ");
+    dump_byte_array(ekRndARndBC, 16);
+
+	// finally build #3
+	memset(cmdBuffer, 0, 64);
+	cmdBuffer[0] = 0xAF;
+	memcpy(&cmdBuffer[1], ekRndARndBC, 16);
+	sendLen = 17;
+
+	// add CRC
+	result = PCD_CalculateCRC(cmdBuffer, sendLen, &cmdBuffer[sendLen]);
+	if (result != STATUS_OK) { 
+		return result;
+	}
+	sendLen += 2;
+
+	// send #3
+	debug("Sending (#3)...");
+	dump_byte_array(cmdBuffer, sendLen);
+	waitIRq = 0x30;		// RxIRq and IdleIRq
+	cmdBufferSize = 64;
+	validBits = 0;
+	result = PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, cmdBuffer, sendLen, cmdBuffer, &cmdBufferSize, &validBits);
+	if (result != STATUS_OK) {
+		debug("ERROR: Could not transceive (#3).");
+		return result;
+	}
+	debug("recieved (#4): ");
+	dump_byte_array(cmdBuffer, cmdBufferSize);
+
+	// fake decipher
+    memcpy(ivPcd, &ekRndARndBC[8], 8);
+
+    // build rndA'
+    byte rndAC[8];
+    memcpy(&rndAC, &rndA[1], 7);
+    rndAC[7] = rndA[0];
+    debug("rndAC");
+    dump_byte_array(rndAC, 8);
+
+    // encrypt to verify
+    byte ekRndAC[8];
+    mbedtls_des3_init(&des);
+    mbedtls_des3_set2key_enc(&des, key);
+    mbedtls_des3_crypt_cbc(&des, MBEDTLS_DES_ENCRYPT, 8, ivPcd, rndAC, ekRndAC);
+
+    debug("ekRndAC: ");
+    dump_byte_array(ekRndAC, 8);
+
+	// actually verify
+	if (memcmp(&cmdBuffer[1], &ekRndAC, 8) == 0) {
+		debug("AUTHENTICATION SUCCESSFULL");
+		return STATUS_OK;
+	} else {
+		return STATUS_ERROR;
+	}
+}
+
+/**
+ * Writes new key to MIFARE Ultralight C PICC.
+ */
+MFRC522::StatusCode MFRC522::MIFARE_UL_C_WriteKey(	byte *key ///< The 3DES key. Exactly 16 byte long.
+									) {
+	MFRC522::StatusCode status;
+	/*
+	byte key[16] = {0x49, 0x45, 0x4D, 0x4B, 0x41, 0x45, 0x52, 0x42, // K7 ... K0 key 1
+                0x21, 0x4E, 0x41, 0x43, 0x55, 0x4F, 0x59, 0x46};// K7 ... K0 key 2
+
+	0x2C  K0 K1 K2 K3  --+ key1
+	0x2D  K4 K5 K6 K7  -/
+	0x2E  K0 K1 K2 K3  --+ key2
+	0x2F  K4 K5 K6 K6  -/
+	*/
+	byte writeBuffer[4];
+
+	// 2C
+	writeBuffer[0] = key[7];
+	writeBuffer[1] = key[6];
+	writeBuffer[2] = key[5];
+	writeBuffer[3] = key[4];
+	debug("2C ");
+	dump_byte_array(writeBuffer, 4);
+	status = MIFARE_Ultralight_Write(0x2C, writeBuffer, 4);
+    if (status != MFRC522::STATUS_OK) {
+        debug("WriteKey (page 0x2C) failed: ");
+        debug(MFRC522::GetStatusCodeName(status));
+        return status;
+    }
+
+	// 2D
+	writeBuffer[0] = key[3];
+	writeBuffer[1] = key[2];
+	writeBuffer[2] = key[1];
+	writeBuffer[3] = key[0];
+	debug("2D ");
+	dump_byte_array(writeBuffer, 4);
+	status = MIFARE_Ultralight_Write(0x2D, writeBuffer, 4);
+    if (status != MFRC522::STATUS_OK) {
+        debug("WriteKey (page 0x2D) failed: ");
+        debug(MFRC522::GetStatusCodeName(status));
+        return status;
+    }
+
+	// 2E
+	writeBuffer[0] = key[15];
+	writeBuffer[1] = key[14];
+	writeBuffer[2] = key[13];
+	writeBuffer[3] = key[12];
+	debug("2E ");
+	dump_byte_array(writeBuffer, 4);
+	status = MIFARE_Ultralight_Write(0x2E, writeBuffer, 4);
+    if (status != MFRC522::STATUS_OK) {
+        debug("WriteKey (page 0x2E) failed: ");
+        debug(MFRC522::GetStatusCodeName(status));
+        return status;
+    }
+
+	// 2F
+	writeBuffer[0] = key[11];
+	writeBuffer[1] = key[10];
+	writeBuffer[2] = key[9];
+	writeBuffer[3] = key[8];
+	debug("2F ");
+	dump_byte_array(writeBuffer, 4);
+	status = MIFARE_Ultralight_Write(0x2F, writeBuffer, 4);
+    if (status != MFRC522::STATUS_OK) {
+        debug("WriteKey (page 0x2F) failed: ");
+        debug(MFRC522::GetStatusCodeName(status));
+        return status;
+    }
+	
+	return MFRC522::STATUS_OK;
+}
 
 /**
  * MIFARE Decrement subtracts the delta from the value of the addressed block, and stores the result in a volatile memory.

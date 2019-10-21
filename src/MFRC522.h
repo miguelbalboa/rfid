@@ -277,6 +277,7 @@ public:
 		PICC_CMD_MF_TRANSFER	= 0xB0,		// Writes the contents of the internal data register to a block.
 		// The commands used for MIFARE Ultralight (from http://www.nxp.com/documents/data_sheet/MF0ICU1.pdf, Section 8.6)
 		// The PICC_CMD_MF_READ and PICC_CMD_MF_WRITE can also be used for MIFARE Ultralight.
+		PICC_CMD_UL_C_AUTH		= 0x1A,		// Perform authentication agains Ultralight C (MF0ICU2)
 		PICC_CMD_UL_WRITE		= 0xA2		// Writes one 4 byte page to the PICC.
 	};
 	
@@ -396,6 +397,12 @@ public:
 	StatusCode MIFARE_GetValue(byte blockAddr, int32_t *value);
 	StatusCode MIFARE_SetValue(byte blockAddr, int32_t value);
 	StatusCode PCD_NTAG216_AUTH(byte *passWord, byte pACK[]);
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Functions for communicating with MIFARE Ultralight C specifically
+	/////////////////////////////////////////////////////////////////////////////////////
+	StatusCode MIFARE_UL_C_Auth(byte *key);
+	StatusCode MIFARE_UL_C_WriteKey(byte *key);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Support functions
@@ -437,6 +444,11 @@ protected:
 	byte _chipSelectPin;		// Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 	byte _resetPowerDownPin;	// Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 	StatusCode MIFARE_TwoStepHelper(byte command, byte blockAddr, int32_t data);
+
+private:
+	void sample();
+	void debug(String str);
+	void dump_byte_array(byte *buffer, byte bufferSize);
 };
 
 #endif

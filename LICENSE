@@ -1,0 +1,1 @@
+des.h and des.c are borrowed from Mbed TLS (https://github.com/ARMmbed/mbedtls or https://tls.mbed.org/) which is licensed under Apache 2.0 license.
