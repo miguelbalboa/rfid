@@ -1,6 +1,16 @@
 rc522-ultralight-c
 =======
 
+Warning
+-------
+
+This library has only been tested with an ESP32. It might not work on other boards. Or at least there will be adaptions to be made.
+
+The 3DES library used to authenticate agains the Ultralight C PICC is Mbed TLS (see https://github.com/ARMmbed/mbedtls). Setup for other platforms than ESP32 might be different. ESP32 comes packaged with some Mbed TLS functions, but DES is disabled for security reasons. The easiest way to provide it is just packaging it with the repository.
+
+Original Readme
+---------------
+
 Original Readme see: https://github.com/miguelbalboa/rfid/blob/master/README.rst
 
 Arduino library for MFRC522 and other RFID RC522 based modules.
