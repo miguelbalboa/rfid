@@ -5,27 +5,20 @@
 */
 
 #include <Arduino.h>
-#include <M5Stack.h>
-#include <M5Display.h>
 #include "MFRC522.h"
 #include "des.h"
 
 void MFRC522::debug(String str) {
     Serial.print("[RC522] ");
     Serial.println(str);
-    M5.Lcd.print("[RC522] ");
-    M5.Lcd.println(str);
 }
 
 void MFRC522::dump_byte_array(byte *buffer, byte bufferSize) {
     for (byte i = 0; i < bufferSize; i++) {
         Serial.print(buffer[i] < 0x10 ? " 0" : " ");
         Serial.print(buffer[i], HEX);
-        M5.Lcd.print(buffer[i] < 0x10 ? " 0" : " ");
-        M5.Lcd.print(buffer[i], HEX);
     }
     Serial.println();
-    M5.Lcd.println();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
