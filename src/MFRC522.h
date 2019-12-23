@@ -84,7 +84,11 @@
 #include <SPI.h>
 
 #ifndef MFRC522_SPICLOCK
+#ifdef ARDUINO_ARDUINO_NANO33BLE
+#define MFRC522_SPICLOCK 0
+#else
 #define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
+#endif
 #endif
 
 // Firmware data for self-test

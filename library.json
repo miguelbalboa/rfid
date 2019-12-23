@@ -10,5 +10,5 @@
   "version": "1.4.5",
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "ststm32", "espressif8266","espressif32","samd"]
+  "platforms": ["atmelavr", "ststm32", "espressif8266","espressif32","samd","mbed"]
 }
