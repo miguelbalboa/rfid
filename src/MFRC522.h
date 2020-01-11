@@ -87,6 +87,16 @@
 #define MFRC522_SPICLOCK SPI_CLOCK_DIV4			// MFRC522 accept upto 10MHz
 #endif
 
+// uncommento to enable use of "any" pins as SPI (SCK, MOSI, MISO)
+// #define MFRC522_SOFTSPI 1
+
+#if MFRC522_SOFTSPI
+#include "utility/SoftSPI.h"
+#define MFRC522_SPI S_SPI   // SoftSPI
+#else
+#define MFRC522_SPI SPI     // Native SPI   
+#endif
+
 // Firmware data for self-test
 // Reference values based on firmware version
 // Hint: if needed, you can remove unused self-test data to save flash memory
