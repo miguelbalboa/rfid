@@ -335,7 +335,6 @@ public:
 	// Functions for setting up the Arduino
 	/////////////////////////////////////////////////////////////////////////////////////
 	MFRC522();
-	DEPRECATED_MSG("use MFRC522(byte chipSelectPin, byte resetPowerDownPin)")
 	MFRC522(byte resetPowerDownPin);
 	MFRC522(byte chipSelectPin, byte resetPowerDownPin);
 	
@@ -354,7 +353,6 @@ public:
 	// Functions for manipulating the MFRC522
 	/////////////////////////////////////////////////////////////////////////////////////
 	void PCD_Init();
-	DEPRECATED_MSG("use PCD_Init(byte chipSelectPin, byte resetPowerDownPin)")
 	void PCD_Init(byte resetPowerDownPin);
 	void PCD_Init(byte chipSelectPin, byte resetPowerDownPin);
 	void PCD_Reset();
@@ -418,13 +416,9 @@ public:
 	void PICC_DumpMifareUltralightToSerial();
 	
 	// Advanced functions for MIFARE
-	DEPRECATED_MSG("name will change in next version")
 	void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);
-	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_OpenUidBackdoor(bool logErrors);
-	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);
-	DEPRECATED_MSG("will move to extra class in next version")
 	bool MIFARE_UnbrickUidSector(bool logErrors);
 	
 	/////////////////////////////////////////////////////////////////////////////////////
