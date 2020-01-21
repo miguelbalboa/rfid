@@ -1,6 +1,12 @@
 -- Add changes to unreleased tag until we make a release.
 
-xx 2019, v1.4.6
+xx 2020, v1.4.7
+
+
+21 Jan 2020, v1.4.6
+- Library in freeze mode, no new features, no new examples, just bugfixes to keep compability for old projects
+- Updated documentation
+- Removed deprecation warnings due code freeze
 
 12 Jun 2019, v1.4.5
 - Library in freeze mode, no new features, no new examples, just bugfixes to keep compability for old projects
