@@ -8,7 +8,8 @@
     "url": "https://github.com/miguelbalboa/rfid.git"
   },
   "version": "1.4.6",
+  "license": "Unlicense",
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "ststm32", "espressif8266","espressif32","samd"]
+  "platforms": ["atmelavr", "ststm32", "espressif8266", "espressif32", "samd"]
 }
