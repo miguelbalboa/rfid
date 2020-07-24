@@ -1,4 +1,4 @@
-/**
+/*
  * This example show how you can get Authenticated by the NTAG213,215,216. By default the tags are unprotected in order to protect them we need to write 4 different values:
  * Using mfrc522.MIFARE_Ultralight_Write(PageNum, Data, #Databytes))
  * 1.- We need to write the 32bit passWord to page 0xE5 !for ntag 213 and 215 page is different refer to nxp documentation!
@@ -40,11 +40,11 @@ void loop() {
     return;
   }
 
-  byte PSWBuff[] = {0xFF, 0xFF, 0xFF, 0xFF}; //32 bit PassWord default FFFFFFFF
-  byte pACK[] = {0, 0}; //16 bit PassWord ACK returned by the NFCtag
+  byte PSWBuff[] = {0xFF, 0xFF, 0xFF, 0xFF}; // 32 bit password default FFFFFFFF.
+  byte pACK[] = {0, 0}; // 16 bit password ACK returned by the NFCtag.
 
   Serial.print("Auth: ");
-  Serial.println(mfrc522.PCD_NTAG216_AUTH(&PSWBuff[0], pACK)); //Request Authentification if return STATUS_OK we are good
+  Serial.println(mfrc522.PCD_NTAG216_AUTH(&PSWBuff[0], pACK)); // Request authentification if return STATUS_OK we are good.
 
   //Print PassWordACK
   Serial.print(pACK[0], HEX);
@@ -54,7 +54,7 @@ void loop() {
   byte RBuff[18];
 
   //Serial.print("CHG BLK: ");
-  //Serial.println(mfrc522.MIFARE_Ultralight_Write(0xE3, WBuff, 4));  //How to write to a page
+  //Serial.println(mfrc522.MIFARE_Ultralight_Write(0xE3, WBuff, 4));  // How to write to a page.
 
   mfrc522.PICC_DumpMifareUltralightToSerial(); // This is a modifier dump just change the for circle to < 232 instead of < 16 in order to see all the pages on NTAG216.
 
