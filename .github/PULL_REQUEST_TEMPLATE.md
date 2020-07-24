@@ -3,6 +3,8 @@
 Please use the following template to give us as much information as you can.
 Not used rows can be deleted.
 
+Please create just PRs wiht fixes/typos or documentation updates; no extensions for other boards; no new examples. See development status.
+
 END - This is a comment just for you visible -->
 
 | Q             | A
