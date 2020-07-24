@@ -6,7 +6,6 @@
  * 
  * This example test the firmware of your MFRC522 reader module, only known version can be checked. If the test passed
  * it do not mean that your module is faultless! Some modules have bad or broken antennas or the PICC is broken.
- * NOTE: for more informations read the README.rst
  * 
  * @author Rotzbua
  * @license Released into the public domain.
