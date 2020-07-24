@@ -5,7 +5,6 @@
  * This is a MFRC522 library example; for further details and other examples see: https://github.com/miguelbalboa/rfid
  * 
  * This sample shows how to set the UID on a UID changeable MIFARE card.
- * NOTE: for more informations read the README.rst
  * 
  * @author Tom Clement
  * @license Released into the public domain.
