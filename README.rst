@@ -25,14 +25,14 @@ Development
 
 **The development by owner miguelbalboa has ended**.
 
-**Feature status: complete freeze**; no function or API change
+**Feature status: complete freeze**; no function or API change.
 
-**Code status: paritial freeze**; just fixes/typos or documentation updates; *no* extentions for other boards; *no* new examples
+**Code status: partial freeze**; just fixes/typos or documentation updates; *no* extensions for other boards; *no* new examples.
 
-**Maintenance status: sporadically**
+**Maintenance status: sporadically**.
 
 **Why no further development?**
-This library has a long history and is used in many projects. These projects often do not document what version they use. Commiting changes might break those old projects and lead to bad experiences (for beginners) and support requests. For these reasons the library is in freeze mode. You can still commit typo, documentation or bug fixes.
+This library has a long history and is used in many projects. These projects often do not document what version they use. Committing changes might break those old projects and lead to bad experiences (for beginners) and support requests. For these reasons the library is in freeze mode. You can still commit typo, documentation or bug fixes.
 
 
 .. _before buy:
@@ -249,7 +249,7 @@ Troubleshooting
   #. Check your pin settings/variables in the code, see `Pin Layout`_ .
   #. Check your pin header soldering. Maybe you have cold solder joints.
   #. Check voltage. Most breakouts work with 3.3V.
-  #. SPI only works with 3.3V, most breakouts seem 5V tollerant, but try a level shifter.
+  #. SPI only works with 3.3V, most breakouts seem 5V tolerant, but try a level shifter.
   #. SPI does not like long connections. Try shorter connections.
   #. SPI does not like prototyping boards. Try soldered connections.
   #. According to reports #101, #126 and #131, there may be a problem with the soldering on the MFRC522 breakout. You could fix this on your own.
@@ -361,7 +361,7 @@ by Søren Thing Andersen (from http://access.thing.dk).
 It has been extended with functionality to alter sector 0 on Chinese UID changeable MIFARE card in Oct 2014 by Tom Clement (from http://tomclement.nl).
 
 Maintained by miguelbalboa until 2016.
-Maintained by Rotzbua from 2016 until 2018.
+Maintained by Rotzbua from 2016 until 2020.
 
 
 .. _arduino: https://arduino.cc/
