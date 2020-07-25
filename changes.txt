@@ -1,7 +1,10 @@
 -- Add changes to unreleased tag until we make a release.
 
-xx 2020, v1.4.7
+xx 2020, v1.4.8
 
+25 Jun 2020, v1.4.7
+- Fixed typos
+- Moved PICC memory layout to /doc
 
 21 Jan 2020, v1.4.6
 - Library in freeze mode, no new features, no new examples, just bugfixes to keep compatibility for old projects
