@@ -4,12 +4,12 @@ xx 2020, v1.4.7
 
 
 21 Jan 2020, v1.4.6
-- Library in freeze mode, no new features, no new examples, just bugfixes to keep compability for old projects
+- Library in freeze mode, no new features, no new examples, just bugfixes to keep compatibility for old projects
 - Updated documentation
 - Removed deprecation warnings due code freeze
 
 12 Jun 2019, v1.4.5
-- Library in freeze mode, no new features, no new examples, just bugfixes to keep compability for old projects
+- Library in freeze mode, no new features, no new examples, just bugfixes to keep compatibility for old projects
 - Updated README
 
 31 Mar 2019, v1.4.4
@@ -52,7 +52,7 @@ xx 2020, v1.4.7
 - Added deprecate and compiler warnings @Rotzbua
 
 8 Apr 2017, v1.3.5
-- Updated "AccessControl.ino", bugs fixed and alterate Wipe button polling method without using other library @beyondszine reviewed by @omersiar 
+- Updated "AccessControl.ino", bugs fixed and alternate wipe button polling method without using other library @beyondszine reviewed by @omersiar 
 - Updated README notice about port for esp8266 @mmmmar
 
 7 Apr 2017, v1.3.4
@@ -161,7 +161,7 @@ xx 2020, v1.4.7
 20 Oct 2013
 - All constants, functions and parameters are now commented in English.
 - Code refactored, most function names have changed.
-- Support ISO-14443-3 anti collission and 4/7/10 byte UIDs (cascade levels).
+- Support ISO-14443-3 anti collision and 4/7/10 byte UIDs (cascade levels).
 - Added functions for MIFARE Classic Decrement/Increment/Restore/Transfer
   and MIFARE Ultralight Write.
 - New examples written.
