@@ -1281,7 +1281,7 @@ const __FlashStringHelper *MFRC522::GetStatusCodeName(MFRC522::StatusCode code	/
 	switch (code) {
 		case STATUS_OK:				return F("Success.");
 		case STATUS_ERROR:			return F("Error in communication.");
-		case STATUS_COLLISION:		return F("Collission detected.");
+		case STATUS_COLLISION:		return F("Collision detected.");
 		case STATUS_TIMEOUT:		return F("Timeout in communication.");
 		case STATUS_NO_ROOM:		return F("A buffer is not big enough.");
 		case STATUS_INTERNAL_ERROR:	return F("Internal error in the code. Should not happen.");
