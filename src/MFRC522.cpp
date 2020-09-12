@@ -1448,6 +1448,21 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,			///< Pointer to Uid st
 												PICC_Type piccType,	///< One of the PICC_Type enums.
 												MIFARE_Key *key		///< Key A used for all sectors.
 											) {
+	PICC_DumpMifareClassicSectorToSerial(PICC_CMD_MF_AUTH_KEY_A, uid, key, sector);
+
+
+} // End PICC_DumpMifareClassicToSerial()
+
+/**
+ * Dumps memory contents of a sector of a MIFARE Classic PICC.
+ * Uses PCD_Authenticate(), MIFARE_Read() and PCD_StopCrypto1.
+ * Always uses PICC_CMD_MF_AUTH_KEY_A because only Key A can always read the sector trailer access bits.
+ */
+void MFRC522::PICC_DumpMifareClassicSectorToSerial(byte command,	///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
+                                                    Uid *uid,		///< Pointer to Uid struct returned from a successful PICC_Select().
+                                                    MIFARE_Key *key,	///< Key A for the sector.
+                                                    byte sector		///< The sector to dump, 0..39.
+                                                    ) {
 	byte no_of_sectors = 0;
 	switch (piccType) {
 		case PICC_TYPE_MIFARE_MINI:
@@ -1473,7 +1488,7 @@ void MFRC522::PICC_DumpMifareClassicToSerial(	Uid *uid,			///< Pointer to Uid st
 	if (no_of_sectors) {
 		Serial.println(F("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15  AccessBits"));
 		for (int8_t i = no_of_sectors - 1; i >= 0; i--) {
-			PICC_DumpMifareClassicSectorToSerial(uid, key, i);
+			PICC_DumpMifareClassicSectorToSerial(command, uid, key, i);
 		}
 	}
 	PICC_HaltA(); // Halt the PICC before stopping the encrypted session.
@@ -1489,6 +1504,22 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 													MIFARE_Key *key,	///< Key A for the sector.
 													byte sector			///< The sector to dump, 0..39.
 													) {
+	PICC_DumpMifareClassicSectorToSerial(PICC_CMD_MF_AUTH_KEY_A, uid, key, sector);
+
+
+} // End PICC_DumpMifareClassicSectorToSerial()
+
+
+/**
+ * Dumps memory contents of a sector of a MIFARE Classic PICC.
+ * Uses PCD_Authenticate(), MIFARE_Read() and PCD_StopCrypto1.
+ * Always uses PICC_CMD_MF_AUTH_KEY_A because only Key A can always read the sector trailer access bits.
+ */
+void MFRC522::PICC_DumpMifareClassicSectorToSerial(byte command,	///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
+                                                    Uid *uid,		///< Pointer to Uid struct returned from a successful PICC_Select().
+                                                    MIFARE_Key *key,	///< Key A for the sector.
+                                                    byte sector		///< The sector to dump, 0..39.
+                                                    ) {
 	MFRC522::StatusCode status;
 	byte firstBlock;		// Address of lowest address to dump actually last block dumped)
 	byte no_of_blocks;		// Number of blocks in sector
@@ -1555,7 +1586,7 @@ void MFRC522::PICC_DumpMifareClassicSectorToSerial(Uid *uid,			///< Pointer to U
 		Serial.print(F("  "));
 		// Establish encrypted communications before reading the first block
 		if (isSectorTrailer) {
-			status = PCD_Authenticate(PICC_CMD_MF_AUTH_KEY_A, firstBlock, key, uid);
+			status = PCD_Authenticate(command, firstBlock, key, uid);
 			if (status != STATUS_OK) {
 				Serial.print(F("PCD_Authenticate() failed: "));
 				Serial.println(GetStatusCodeName(status));
