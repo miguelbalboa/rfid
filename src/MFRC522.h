@@ -346,7 +346,9 @@ public:
 	void PCD_DumpVersionToSerial();
 	void PICC_DumpToSerial(Uid *uid);
 	void PICC_DumpDetailsToSerial(Uid *uid);
+	void PICC_DumpMifareClassicToSerial(byte command, Uid *uid, PICC_Type piccType, MIFARE_Key *key);
 	void PICC_DumpMifareClassicToSerial(Uid *uid, PICC_Type piccType, MIFARE_Key *key);
+	void PICC_DumpMifareClassicSectorToSerial(byte command, Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareClassicSectorToSerial(Uid *uid, MIFARE_Key *key, byte sector);
 	void PICC_DumpMifareUltralightToSerial();
 	
