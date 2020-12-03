@@ -3,12 +3,14 @@ MFRC522
 
 .. image:: https://img.shields.io/maintenance/no/2019.svg
     :target: `development`_
-.. image:: https://travis-ci.org/miguelbalboa/rfid.svg?branch=master
-    :target: https://travis-ci.org/miguelbalboa/rfid
+.. image:: https://github.com/miguelbalboa/rfid/workflows/PlatformIO%20CI/badge.svg
+   :target: https://github.com/miguelbalboa/rfid/actions
+   :alt: GitHub Actions
 .. image:: https://img.shields.io/badge/C%2B%2B-11-brightgreen.svg
     :target: `compatible ide`_
 .. image:: https://img.shields.io/github/release/miguelbalboa/rfid.svg?colorB=green
     :target: https://github.com/miguelbalboa/rfid/releases
+    :alt: Releases
 .. image:: https://img.shields.io/badge/ArduinoIDE-%3E%3D1.6.10-lightgrey.svg
     :target: `compatible ide`_
 
