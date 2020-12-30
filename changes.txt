@@ -1,6 +1,7 @@
 -- Add changes to unreleased tag until we make a release.
 
-xx 2020, v1.4.8
+30 Dec 2020, v1.4.8
+- Fixed wrong SPI clock speed.
 
 25 Jun 2020, v1.4.7
 - Fixed typos
