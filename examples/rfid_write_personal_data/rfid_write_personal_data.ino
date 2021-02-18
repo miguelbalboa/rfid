@@ -66,8 +66,8 @@ void loop() {
 
   Serial.setTimeout(20000L) ;     // wait until 20 seconds for input from serial
   // Ask personal data: Family name
-  Serial.println(F("Type Family name, ending with #"));
-  len = Serial.readBytesUntil('#', (char *) buffer, 30) ; // read family name from serial
+  Serial.println(F("Type Family name"));
+  len = Serial.readBytesUntil('\n', (char *) buffer, 30) ; // read family name from serial  
   for (byte i = len; i < 30; i++) buffer[i] = ' ';     // pad with spaces
 
   block = 1;
@@ -108,8 +108,8 @@ void loop() {
   else Serial.println(F("MIFARE_Write() success: "));
 
   // Ask personal data: First name
-  Serial.println(F("Type First name, ending with #"));
-  len = Serial.readBytesUntil('#', (char *) buffer, 20) ; // read first name from serial
+  Serial.println(F("Type First name"));
+  len = Serial.readBytesUntil('\n', (char *) buffer, 20) ; // read first name from serial
   for (byte i = len; i < 20; i++) buffer[i] = ' ';     // pad with spaces
 
   block = 4;
