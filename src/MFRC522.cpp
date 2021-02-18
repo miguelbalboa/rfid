@@ -1717,7 +1717,7 @@ bool MFRC522::MIFARE_OpenUidBackdoor(bool logErrors) {
 	byte validBits = 7; /* Our command is only 7 bits. After receiving card response,
 						  this will contain amount of valid response bits. */
 	byte response[32]; // Card's response is written here
-	byte received;
+	byte received = sizeof(response);
 	MFRC522::StatusCode status = PCD_TransceiveData(&cmd, (byte)1, response, &received, &validBits, (byte)0, false); // 40
 	if(status != STATUS_OK) {
 		if(logErrors) {
