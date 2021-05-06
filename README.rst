@@ -250,6 +250,7 @@ Troubleshooting
   #. Check your physical connection, see `Pin Layout`_ .
   #. Check your pin settings/variables in the code, see `Pin Layout`_ .
   #. Check your pin header soldering. Maybe you have cold solder joints.
+  #. Check your power supply. Maybe add a capacitor between 3.3V and GND to stabilize the power #560, sometimes an additional delay after `PCD_Init()` can help.
   #. Check voltage. Most breakouts work with 3.3V.
   #. SPI only works with 3.3V, most breakouts seem 5V tolerant, but try a level shifter.
   #. SPI does not like long connections. Try shorter connections.
