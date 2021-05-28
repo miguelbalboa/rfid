@@ -21,16 +21,16 @@
  * @license Released into the public domain.
  * 
  * Typical pin layout used:
- * -----------------------------------------------------------------------------------------
- *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
- * Signal      Pin          Pin           Pin       Pin        Pin              Pin
- * -----------------------------------------------------------------------------------------
- * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
- * SPI SS      SDA(SS)      10            53        D10        10               10
- * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
- * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
- * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
+ * ---------------------------------------------------------------------------------------------------
+ *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino    ESP8266/
+ *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro  NodeMCU
+ * Signal      Pin          Pin           Pin       Pin        Pin              Pin        Pin
+ * ---------------------------------------------------------------------------------------------------
+ * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST        D3/0
+ * SPI SS      SDA(SS)      10            53        D10        10               10		   D4/2
+ * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16		   D7/13
+ * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14		   D6/12
+ * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15		   D5/14
  */
 
 #include <SPI.h>
@@ -38,6 +38,9 @@
 
 #define RST_PIN         9          // Configurable, see typical pin layout above
 #define SS_PIN          10         // Configurable, see typical pin layout above
+// Uncomment and comment the 2 lines above when using an ESP8266
+// constexpr uint8_t RST_PIN = D3;     // Configurable, see typical pin layout above
+// constexpr uint8_t SS_PIN = D4;     // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
