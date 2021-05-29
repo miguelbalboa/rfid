@@ -11,6 +11,10 @@
  * 
  * @author GARGANTUA from RoboCreators.com & paradoxalabs.com
  * @license Released into the public domain.
+ *
+ *
+ *
+ * For more info on the Pin Layout on specific boards, read this : https://github.com/miguelbalboa/rfid#pin-layout 
  */
 
 #include <SPI.h>
