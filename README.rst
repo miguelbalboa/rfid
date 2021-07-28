@@ -1,12 +1,14 @@
 rc522-ultralight-c
 =======
 
+RC522 with ESP32 and support for MiFare Ultralight C.
+
 Warning
 -------
 
-This library has only been tested with an ESP32. It might not work on other boards. Or at least there will be adaptions to be made.
+This library has only been tested with ESP32. It might not work on other boards (or at least there will be adaptions to be made).
 
-The 3DES library used to authenticate agains the Ultralight C PICC is Mbed TLS (see https://github.com/ARMmbed/mbedtls). Setup for other platforms than ESP32 might be different. ESP32 comes packaged with some Mbed TLS functions, but DES is disabled for security reasons. The easiest way to provide it is just packaging it with the repository.
+The 3DES library used to authenticate agains the Ultralight C PICC is Mbed TLS (see https://github.com/ARMmbed/mbedtls). Setup for other platforms than ESP32 might be different. ESP-SDK comes packaged with some Mbed TLS functionality, but DES is disabled for security reasons. The easiest way to provide it is just packaging it with the repository.
 
 Original Readme
 ---------------
@@ -47,6 +49,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to https://unlicense.org/
+
+License Mbed TLS
+----------------
+The following applies for the files src/des.h and src/des.c. They are unmodified.
+
+Unless specifically indicated otherwise in a file, Mbed TLS files are provided under the Apache-2.0 license. See the LICENSE file at https://github.com/ARMmbed/mbedtls/blob/development/LICENSE for the full text of this license. Contributors must accept that their contributions are made under both the Apache-2.0 AND GPL-2.0-or-later licenses. This enables LTS (Long Term Support) branches of the software to be provided under either the Apache-2.0 OR GPL-2.0-or-later licenses.
 
 History
 -------
