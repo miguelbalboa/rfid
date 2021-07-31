@@ -1,5 +1,11 @@
 -- Add changes to unreleased tag until we make a release.
 
+xxxxx , v1.4.10
+
+31 Jul 2021, v1.4.9
+- Removed example AccessControl
+- Updated docs
+
 30 Dec 2020, v1.4.8
 - Fixed wrong SPI clock speed.
 
