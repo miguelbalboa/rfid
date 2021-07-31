@@ -26,9 +26,9 @@ jobs:
             RFID-Cloner,
             rfid_read_personal_data,
           ]
-        include:
-          - boards: 'avr_only'
-            example: AccessControl
+        #include:
+        #  - boards: 'avr_only'
+        #    example: AccessControl
 
     steps:
     - uses: actions/checkout@v2
