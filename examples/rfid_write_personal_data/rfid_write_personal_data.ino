@@ -12,6 +12,8 @@
  * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
  * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
  *
+ * More pin layouts for other boards can be found here: https://github.com/miguelbalboa/rfid#pin-layout
+ *
  * Hardware required:
  * Arduino
  * PCD (Proximity Coupling Device): NXP MFRC522 Contactless Reader IC
