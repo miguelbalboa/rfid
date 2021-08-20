@@ -163,10 +163,10 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 	PCD_WriteRegister(FIFODataReg, length, data);	// Write data to the FIFO
 	PCD_WriteRegister(CommandReg, PCD_CalcCRC);		// Start the calculation
 	
-	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73μs.
-	// TODO check/modify for other architectures than Arduino Uno 16bit
-
-	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73us.
+	// Wait for the CRC calculation to complete. Check for the register to
+	// indicate that the CRC calculation is complete in a loop. If the
+	// calculation is not indicated as complete in ~90ms, then time out
+	// the operation.
 	uint32_t deadline = millis() + 89;
 
 	do {
@@ -181,7 +181,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 		}
 		yield();
 	}
-	while (millis() < deadline);
+	while (static_cast<uint32_t> (millis()) < deadline);
 
 	// 89ms passed and nothing happend. Communication with the MFRC522 might be down.
 	return STATUS_TIMEOUT;
@@ -483,15 +483,21 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		PCD_SetRegisterBitMask(BitFramingReg, 0x80);	// StartSend=1, transmission of data starts
 	}
 	
-	// Wait for the command to complete.
-	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
-	// Each iteration of the do-while-loop takes 17.86μs.
-	// TODO check/modify for other architectures than Arduino Uno 16bit
+	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer
+	// automatically starts when the PCD stops transmitting.
+	//
+	// Wait here for the command to complete. The bits specified in the
+	// `waitIRq` parameter define what bits constitute a completed command.
+	// When they are set in the ComIrqReg register, then the command is
+	// considered complete. If the command is not indicated as complete in
+	// ~36ms, then consider the command as timed out.
 	uint32_t deadline = millis() + 36;
+	bool completed = false;
 
 	do {
 		byte n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
+			completed = true;
 			break;
 		}
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
@@ -499,10 +505,10 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		}
 		yield();
 	}
-	while (millis() < deadline);
+	while (static_cast<uint32_t> (millis()) < deadline);
 
-	// 35.7ms and nothing happend. Communication with the MFRC522 might be down.
-	if (millis() >= deadline) {
+	// 36ms and nothing happend. Communication with the MFRC522 might be down.
+	if (!completed) {
 		return STATUS_TIMEOUT;
 	}
 	
