@@ -167,7 +167,9 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 	// TODO check/modify for other architectures than Arduino Uno 16bit
 
 	// Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73us.
-	for (uint16_t i = 5000; i > 0; i--) {
+	uint32_t deadline = millis() + 89;
+
+	do {
 		// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
 		byte n = PCD_ReadRegister(DivIrqReg);
 		if (n & 0x04) {									// CRCIRq bit set - calculation done
@@ -177,7 +179,10 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 			result[1] = PCD_ReadRegister(CRCResultRegH);
 			return STATUS_OK;
 		}
+		yield();
 	}
+	while (millis() < deadline);
+
 	// 89ms passed and nothing happend. Communication with the MFRC522 might be down.
 	return STATUS_TIMEOUT;
 } // End PCD_CalculateCRC()
@@ -422,6 +427,7 @@ void MFRC522::PCD_SoftPowerUp(){
 		if(!(val & (1<<4))){ // if powerdown bit is 0 
 			break;// wake up procedure is finished 
 		}
+		yield();
 	}
 }
 
@@ -481,8 +487,9 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
 	// Each iteration of the do-while-loop takes 17.86μs.
 	// TODO check/modify for other architectures than Arduino Uno 16bit
-	uint16_t i;
-	for (i = 2000; i > 0; i--) {
+	uint32_t deadline = millis() + 36;
+
+	do {
 		byte n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
 			break;
@@ -490,9 +497,12 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
 			return STATUS_TIMEOUT;
 		}
+		yield();
 	}
+	while (millis() < deadline);
+
 	// 35.7ms and nothing happend. Communication with the MFRC522 might be down.
-	if (i == 0) {
+	if (millis() >= deadline) {
 		return STATUS_TIMEOUT;
 	}
 	
