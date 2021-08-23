@@ -183,7 +183,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 	}
 	while (static_cast<uint32_t> (millis()) < deadline);
 
-	// 89ms passed and nothing happend. Communication with the MFRC522 might be down.
+	// 89ms passed and nothing happened. Communication with the MFRC522 might be down.
 	return STATUS_TIMEOUT;
 } // End PCD_CalculateCRC()
 
