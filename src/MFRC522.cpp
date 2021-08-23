@@ -167,7 +167,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 	// indicate that the CRC calculation is complete in a loop. If the
 	// calculation is not indicated as complete in ~90ms, then time out
 	// the operation.
-	uint32_t deadline = millis() + 89;
+	const uint32_t deadline = millis() + 89;
 
 	do {
 		// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved CRCIRq reserved reserved
@@ -491,7 +491,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	// When they are set in the ComIrqReg register, then the command is
 	// considered complete. If the command is not indicated as complete in
 	// ~36ms, then consider the command as timed out.
-	uint32_t deadline = millis() + 36;
+	const uint32_t deadline = millis() + 36;
 	bool completed = false;
 
 	do {
@@ -507,7 +507,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	byte command,		///< The co
 	}
 	while (static_cast<uint32_t> (millis()) < deadline);
 
-	// 36ms and nothing happend. Communication with the MFRC522 might be down.
+	// 36ms and nothing happened. Communication with the MFRC522 might be down.
 	if (!completed) {
 		return STATUS_TIMEOUT;
 	}
