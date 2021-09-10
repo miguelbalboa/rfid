@@ -1,0 +1,63 @@
+name: PlatformIO CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        boards: ['all']
+        example: [
+            ChangeUID,
+            DumpInfo,
+            firmware_check,
+            FixBrickedUID,
+            MifareClassicValueBlock,
+            MinimalInterrupt,
+            ReadUidMultiReader,
+            rfid_default_keys,
+            rfid_write_personal_data,
+            Ntag216_AUTH,
+            ReadNUID,
+            RFID-Cloner,
+            rfid_read_personal_data,
+          ]
+        #include:
+        #  - boards: 'avr_only'
+        #    example: AccessControl
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Run PlatformIO all Boards
+      if: ${{ contains(matrix.boards, 'all') }}
+      # test all
+      run: platformio ci --lib=. --board=uno --board=megaatmega1280 --board=due --board=zero --board=d1_mini
+      env:
+        PLATFORMIO_CI_SRC: examples/${{ matrix.example }}/${{ matrix.example }}.ino
+    - name: Run PlatformIO avr Boards
+      if: ${{ contains(matrix.boards, 'avr_only') }}
+      # test avr_only
+      run: platformio ci --lib=. --board=uno --board=megaatmega1280
+      env:
+        PLATFORMIO_CI_SRC: examples/${{ matrix.example }}/${{ matrix.example }}.ino

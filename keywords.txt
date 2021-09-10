@@ -6,6 +6,7 @@
 # KEYWORD1 Classes, datatypes, and C++ keywords
 #######################################
 MFRC522	KEYWORD1
+MFRC522Extended	KEYWORD1
 PCD_Register	KEYWORD1
 PCD_Command	KEYWORD1
 PCD_RxGain	KEYWORD1
@@ -13,14 +14,15 @@ PICC_Command	KEYWORD1
 MIFARE_Misc	KEYWORD1
 PICC_Type	KEYWORD1
 StatusCode	KEYWORD1
-Uid		KEYWORD1
+TagBitRates	KEYWORD1
+Uid	KEYWORD1
+CardInfo	KEYWORD1
 MIFARE_Key	KEYWORD1
+PcbBlock	KEYWORD1
  
 #######################################
 # KEYWORD2 Methods and functions
 #######################################
-# Functions for setting up the Arduino
-setSPIConfig	KEYWORD2
 
 # Basic interface functions for communicating with the MFRC522
 PCD_WriteRegister	KEYWORD2
@@ -41,6 +43,10 @@ PCD_GetAntennaGain	KEYWORD2
 PCD_SetAntennaGain	KEYWORD2
 PCD_PerformSelfTest	KEYWORD2
 
+# Power control functions MFRC522
+PCD_SoftPowerDown	KEYWORD2
+PCD_SoftPowerUp	KEYWORD2
+
 # Functions for communicating with PICCs
 PCD_TransceiveData	KEYWORD2
 PCD_CommunicateWithPICC	KEYWORD2
@@ -49,6 +55,13 @@ PICC_WakeupA	KEYWORD2
 PICC_REQA_or_WUPA	KEYWORD2
 PICC_Select	KEYWORD2
 PICC_HaltA	KEYWORD2
+PICC_RATS	KEYWORD2
+PICC_PPS	KEYWORD2
+
+# Functions for communicating with ISO/IEC 14433-4 cards
+TCL_Transceive	KEYWORD2
+TCL_TransceiveRBlock	KEYWORD2
+TCL_Deselect	KEYWORD2
 
 # Functions for communicating with MIFARE PICCs
 PCD_Authenticate	KEYWORD2
@@ -59,16 +72,24 @@ MIFARE_Increment	KEYWORD2
 MIFARE_Ultralight_Write	KEYWORD2
 MIFARE_GetValue	KEYWORD2
 MIFARE_SetValue	KEYWORD2
+PCD_NTAG216_AUTH	KEYWORD2
 
 # Support functions
 PCD_MIFARE_Transceive	KEYWORD2
 GetStatusCodeName	KEYWORD2
 PICC_GetType	KEYWORD2
 PICC_GetTypeName	KEYWORD2
+
+# Support functions for debuging
+PCD_DumpVersionToSerial	KEYWORD2
 PICC_DumpToSerial	KEYWORD2
+PICC_DumpDetailsToSerial	KEYWORD2
 PICC_DumpMifareClassicToSerial	KEYWORD2
 PICC_DumpMifareClassicSectorToSerial	KEYWORD2
 PICC_DumpMifareUltralightToSerial	KEYWORD2
+PICC_DumpISO14443_4	KEYWORD2
+
+# Advanced functions for MIFARE
 MIFARE_SetAccessBits	KEYWORD2
 MIFARE_OpenUidBackdoor	KEYWORD2
 MIFARE_SetUid	KEYWORD2
@@ -83,7 +104,7 @@ PICC_ReadCardSerial	KEYWORD2
 #######################################
 
 #######################################
-LITERAL1 Constants
+# LITERAL1 Constants
 #######################################
 CommandReg	LITERAL1
 ComIEnReg	LITERAL1
@@ -142,8 +163,8 @@ PCD_CalcCRC	LITERAL1
 PCD_Transmit	LITERAL1
 PCD_NoCmdChange	LITERAL1
 PCD_Receive	LITERAL1
-PCD_Transceive 	LITERAL1
-PCD_MFAuthent 	LITERAL1
+PCD_Transceive	LITERAL1
+PCD_MFAuthent	LITERAL1
 PCD_SoftReset	LITERAL1
 RxGain_18dB	LITERAL1
 RxGain_23dB	LITERAL1
@@ -163,6 +184,7 @@ PICC_CMD_SEL_CL1	LITERAL1
 PICC_CMD_SEL_CL2	LITERAL1
 PICC_CMD_SEL_CL3	LITERAL1
 PICC_CMD_HLTA	LITERAL1
+PICC_CMD_RATS	LITERAL1
 PICC_CMD_MF_AUTH_KEY_A	LITERAL1
 PICC_CMD_MF_AUTH_KEY_B	LITERAL1
 PICC_CMD_MF_READ	LITERAL1
@@ -182,6 +204,7 @@ PICC_TYPE_MIFARE_1K	LITERAL1
 PICC_TYPE_MIFARE_4K	LITERAL1
 PICC_TYPE_MIFARE_UL	LITERAL1
 PICC_TYPE_MIFARE_PLUS	LITERAL1
+PICC_TYPE_MIFARE_DESFIRE	LITERAL1
 PICC_TYPE_TNP3XXX	LITERAL1
 PICC_TYPE_NOT_COMPLETE	LITERAL1
 STATUS_OK	LITERAL1
@@ -194,3 +217,7 @@ STATUS_INVALID	LITERAL1
 STATUS_CRC_WRONG	LITERAL1
 STATUS_MIFARE_NACK	LITERAL1
 FIFO_SIZE	LITERAL1
+BITRATE_106KBITS	LITERAL1
+BITRATE_212KBITS	LITERAL1
+BITRATE_424KBITS	LITERAL1
+BITRATE_848KBITS	LITERAL1

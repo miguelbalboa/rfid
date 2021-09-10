@@ -14,7 +14,7 @@
  * Typical pin layout used:
  * -----------------------------------------------------------------------------------------
  *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno           Mega      Nano v3    Leonardo/Micro   Pro Micro
+ *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
  * Signal      Pin          Pin           Pin       Pin        Pin              Pin
  * -----------------------------------------------------------------------------------------
  * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
@@ -22,6 +22,8 @@
  * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
  * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
  * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
+ *
+ * More pin layouts for other boards can be found here: https://github.com/miguelbalboa/rfid#pin-layout
  *
  */
 
@@ -75,13 +77,13 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
  *
  * @return true when the given key worked, false otherwise.
  */
-boolean try_key(MFRC522::MIFARE_Key *key)
+bool try_key(MFRC522::MIFARE_Key *key)
 {
-    boolean result = false;
+    bool result = false;
     byte buffer[18];
     byte block = 0;
-    byte status;
-    
+    MFRC522::StatusCode status;
+
     // Serial.println(F("Authenticating using key A..."));
     status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
@@ -119,7 +121,7 @@ boolean try_key(MFRC522::MIFARE_Key *key)
  * Main loop.
  */
 void loop() {
-    // Look for new cards
+    // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
     if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
 
@@ -132,7 +134,7 @@ void loop() {
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
     
     // Try the known default keys
@@ -148,5 +150,11 @@ void loop() {
             // no need to try other keys for this PICC
             break;
         }
+        
+        // http://arduino.stackexchange.com/a/14316
+        if ( ! mfrc522.PICC_IsNewCardPresent())
+            break;
+        if ( ! mfrc522.PICC_ReadCardSerial())
+            break;
     }
 }

@@ -2,21 +2,21 @@
  * ----------------------------------------------------------------------------
  * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
  * for further details and other examples.
- * 
+ *
  * NOTE: The library file MFRC522.h has a lot of useful info. Please read it.
- * 
+ *
  * Released into the public domain.
  * ----------------------------------------------------------------------------
  * This sample shows how to read and write data blocks on a MIFARE Classic PICC
  * (= card/tag).
- * 
+ *
  * BEWARE: Data will be written to the PICC, in sector #1 (blocks #4 to #7).
- * 
- * 
+ *
+ *
  * Typical pin layout used:
  * -----------------------------------------------------------------------------------------
  *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno           Mega      Nano v3    Leonardo/Micro   Pro Micro
+ *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
  * Signal      Pin          Pin           Pin       Pin        Pin              Pin
  * -----------------------------------------------------------------------------------------
  * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
@@ -24,7 +24,9 @@
  * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
  * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
  * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
- * 
+ *
+ * More pin layouts for other boards can be found here: https://github.com/miguelbalboa/rfid#pin-layout
+ *
  */
 
 #include <SPI.h>
@@ -56,7 +58,7 @@ void setup() {
     Serial.print(F("Using key (for A and B):"));
     dump_byte_array(key.keyByte, MFRC522::MF_KEY_SIZE);
     Serial.println();
-    
+
     Serial.println(F("BEWARE: Data will be written to the PICC, in sector #1"));
 }
 
@@ -64,7 +66,7 @@ void setup() {
  * Main loop.
  */
 void loop() {
-    // Look for new cards
+    // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
     if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
 
@@ -77,7 +79,7 @@ void loop() {
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
     // Check for compatibility
@@ -95,17 +97,17 @@ void loop() {
     byte dataBlock[]    = {
         0x01, 0x02, 0x03, 0x04, //  1,  2,   3,  4,
         0x05, 0x06, 0x07, 0x08, //  5,  6,   7,  8,
-        0x08, 0x09, 0xff, 0x0b, //  9, 10, 255, 12,
-        0x0c, 0x0d, 0x0e, 0x0f  // 13, 14,  15, 16
+        0x09, 0x0a, 0xff, 0x0b, //  9, 10, 255, 11,
+        0x0c, 0x0d, 0x0e, 0x0f  // 12, 13, 14, 15
     };
     byte trailerBlock   = 7;
-    byte status;
+    MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
 
     // Authenticate using key A
     Serial.println(F("Authenticating using key A..."));
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
+    status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("PCD_Authenticate() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -120,7 +122,7 @@ void loop() {
     // Read data from the block
     Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Read() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -131,7 +133,7 @@ void loop() {
 
     // Authenticate using key B
     Serial.println(F("Authenticating again using key B..."));
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
+    status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("PCD_Authenticate() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -142,7 +144,7 @@ void loop() {
     Serial.print(F("Writing data into block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
     dump_byte_array(dataBlock, 16); Serial.println();
-    status = mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Write() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
@@ -152,14 +154,14 @@ void loop() {
     // Read data from the block (again, should now be what we have written)
     Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
     Serial.println(F(" ..."));
-    status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
     if (status != MFRC522::STATUS_OK) {
         Serial.print(F("MIFARE_Read() failed: "));
         Serial.println(mfrc522.GetStatusCodeName(status));
     }
     Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
     dump_byte_array(buffer, 16); Serial.println();
-        
+
     // Check that data in block is what we have written
     // by counting the number of bytes that are equal
     Serial.println(F("Checking result..."));
@@ -177,7 +179,7 @@ void loop() {
         Serial.println(F("  perhaps the write didn't work properly..."));
     }
     Serial.println();
-        
+
     // Dump the sector data
     Serial.println(F("Current data in sector:"));
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);

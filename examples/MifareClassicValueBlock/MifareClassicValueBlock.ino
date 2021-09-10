@@ -17,7 +17,7 @@
  * Typical pin layout used:
  * -----------------------------------------------------------------------------------------
  *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno           Mega      Nano v3    Leonardo/Micro   Pro Micro
+ *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
  * Signal      Pin          Pin           Pin       Pin        Pin              Pin
  * -----------------------------------------------------------------------------------------
  * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
@@ -25,6 +25,8 @@
  * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
  * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
  * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
+ *
+ * More pin layouts for other boards can be found here: https://github.com/miguelbalboa/rfid#pin-layout
  * 
  */
 
@@ -65,7 +67,7 @@ void setup() {
  * Main loop.
  */
 void loop() {
-    // Look for new cards
+    // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
     if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
 
@@ -78,7 +80,7 @@ void loop() {
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     Serial.print(F("PICC type: "));
-    byte piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+    MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
     // Check for compatibility
@@ -95,10 +97,10 @@ void loop() {
     byte valueBlockA    = 5;
     byte valueBlockB    = 6;
     byte trailerBlock   = 7;
-    byte status;
+    MFRC522::StatusCode status;
     byte buffer[18];
     byte size = sizeof(buffer);
-    long value;
+    int32_t value;
 
     // Authenticate using key A
     Serial.println(F("Authenticating using key A..."));
@@ -166,8 +168,8 @@ void loop() {
     // Check if it matches the desired access pattern already;
     // because if it does, we don't need to write it again...
     if (    buffer[6] != trailerBuffer[6]
-        &&  buffer[7] != trailerBuffer[7]
-        &&  buffer[8] != trailerBuffer[8]) {
+        ||  buffer[7] != trailerBuffer[7]
+        ||  buffer[8] != trailerBuffer[8]) {
         // They don't match (yet), so write it to the PICC
         Serial.println(F("Writing new sector trailer..."));
         status = mfrc522.MIFARE_Write(trailerBlock, trailerBuffer, 16);
@@ -278,7 +280,7 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
 void formatValueBlock(byte blockAddr) {
     byte buffer[18];
     byte size = sizeof(buffer);
-    byte status;
+    MFRC522::StatusCode status;
 
     Serial.print(F("Reading block ")); Serial.println(blockAddr);
     status = mfrc522.MIFARE_Read(blockAddr, buffer, &size);
