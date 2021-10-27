@@ -397,6 +397,11 @@ bool MFRC522::PCD_PerformSelfTest() {
 		}
 	}
 	
+	// 8. Perform a re-init, because PCD does not work after test.
+	// Reset does not work as expected.
+	// "Auto self-test done" does not work as expected.
+	PCD_Init();
+	
 	// Test passed; all is good.
 	return true;
 } // End PCD_PerformSelfTest()
