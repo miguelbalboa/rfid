@@ -1,9 +1,9 @@
 {
   "name": "MFRC522",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "license": "Unlicense",
   "keywords": "rfid, spi",
-  "description": "Read a card using a MFRC522 reader on your SPI interface.",
+  "description": "Arduino RFID Library for MFRC522 (SPI). Read/Write a RFID Card or Tag using the ISO/IEC 14443A/MIFARE interface.",
   "repository":
   {
     "type": "git",

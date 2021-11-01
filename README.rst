@@ -20,10 +20,11 @@ Read and write different types of Radio-Frequency IDentification (RFID) cards
 on your Arduino using a RC522 based reader connected via the Serial Peripheral
 Interface (SPI) interface.
 
+For advanced and further development please use library `RFID_MFRC522v2 <https://github.com/OSSLibraries/Arduino_MFRC522v2>`_.
 
 .. _development:
 Development
-----------
+-----------
 
 **The development by owner miguelbalboa has ended**.
 
@@ -49,7 +50,7 @@ If you got a bad board and you can tell us how to detect those boards (silk, chi
 
 .. _what works and not:
 What works and not?
-----------
+-------------------
 
 * **Works**
   
@@ -86,7 +87,7 @@ What works and not?
 
 .. _compatible ide:
 Compatible IDE
-----------
+--------------
 This library works with Arduino IDE 1.6, older versions are **not supported** and will cause compiler errors. The built-in library manager is supported.
 
 If you use your own compiler, you have to enable ``c++11``-support.
@@ -94,7 +95,7 @@ If you use your own compiler, you have to enable ``c++11``-support.
 
 .. _compatible boards:
 Compatible boards
-----------
+-----------------
 
 **!!!Only for advanced users!!!**
 
@@ -111,7 +112,7 @@ Note that the main target/support of library is still Arduino.
 
 .. _support issue:
 Support/issue
-----------
+-------------
 1. First checkout `what works and not`_ and `troubleshooting`_ .
 
 2. It seems to be a hardware issue or you need support to program your project?
@@ -173,7 +174,7 @@ The following table shows the typical pin layout used:
 .. [1] Configurable, typically defined as RST_PIN in sketch/program.
 .. [2] Configurable, typically defined as SS_PIN in sketch/program.
 .. [3] The SDA pin might be labeled SS on some/older MFRC522 boards. 
-.. [4] Source: https://github.com/miguelbalboa/rfid/issues/111#issuecomment-420433658 .
+.. [4] Source: `#111 <https://github.com/miguelbalboa/rfid/issues/111#issuecomment-420433658>`_ .
 
 Important: If your micro controller supports multiple SPI interfaces, the library only uses the **default (first) SPI** of the Arduino framework.
 
@@ -233,7 +234,7 @@ Protocols
 
 .. _security:
 Security
--------
+--------
 * The **UID** of a card **can not be used** as an unique identification for security related projects. Some Chinese cards allow to change the UID which means you can easily clone a card. For projects like *access control*, *door opener* or *payment systems* you **must implement** an **additional security mechanism** like a password or normal key.
 
 * This library only supports crypto1-encrypted communication. Crypto1 has been known as `broken`_ for a few years, so it does NOT offer ANY security, it is virtually unencrypted communication. **Do not use it for any security related applications!**
@@ -243,7 +244,7 @@ Security
 
 .. _troubleshooting:
 Troubleshooting
--------
+---------------
 
 * **I don't get input from reader** or **WARNING: Communication failure, is the MFRC522 properly connected?**
 
@@ -285,16 +286,27 @@ Troubleshooting
   #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentication, see `security`_ or different `protocol`_.
   #. Some boards bought from Chinese manufactures do not use the best components and this can affect the detection of different types of tag/card. In some of these boards, the L1 and L2 inductors do not have a high enough current so the signal generated is not enough to get Ultralight C and NTAG203 tags to work, replacing those with same inductance (2.2uH) but higher operating current inductors should make things work smoothly. Also, in some of those boards the  harmonic and matching circuit needs to be tuned, for this replace C4 and C5 with 33pf capacitors and you are all set. (Source: `Mikro Elektronika`_) 
 
+
 * **My mobile phone doesn't recognize the MFRC522** or **my MFRC522 can't read data from other MFRC522**
 
   #. Card simulation is not supported.
   #. Communication with mobile phones is not supported.
   #. Peer to peer communication is not supported.
 
+
 * **I can only read the card UID.**
 
   #. Maybe the `AccessBits` have been accidentally set and now an unknown password is set. This can not be reverted.
   #. Probably the card is encrypted. Especially official cards like public transport, university or library cards. There is *no* way to get access with this library.
+
+
+* **Where do I get more information?**
+
+  #. For general support from the community, see `Arduino Forum <https://forum.arduino.cc/>`_ or `StackOverflow <https://stackoverflow.com/questions/tagged/mifare>`_ .
+  #. Visit the `community mfrc522 wiki <https://github.com/miguelbalboa/rfid/wiki>`_ .
+  #. Read the datasheets!
+  #. Your preferred search engine.
+
 
 * **I need more features.**
 
@@ -364,7 +376,7 @@ by Søren Thing Andersen (from http://access.thing.dk).
 It has been extended with functionality to alter sector 0 on Chinese UID changeable MIFARE card in Oct 2014 by Tom Clement (from http://tomclement.nl).
 
 Maintained by miguelbalboa until 2016.
-Maintained by Rotzbua from 2016 until 2020.
+Maintained by Rotzbua from 2016 until 2022.
 
 
 .. _arduino: https://arduino.cc/
