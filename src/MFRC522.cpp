@@ -494,7 +494,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(byte command,     ///< The 
     // When they are set in the ComIrqReg register, then the command is
     // considered complete. If the command is not indicated as complete in
     // ~36ms, then consider the command as timed out.
-    const uint32_t deadline = millis() + 5000;
+    const uint32_t deadline = millis() + max(36, fwt);
     bool completed = false;
 
     do {
@@ -511,7 +511,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(byte command,     ///< The 
 
     // 36ms and nothing happened. Communication with the MFRC522 might be down.
     if (!completed) {
-        Serial.println("Timout here lel, library");
+        //Serial.println("Timout here lel, library");
         return STATUS_TIMEOUT;
     }
 

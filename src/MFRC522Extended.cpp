@@ -317,6 +317,13 @@ MFRC522::StatusCode MFRC522Extended::PICC_Select(Uid *uid,       ///< Pointer to
 
                     PICC_PPS(ds, dr);
                 }
+
+                byte fwi = ats.tb1.fwi;
+                double fc = 13560;
+                fwt = (int)(((256 * 16) / fc) * (1 << fwi) + 1);
+                Serial.println("FWT");
+                Serial.println(fwi);
+                Serial.println(fwt);
             }
         }
     }
@@ -446,7 +453,7 @@ MFRC522::StatusCode MFRC522Extended::PICC_RequestATS(Ats *ats) {
             ats->tb1.sfgi = bufferATS[tb1Index] & 0x0F;
         } else {
             // Defaults for TB1
-            ats->tb1.fwi = 0;   // TODO: Don't know the default for this!
+            ats->tb1.fwi = 4;
             ats->tb1.sfgi = 0;  // The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
         }
 
@@ -482,7 +489,7 @@ MFRC522::StatusCode MFRC522Extended::PICC_RequestATS(Ats *ats) {
 
         // Defaults for TB1
         ats->tb1.transmitted = false;
-        ats->tb1.fwi = 0;   // TODO: Don't know the default for this!
+        ats->tb1.fwi = 4;
         ats->tb1.sfgi = 0;  // The default value of SFGI is 0 (meaning that the card does not need any particular SFGT)
 
         // Defaults for TC1
@@ -783,8 +790,11 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
         return result;
     }
 
+    int fwtSave = fwt;
     bool waitTimeExtension = ((in.prologue.pcb & 0xC2) == 0xC2) && in.inf.size == 1;
     while (waitTimeExtension) {
+        int wtxm = in.inf.data[0] & 0x3F;
+        fwt = min(5000, fwtSave * wtxm);
         out.prologue = in.prologue;
         memcpy(out.inf.data, in.inf.data, in.inf.size);
         out.inf.size = in.inf.size;
@@ -797,6 +807,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
         }
         waitTimeExtension = ((in.prologue.pcb & 0xC2) == 0xC2) && in.inf.size == 1;
     }
+    fwt = fwtSave;
 
     // Swap block number on success
     tag->blockNumber = !tag->blockNumber;
@@ -817,18 +828,20 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
     // Result is chained
     // Send an ACK to receive more data
     // TODO: Should be checked I've never needed to send an ACK
-    while (in.prologue.pcb & 0x10) {
+    //while (in.prologue.pcb & 0x10) {
+    if (in.prologue.pcb & 0x10) {
         byte ackData[FIFO_SIZE];
         byte ackDataSize = FIFO_SIZE;
 
         result = TCL_TransceiveRBlock(tag, true, ackData, &ackDataSize);
-        if (result != STATUS_OK)
+        if (result != STATUS_OK) {
             return result;
+        }
 
         if (backData && (backLen > 0)) {
-            if ((*backLen + ackDataSize) > totalBackLen)
+            if ((*backLen + ackDataSize) > totalBackLen) {
                 return STATUS_NO_ROOM;
-
+            }
             memcpy(&(backData[*backLen]), ackData, ackDataSize);
             *backLen += ackDataSize;
         }
