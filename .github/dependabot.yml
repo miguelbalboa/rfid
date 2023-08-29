@@ -13,3 +13,7 @@ updates:
       time: "05:00"
     labels:
       - "github-actions-dependencies"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
