@@ -31,7 +31,7 @@ jobs:
         #    example: AccessControl
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache pip
       uses: actions/cache@v3
       with:
