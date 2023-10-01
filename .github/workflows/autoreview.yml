@@ -5,7 +5,7 @@ jobs:
   misspellcheck:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Run misspell with reviewdog
       uses: reviewdog/action-misspell@v1
       #with:
