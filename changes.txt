@@ -1,6 +1,9 @@
 -- Add changes to unreleased tag until we make a release.
 
-xxxxx , v1.4.11
+xxxxx , v1.4.12
+
+30 Dec 2023, v1.4.11
+- fix: documentation
 
 1 Nov 2021 , v1.4.10
 - fix: timeout on Non-AVR boards; feat: Use yield() in busy wait loops @greezybacon 
