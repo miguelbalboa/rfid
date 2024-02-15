@@ -35,19 +35,12 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 /* Set your new UID here! */
 #define NEW_UID {0xDE, 0xAD, 0xBE, 0xEF}
 
-MFRC522::MIFARE_Key key;
-
 void setup() {
   Serial.begin(9600);  // Initialize serial communications with the PC
   while (!Serial);     // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
   SPI.begin();         // Init SPI bus
   mfrc522.PCD_Init();  // Init MFRC522 card
   Serial.println(F("Warning: this example overwrites the UID of your UID changeable card, use with care!"));
-  
-  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
-  for (byte i = 0; i < 6; i++) {
-    key.keyByte[i] = 0xFF;
-  }
 }
 
 // Setting the UID can be as simple as this:
