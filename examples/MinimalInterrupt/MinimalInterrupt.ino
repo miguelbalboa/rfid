@@ -37,8 +37,6 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
-MFRC522::MIFARE_Key key;
-
 volatile bool bNewInt = false;
 byte regVal = 0x7F;
 void activateRec(MFRC522 mfrc522);
