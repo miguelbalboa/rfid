@@ -10,8 +10,8 @@ The **MIFARE Classic** chips and protocol is described in the datasheets:
   *  Mini: http://www.idcardmarket.com/download/mifare_S20_datasheet.pdf
 
 The **MIFARE Ultralight** chip and protocol is described in the datasheets:
-  *  Ultralight:   https://www.nxp.com/documents/data_sheet/MF0ICU1.pdf
-  *  Ultralight C: https://www.nxp.com/documents/short_data_sheet/MF0ICU2_SDS.pdf
+  *  Ultralight:   https://www.nxp.com/docs/en/data-sheet/MF0ICU1.pdf
+  *  Ultralight C: https://www.nxp.com/docs/en/data-sheet/MF0ICU2_SDS_32.pdf
 
 ## MIFARE Classic 1K (MF1S503x)
 
