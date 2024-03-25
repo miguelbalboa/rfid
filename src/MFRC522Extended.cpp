@@ -780,7 +780,10 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	PcbBlock in;
 	byte outBuffer[FIFO_SIZE];
 	byte outBufferSize = FIFO_SIZE;
-	byte totalBackLen = *backLen;
+	byte totalBackLen = 0;
+	if (backLen) {
+		totalBackLen = *backLen;
+	}
 
 	// This command sends an I-Block
 	out.prologue.pcb = 0x02;
@@ -821,7 +824,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	// Swap block number on success
 	tag->blockNumber = !tag->blockNumber;
 
-	if (backData && (backLen > 0)) {
+	if (backData && backLen) {
 		if (*backLen < in.inf.size)
 			return STATUS_NO_ROOM;
 
@@ -844,7 +847,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 		if (result != STATUS_OK)
 			return result;
 
-		if (backData && (backLen > 0)) {
+		if (backData && backLen) {
 			if ((*backLen + ackDataSize) > totalBackLen)
 				return STATUS_NO_ROOM;
 
