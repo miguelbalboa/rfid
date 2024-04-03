@@ -384,7 +384,7 @@ Maintained by Rotzbua from 2016 until 2022.
 .. _ebay: https://www.ebay.com/
 .. _iso/iec 14443a: https://en.wikipedia.org/wiki/ISO/IEC_14443
 .. _iso/iec 14443-3\:2011 part 3: 
-.. _nxp mfrc522: https://www.nxp.com/documents/data_sheet/MFRC522.pdf
+.. _nxp mfrc522: https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
 .. _broken: https://eprint.iacr.org/2008/166
 .. _supported by hardware: https://web.archive.org/web/20151210045625/http://www.nxp.com/documents/leaflet/939775017564.pdf
 .. _Arduino forum: https://forum.arduino.cc
