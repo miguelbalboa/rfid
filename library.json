@@ -11,5 +11,5 @@
   },
   "exclude": "doc",
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "atmelsam", "ststm32", "espressif8266", "espressif32", "samd"]
+  "platforms": ["atmelavr", "atmelsam", "ststm32", "espressif8266", "espressif32", "samd", "rp2040"]
 }
