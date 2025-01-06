@@ -800,7 +800,7 @@ MFRC522::StatusCode MFRC522Extended::TCL_Transceive(TagInfo *tag, byte *sendData
 	}
 
 	// Do we have data to send?
-	if (sendData != nullptr && (sendLen > 0x00)) {
+	if (sendData && (sendLen > 0)) {
 		out.inf.size = sendLen;
 		out.inf.data = sendData;
 	} else {
