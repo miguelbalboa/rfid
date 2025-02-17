@@ -2,6 +2,10 @@
 
 xxxxx , v1.4.12
 
+17 Feb 2025, v1.4.12
+- fix: compiler warning/error @robosphere99
+- chore: add rp2040 to allow list @aaronjamt 
+
 30 Dec 2023, v1.4.11
 - fix: documentation
 
