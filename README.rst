@@ -282,7 +282,7 @@ Troubleshooting
   #. Distance between antenna and token too large (>1cm).
   #. You got the wrong type PICC. Is it really 13.56 MHz? Is it really a Mifare Type A?
   #. NFC tokens are not supported. Some may work.
-  #. Animal RFID tags are not supported. They use a different frequency (125 kHz).
+  #. Animal RFID tags are not supported. They use a different frequency (134.2 kHz - https://en.wikipedia.org/wiki/ISO_11784_and_ISO_11785).
   #. Hardware may be corrupted, most products are from china and sometimes the quality is really poor. Contact your seller.
   #. Newer versions of Mifare cards like DESFire/Ultralight maybe not work according to missing authentication, see `security`_ or different `protocol`_.
   #. Some boards bought from Chinese manufactures do not use the best components and this can affect the detection of different types of tag/card. In some of these boards, the L1 and L2 inductors do not have a high enough current so the signal generated is not enough to get Ultralight C and NTAG203 tags to work, replacing those with same inductance (2.2uH) but higher operating current inductors should make things work smoothly. Also, in some of those boards the  harmonic and matching circuit needs to be tuned, for this replace C4 and C5 with 33pf capacitors and you are all set. (Source: `Mikro Elektronika`_) 
@@ -390,3 +390,4 @@ Maintained by Rotzbua from 2016 until 2022.
 .. _Arduino forum: https://forum.arduino.cc
 .. _stdint.h: https://en.wikibooks.org/wiki/C_Programming/C_Reference/stdint.h
 .. _Mikro Elektronika: https://forum.mikroe.com/viewtopic.php?f=147&t=64203
+.. _iso11784and11785: https://en.wikipedia.org/wiki/ISO_11784_and_ISO_11785
