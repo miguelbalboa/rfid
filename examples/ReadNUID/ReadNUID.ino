@@ -39,7 +39,7 @@
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
 
 // Init array that will store new NUID 
-byte nuidPICC[4];
+byte nuidPICC[7];
 
 void setup() { 
   Serial.begin(9600);
@@ -66,20 +66,20 @@ void loop() {
   // Check is the PICC of Classic MIFARE type
   if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&  
     piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
-    piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-    Serial.println(F("Your tag is not of type MIFARE Classic."));
+    piccType != MFRC522::PICC_TYPE_MIFARE_4K &&
+    piccType != MFRC522::PICC_TYPE_MIFARE_UL) {
+    Serial.println(F("Your tag is not of type MIFARE Classic or MIFARE Ultralight."));
     return;
   }
 
-  if (rfid.uid.uidByte[0] != nuidPICC[0] || 
-    rfid.uid.uidByte[1] != nuidPICC[1] || 
-    rfid.uid.uidByte[2] != nuidPICC[2] || 
-    rfid.uid.uidByte[3] != nuidPICC[3] ) {
+  if(areUIDsIdentical(rfid.uid.uidByte, nuidPICC, sizeof(nuidPICC)/sizeof(nuidPICC[0]))) {
+    Serial.println(F("Card read previously."));
+  } else {
     Serial.println(F("A new card has been detected."));
 
     // Store NUID into nuidPICC array
-    for (byte i = 0; i < 4; i++) {
-      nuidPICC[i] = rfid.uid.uidByte[i];
+    for (byte i = 0; i < 7; i++) {
+      nuidPICC[i] = i >= rfid.uid.size ? 0x00 : rfid.uid.uidByte[i];
     }
    
     Serial.println(F("The NUID tag is:"));
@@ -90,7 +90,6 @@ void loop() {
     printDec(rfid.uid.uidByte, rfid.uid.size);
     Serial.println();
   }
-  else Serial.println(F("Card read previously."));
 
   // Halt PICC
   rfid.PICC_HaltA();
@@ -99,6 +98,15 @@ void loop() {
   rfid.PCD_StopCrypto1();
 }
 
+/**
+ * Helper routine to check if the given UID's are identical
+ */
+bool areUIDsIdentical(byte *uid1, byte *uid2, byte uidLength) {
+  for (byte i = 0; i < uidLength; i++) {
+    if(uid1[i] != uid2[i]) return false;
+  }
+  return true;
+}
 
 /**
  * Helper routine to dump a byte array as hex values to Serial. 
