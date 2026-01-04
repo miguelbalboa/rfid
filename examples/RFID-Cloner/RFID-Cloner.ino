@@ -310,5 +310,14 @@ void keuze1(){ //Read card
             // no need to try other keys for this PICC
             break;
         }
+        
+        // http://arduino.stackexchange.com/a/14316
+        // After a failed authentication, the MIFARE card stops responding
+        // to further communication attempts. We must re-establish the 
+        // connection before trying the next key.
+        if ( ! mfrc522.PICC_IsNewCardPresent())
+            break;
+        if ( ! mfrc522.PICC_ReadCardSerial())
+            break;
     }
 }
